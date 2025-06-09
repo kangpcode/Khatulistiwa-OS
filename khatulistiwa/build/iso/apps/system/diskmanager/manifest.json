@@ -1,0 +1,283 @@
+{
+    "name": "DiskManager",
+    "version": "1.0.0",
+    "description": "Manajemen disk, partisi, dan media penyimpanan dengan tema lumbung data Indonesia",
+    "author": "Tim Khatulistiwa OS",
+    "category": "system",
+    "type": "disk_management",
+    "cultural": {
+        "indonesian_elements": true,
+        "batik_theme": "kawung",
+        "garuda_animations": true,
+        "traditional_sounds": true,
+        "cultural_colors": {
+            "primary": "#059669",
+            "secondary": "#10B981",
+            "accent": "#34D399",
+            "background": "#ECFDF5"
+        }
+    },
+    "permissions": [
+        "disk_management",
+        "partition_access",
+        "filesystem_operations",
+        "mount_unmount",
+        "format_operations",
+        "cultural_assets_access",
+        "system_integration",
+        "storage_monitoring",
+        "backup_operations",
+        "disk_diagnostics"
+    ],
+    "dependencies": [
+        "khatui_runtime.khat",
+        "khatcore_runtime.khat",
+        "khatstorage.khat",
+        "khatfilesystem.khat"
+    ],
+    "min_os_version": "1.0.0",
+    "ui_framework": "KhatUI",
+    "features": {
+        "disk_partitioning": true,
+        "filesystem_formatting": true,
+        "mount_management": true,
+        "storage_monitoring": true,
+        "backup_restore": true,
+        "cultural_storage_metaphors": true,
+        "traditional_organization": true,
+        "indonesian_terminology": true,
+        "disk_health_monitoring": true,
+        "automatic_cleanup": true,
+        "storage_optimization": true,
+        "cultural_visualization": true
+    },
+    "storage_types": [
+        {
+            "id": "hdd",
+            "name": "Hard Disk",
+            "cultural_name": "Cakram Keras",
+            "icon": "hdd_icon",
+            "cultural_icon": "lumbung_besar",
+            "description": "Penyimpanan magnetik tradisional"
+        },
+        {
+            "id": "ssd",
+            "name": "SSD",
+            "cultural_name": "Cakram Padat",
+            "icon": "ssd_icon",
+            "cultural_icon": "lumbung_cepat",
+            "description": "Penyimpanan solid state modern"
+        },
+        {
+            "id": "usb",
+            "name": "USB Drive",
+            "cultural_name": "Penyimpan USB",
+            "icon": "usb_icon",
+            "cultural_icon": "tas_data",
+            "description": "Penyimpanan portabel USB"
+        },
+        {
+            "id": "optical",
+            "name": "Optical Disc",
+            "cultural_name": "Cakram Optik",
+            "icon": "optical_icon",
+            "cultural_icon": "piringan_data",
+            "description": "CD, DVD, Blu-ray disc"
+        },
+        {
+            "id": "network",
+            "name": "Network Storage",
+            "cultural_name": "Lumbung Jaringan",
+            "icon": "network_storage_icon",
+            "cultural_icon": "gudang_awan",
+            "description": "Penyimpanan melalui jaringan"
+        }
+    ],
+    "filesystem_types": [
+        {
+            "id": "khatfs",
+            "name": "KhatFS",
+            "cultural_name": "Sistem Berkas Khat",
+            "description": "Filesystem native Khatulistiwa OS",
+            "features": ["compression", "encryption", "cultural_metadata"]
+        },
+        {
+            "id": "ext4",
+            "name": "EXT4",
+            "cultural_name": "Sistem Berkas Linux",
+            "description": "Extended filesystem untuk Linux",
+            "features": ["journaling", "large_files"]
+        },
+        {
+            "id": "ntfs",
+            "name": "NTFS",
+            "cultural_name": "Sistem Berkas Windows",
+            "description": "New Technology File System",
+            "features": ["compression", "encryption", "large_files"]
+        },
+        {
+            "id": "fat32",
+            "name": "FAT32",
+            "cultural_name": "Sistem Berkas Universal",
+            "description": "File Allocation Table 32-bit",
+            "features": ["compatibility", "simple"]
+        },
+        {
+            "id": "exfat",
+            "name": "exFAT",
+            "cultural_name": "Sistem Berkas Diperluas",
+            "description": "Extended File Allocation Table",
+            "features": ["large_files", "flash_optimized"]
+        }
+    ],
+    "disk_operations": [
+        {
+            "id": "format",
+            "name": "Format",
+            "cultural_name": "Format Ulang",
+            "description": "Memformat disk dengan filesystem baru",
+            "icon": "format_operation",
+            "cultural_icon": "bersihkan_lumbung",
+            "danger_level": "high"
+        },
+        {
+            "id": "partition",
+            "name": "Partition",
+            "cultural_name": "Bagi Ruang",
+            "description": "Membagi disk menjadi beberapa partisi",
+            "icon": "partition_operation",
+            "cultural_icon": "bagi_lumbung",
+            "danger_level": "medium"
+        },
+        {
+            "id": "mount",
+            "name": "Mount",
+            "cultural_name": "Pasang",
+            "description": "Memasang disk ke sistem",
+            "icon": "mount_operation",
+            "cultural_icon": "buka_lumbung",
+            "danger_level": "low"
+        },
+        {
+            "id": "unmount",
+            "name": "Unmount",
+            "cultural_name": "Lepas",
+            "description": "Melepas disk dari sistem",
+            "icon": "unmount_operation",
+            "cultural_icon": "tutup_lumbung",
+            "danger_level": "low"
+        },
+        {
+            "id": "check",
+            "name": "Check",
+            "cultural_name": "Periksa",
+            "description": "Memeriksa kesehatan disk",
+            "icon": "check_operation",
+            "cultural_icon": "cek_lumbung",
+            "danger_level": "none"
+        },
+        {
+            "id": "defrag",
+            "name": "Defragment",
+            "cultural_name": "Rapikan",
+            "description": "Merapikan data di disk",
+            "icon": "defrag_operation",
+            "cultural_icon": "rapikan_lumbung",
+            "danger_level": "low"
+        }
+    ],
+    "disk_health_indicators": [
+        {
+            "id": "excellent",
+            "name": "Excellent",
+            "cultural_name": "Sangat Baik",
+            "color": "#10B981",
+            "icon": "health_excellent",
+            "cultural_icon": "lumbung_sehat",
+            "range": [90, 100]
+        },
+        {
+            "id": "good",
+            "name": "Good",
+            "cultural_name": "Baik",
+            "color": "#34D399",
+            "icon": "health_good",
+            "cultural_icon": "lumbung_kuat",
+            "range": [70, 89]
+        },
+        {
+            "id": "fair",
+            "name": "Fair",
+            "cultural_name": "Cukup",
+            "color": "#FBBF24",
+            "icon": "health_fair",
+            "cultural_icon": "lumbung_biasa",
+            "range": [50, 69]
+        },
+        {
+            "id": "poor",
+            "name": "Poor",
+            "cultural_name": "Buruk",
+            "color": "#F87171",
+            "icon": "health_poor",
+            "cultural_icon": "lumbung_rusak",
+            "range": [20, 49]
+        },
+        {
+            "id": "critical",
+            "name": "Critical",
+            "cultural_name": "Kritis",
+            "color": "#EF4444",
+            "icon": "health_critical",
+            "cultural_icon": "lumbung_bahaya",
+            "range": [0, 19]
+        }
+    ],
+    "cultural_features": {
+        "lumbung_storage_metaphor": true,
+        "traditional_organization_system": true,
+        "indonesian_storage_terms": true,
+        "cultural_capacity_visualization": true,
+        "traditional_backup_concepts": true,
+        "batik_progress_indicators": true,
+        "ornamental_disk_representations": true,
+        "cultural_health_indicators": true
+    },
+    "backup_strategies": [
+        {
+            "id": "full_backup",
+            "name": "Full Backup",
+            "cultural_name": "Cadangan Lengkap",
+            "description": "Mencadangkan semua data",
+            "icon": "full_backup",
+            "cultural_icon": "simpan_semua"
+        },
+        {
+            "id": "incremental",
+            "name": "Incremental",
+            "cultural_name": "Cadangan Bertahap",
+            "description": "Mencadangkan perubahan saja",
+            "icon": "incremental_backup",
+            "cultural_icon": "simpan_baru"
+        },
+        {
+            "id": "differential",
+            "name": "Differential",
+            "cultural_name": "Cadangan Berbeda",
+            "description": "Mencadangkan perbedaan dari backup terakhir",
+            "icon": "differential_backup",
+            "cultural_icon": "simpan_beda"
+        }
+    ],
+    "localization": {
+        "default_language": "id_ID",
+        "supported_languages": ["id_ID", "en_US", "jv_ID", "su_ID"]
+    },
+    "resources": {
+        "icons": "resources/icons/",
+        "sounds": "resources/sounds/",
+        "cultural_assets": "cultural/",
+        "themes": "resources/themes/",
+        "tools": "resources/tools/"
+    }
+}

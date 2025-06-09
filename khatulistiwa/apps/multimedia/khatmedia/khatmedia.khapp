@@ -1,0 +1,176 @@
+{
+  "khapp_format_version": "2.0",
+  "app_info": {
+    "id": "com.khatulistiwa.media",
+    "name": "KhatMedia Player",
+    "name_indonesia": "Pemutar Media Khatulistiwa",
+    "version": "1.5.0",
+    "build": "20241210",
+    "developer": "Tim Multimedia Khatulistiwa",
+    "developer_indonesia": "Tim Multimedia Khatulistiwa",
+    "category": "multimedia",
+    "subcategory": "media_player",
+    "description": "Advanced media player with gamelan audio enhancement and traditional Indonesian visual effects",
+    "description_indonesia": "Pemutar media canggih dengan peningkatan audio gamelan dan efek visual tradisional Indonesia",
+    "icon": "assets/icons/khatmedia_icon.png",
+    "screenshots": [
+      "assets/screenshots/main_interface.png",
+      "assets/screenshots/gamelan_visualizer.png",
+      "assets/screenshots/wayang_mode.png",
+      "assets/screenshots/batik_themes.png"
+    ]
+  },
+  "cultural_info": {
+    "cultural_level": 4,
+    "spiritual_approved": true,
+    "gotong_royong_compatible": true,
+    "cultural_features": [
+      "gamelan_audio_enhancement",
+      "wayang_visualizer",
+      "batik_themes",
+      "traditional_music_support",
+      "cultural_playlists",
+      "indonesian_subtitles"
+    ],
+    "traditional_elements": [
+      "Gamelan sound processing",
+      "Wayang kulit animations",
+      "Batik pattern visualizations",
+      "Traditional Indonesian music library",
+      "Cultural event reminders",
+      "Islamic prayer time integration"
+    ]
+  },
+  "technical_specs": {
+    "min_ram": "512MB",
+    "min_storage": "100MB",
+    "supported_platforms": ["x86_64", "arm64"],
+    "supported_formats": {
+      "audio": ["mp3", "flac", "ogg", "wav", "gamelan", "traditional"],
+      "video": ["mp4", "mkv", "avi", "webm", "wayang"],
+      "subtitles": ["srt", "ass", "vtt", "indonesia"]
+    },
+    "dependencies": [
+      "khatcore_runtime >= 2.0.0",
+      "khatui_runtime >= 2.0.0",
+      "gamelan_audio_driver >= 1.0.0"
+    ]
+  },
+  "features": {
+    "audio_features": [
+      "Gamelan audio enhancement",
+      "Traditional music equalizer",
+      "Cultural audio effects",
+      "Islamic audio filtering",
+      "Gotong royong playlist sharing",
+      "Community radio integration"
+    ],
+    "video_features": [
+      "Wayang kulit visualizer",
+      "Batik pattern overlays",
+      "Cultural subtitle support",
+      "Traditional video effects",
+      "Cultural content filtering",
+      "Educational video mode"
+    ],
+    "ui_features": [
+      "Batik-themed interface",
+      "Traditional Indonesian controls",
+      "Cultural gesture support",
+      "Islamic-compliant design",
+      "Accessibility features",
+      "Multi-language support"
+    ]
+  },
+  "permissions": {
+    "required": [
+      "audio_playback",
+      "video_playback",
+      "file_access",
+      "network_access",
+      "cultural_database_access"
+    ],
+    "optional": [
+      "microphone_access",
+      "camera_access",
+      "location_access",
+      "notification_access"
+    ]
+  },
+  "cultural_compliance": {
+    "halal_certified": true,
+    "family_friendly": true,
+    "educational_value": true,
+    "cultural_preservation": true,
+    "spiritual_guidelines": true,
+    "community_values": true
+  },
+  "installation": {
+    "install_size": "150MB",
+    "data_directory": "~/.khatmedia",
+    "config_files": [
+      "config/khatmedia.conf",
+      "config/cultural_settings.conf",
+      "config/gamelan_profiles.conf"
+    ],
+    "desktop_integration": {
+      "create_desktop_entry": true,
+      "register_mime_types": true,
+      "add_to_applications_menu": true,
+      "create_file_associations": true
+    }
+  },
+  "localization": {
+    "supported_languages": [
+      "id_ID", "en_US", "ar_SA", "ms_MY", "jv_ID"
+    ],
+    "default_language": "id_ID",
+    "cultural_calendar_support": true,
+    "traditional_number_formats": true,
+    "islamic_calendar_integration": true
+  },
+  "content": {
+    "executable": "bin/khatmedia",
+    "libraries": [
+      "lib/libkhatmedia.so",
+      "lib/libgamelan.so",
+      "lib/libwayang.so",
+      "lib/libbatik.so"
+    ],
+    "assets": [
+      "assets/icons/",
+      "assets/themes/",
+      "assets/sounds/",
+      "assets/fonts/",
+      "assets/cultural/"
+    ],
+    "documentation": [
+      "docs/user_guide_id.pdf",
+      "docs/user_guide_en.pdf",
+      "docs/cultural_features.pdf",
+      "docs/spiritual_guidelines.pdf"
+    ]
+  },
+  "updates": {
+    "auto_update": true,
+    "update_channel": "stable",
+    "cultural_content_updates": true,
+    "community_contributions": true,
+    "spiritual_validation_required": true
+  },
+  "community": {
+    "support_forum": "https://community.khatulistiwa-os.my.id/khatmedia",
+    "documentation": "https://docs.khatulistiwa-os.my.id/khatmedia",
+    "bug_reports": "https://github.com/khatulistiwa/khatmedia/issues",
+    "feature_requests": "https://github.com/khatulistiwa/khatmedia/discussions",
+    "cultural_contributions": "https://cultural.khatulistiwa-os.my.id/contribute"
+  },
+  "metadata": {
+    "package_date": "2024-12-10T10:00:00Z",
+    "package_size": "157286400",
+    "checksum_sha256": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456",
+    "digital_signature": "khatulistiwa_multimedia_team_2024",
+    "cultural_validator": "Dewan Budaya Khatulistiwa",
+    "spiritual_validator": "Majelis Ulama Khatulistiwa"
+  }
+}

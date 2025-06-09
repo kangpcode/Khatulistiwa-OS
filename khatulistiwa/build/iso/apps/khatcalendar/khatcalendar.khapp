@@ -1,0 +1,566 @@
+/*
+ * ============================================================================
+ * khatcalendar.khapp - Khat Calendar untuk Khatulistiwa OS
+ * Copyright (c) 2025 Dhafa Nazula Permadi & Team BIGCode By Cv Bintang Gumilang Group
+ * ============================================================================
+ * 
+ * Khat Calendar dengan fitur:
+ * 1. Traditional Indonesian calendar systems
+ * 2. Cultural and religious events
+ * 3. Javanese calendar integration
+ * 4. Islamic calendar support
+ * 5. Spiritual event reminders
+ * 6. Community event planning
+ */
+
+import "system/khatcore_runtime.khat"
+import "system/khatui_runtime.khat"
+
+// Calendar constants
+konstan KHATCALENDAR_VERSION = "2.0.0"
+konstan MAX_EVENTS_PER_DAY = 32
+konstan MAX_REMINDERS = 100
+
+// Calendar types
+enum CalendarType {
+    CALENDAR_GREGORIAN = 0,         // Gregorian calendar
+    CALENDAR_HIJRI = 1,             // Islamic calendar
+    CALENDAR_JAVANESE = 2,          // Javanese calendar
+    CALENDAR_BALINESE = 3,          // Balinese calendar
+    CALENDAR_SUNDANESE = 4,         // Sundanese calendar
+    CALENDAR_CHINESE = 5            // Chinese calendar
+}
+
+// Event types dengan nama Indonesia
+enum EventType {
+    EVENT_HARI_RAYA = 0,            // Religious holiday
+    EVENT_HARI_NASIONAL = 1,        // National holiday
+    EVENT_BUDAYA = 2,               // Cultural event
+    EVENT_SPIRITUAL = 3,            // Spiritual event
+    EVENT_GOTONG_ROYONG = 4,        // Community cooperation
+    EVENT_KELUARGA = 5,             // Family event
+    EVENT_PRIBADI = 6,              // Personal event
+    EVENT_UPACARA_ADAT = 7,         // Traditional ceremony
+    EVENT_MUSYAWARAH = 8,           // Community meeting
+    EVENT_SELAMETAN = 9             // Traditional feast
+}
+
+// Calendar event
+struct CalendarEvent {
+    uint32_t event_id;
+    char event_name[128];
+    char traditional_name[128];
+    char description[256];
+    
+    // Event timing
+    uint32_t year;
+    uint32_t month;
+    uint32_t day;
+    uint32_t hour;
+    uint32_t minute;
+    uint32_t duration_minutes;
+    
+    // Event properties
+    EventType type;
+    CalendarType calendar_type;
+    bool all_day_event;
+    bool recurring;
+    
+    // Cultural attributes
+    cultural_theme_t theme;
+    traditional_role_t organizer_role;
+    char cultural_significance[256];
+    bool requires_ceremony;
+    bool spiritual_event;
+    
+    // Recurrence pattern
+    enum {
+        RECUR_NONE = 0,
+        RECUR_DAILY = 1,
+        RECUR_WEEKLY = 2,
+        RECUR_MONTHLY = 3,
+        RECUR_YEARLY = 4,
+        RECUR_JAVANESE_CYCLE = 5,
+        RECUR_ISLAMIC_CYCLE = 6
+    } recurrence_type;
+    
+    // Participants
+    ProcessID participants[32];
+    uint32_t participant_count;
+    bool community_event;
+    
+    // Reminders
+    uint32_t reminder_minutes[8];
+    uint32_t reminder_count;
+    bool spiritual_reminder;
+    
+    // Event status
+    enum {
+        STATUS_SCHEDULED = 0,
+        STATUS_ACTIVE = 1,
+        STATUS_COMPLETED = 2,
+        STATUS_CANCELLED = 3
+    } status;
+    
+    // Statistics
+    uint64_t creation_time;
+    uint32_t attendance_count;
+    bool successful_event;
+}
+
+// Traditional date representation
+struct TraditionalDate {
+    // Gregorian
+    uint32_t gregorian_year;
+    uint32_t gregorian_month;
+    uint32_t gregorian_day;
+    
+    // Islamic (Hijri)
+    uint32_t hijri_year;
+    uint32_t hijri_month;
+    uint32_t hijri_day;
+    
+    // Javanese
+    uint32_t javanese_year;
+    uint32_t javanese_month;
+    uint32_t javanese_day;
+    char javanese_day_name[32];
+    char javanese_market_day[16];  // Pasaran (Legi, Pahing, Pon, Wage, Kliwon)
+    
+    // Cultural information
+    char moon_phase[32];
+    char seasonal_info[64];
+    char spiritual_significance[128];
+    bool auspicious_day;
+    bool fasting_day;
+}
+
+// Calendar view
+struct CalendarView {
+    enum {
+        VIEW_MONTH = 0,
+        VIEW_WEEK = 1,
+        VIEW_DAY = 2,
+        VIEW_YEAR = 3,
+        VIEW_TRADITIONAL = 4,
+        VIEW_SPIRITUAL = 5
+    } view_type;
+    
+    // Current date being viewed
+    TraditionalDate current_date;
+    
+    // View configuration
+    CalendarType primary_calendar;
+    bool show_multiple_calendars;
+    bool show_cultural_events;
+    bool show_spiritual_events;
+    bool show_lunar_phases;
+    
+    // Cultural display options
+    bool show_javanese_calendar;
+    bool show_islamic_calendar;
+    bool show_traditional_names;
+    bool show_spiritual_significance;
+}
+
+// Calendar application state
+struct KhatCalendar {
+    // Events
+    CalendarEvent events[1000];
+    uint32_t event_count;
+    
+    // Current view
+    CalendarView view;
+    CalendarEvent *selected_event;
+    
+    // Calendar configuration
+    CalendarType default_calendar;
+    bool cultural_mode_enabled;
+    bool spiritual_reminders_enabled;
+    bool traditional_notifications;
+    cultural_theme_t calendar_theme;
+    
+    // Today's information
+    TraditionalDate today;
+    CalendarEvent *today_events[MAX_EVENTS_PER_DAY];
+    uint32_t today_event_count;
+    
+    // Reminders
+    struct {
+        uint32_t event_id;
+        uint64_t reminder_time;
+        bool active;
+        bool spiritual_reminder;
+    } reminders[MAX_REMINDERS];
+    uint32_t reminder_count;
+    
+    // Cultural features
+    bool show_traditional_holidays;
+    bool show_spiritual_events;
+    bool show_community_events;
+    bool javanese_calendar_enabled;
+    bool islamic_calendar_enabled;
+    
+    // Statistics
+    uint64_t events_created;
+    uint64_t cultural_events_count;
+    uint64_t spiritual_events_count;
+    uint64_t community_events_count;
+    
+    // Synchronization
+    mutex_t calendar_lock;
+}
+
+// Global calendar instance
+static KhatCalendar g_calendar;
+
+// Function prototypes
+int khatcalendar_init(void);
+int khatcalendar_main(int argc, char *argv[]);
+
+// Event management
+int create_event(const char *name, const char *traditional_name, EventType type, 
+                uint32_t year, uint32_t month, uint32_t day);
+int edit_event(uint32_t event_id, CalendarEvent *updated_event);
+int delete_event(uint32_t event_id);
+CalendarEvent* find_event(uint32_t event_id);
+
+// Date conversion functions
+int convert_to_hijri(uint32_t greg_year, uint32_t greg_month, uint32_t greg_day,
+                    uint32_t *hijri_year, uint32_t *hijri_month, uint32_t *hijri_day);
+int convert_to_javanese(uint32_t greg_year, uint32_t greg_month, uint32_t greg_day,
+                       uint32_t *jav_year, uint32_t *jav_month, uint32_t *jav_day);
+void get_javanese_day_info(uint32_t greg_year, uint32_t greg_month, uint32_t greg_day,
+                          char *day_name, char *market_day);
+
+// Cultural calendar functions
+int load_traditional_holidays(void);
+int load_spiritual_events(void);
+int check_auspicious_day(const TraditionalDate *date);
+int get_spiritual_significance(const TraditionalDate *date, char *significance);
+
+// Event scheduling
+int schedule_recurring_event(CalendarEvent *event);
+int add_event_reminder(uint32_t event_id, uint32_t minutes_before);
+int check_event_reminders(void);
+
+// Community features
+int create_community_event(const char *name, const char *description, 
+                          uint32_t year, uint32_t month, uint32_t day);
+int invite_to_event(uint32_t event_id, ProcessID *participants, uint32_t count);
+int join_community_event(uint32_t event_id, ProcessID participant_pid);
+
+// UI functions
+void render_calendar_ui(void);
+void render_month_view(void);
+void render_traditional_calendar_view(void);
+void render_event_details(CalendarEvent *event);
+
+// Initialize Khat Calendar
+fungsi khatcalendar_init() -> int {
+    khat_log("[CALENDAR] Initializing Khat Calendar v" + KHATCALENDAR_VERSION)
+    
+    // Initialize calendar state
+    memset(&g_calendar, 0, sizeof(KhatCalendar))
+    
+    // Initialize synchronization
+    mutex_init(&g_calendar.calendar_lock)
+    
+    // Set default configuration
+    g_calendar.default_calendar = CALENDAR_GREGORIAN
+    g_calendar.cultural_mode_enabled = true
+    g_calendar.spiritual_reminders_enabled = true
+    g_calendar.traditional_notifications = true
+    g_calendar.calendar_theme = THEME_KAWUNG
+    
+    // Enable cultural calendars
+    g_calendar.show_traditional_holidays = true
+    g_calendar.show_spiritual_events = true
+    g_calendar.show_community_events = true
+    g_calendar.javanese_calendar_enabled = true
+    g_calendar.islamic_calendar_enabled = true
+    
+    // Set default view
+    g_calendar.view.view_type = VIEW_MONTH
+    g_calendar.view.primary_calendar = CALENDAR_GREGORIAN
+    g_calendar.view.show_multiple_calendars = true
+    g_calendar.view.show_cultural_events = true
+    g_calendar.view.show_spiritual_events = true
+    
+    // Initialize today's date
+    initialize_today_date()
+    
+    // Load traditional holidays and events
+    load_traditional_holidays()
+    load_spiritual_events()
+    load_national_holidays()
+    
+    khat_log("[CALENDAR] Khat Calendar initialized successfully")
+    
+    return 0
+}
+
+// Main calendar function
+fungsi khatcalendar_main(argc: int, argv: char*[]) -> int {
+    khat_log("[CALENDAR] Starting Khat Calendar")
+    
+    // Initialize calendar
+    if (khatcalendar_init() != 0) {
+        khat_log("[ERROR] Failed to initialize calendar")
+        return -1
+    }
+    
+    // Initialize UI
+    if (init_calendar_ui() != 0) {
+        khat_log("[ERROR] Failed to initialize calendar UI")
+        return -2
+    }
+    
+    // Show welcome message
+    show_calendar_welcome()
+    
+    // Main calendar loop
+    while (true) {
+        // Update today's date
+        update_today_date()
+        
+        // Check for event reminders
+        check_event_reminders()
+        
+        // Handle input events
+        handle_calendar_input()
+        
+        // Update UI
+        render_calendar_ui()
+        
+        // Handle background tasks
+        handle_calendar_background_tasks()
+        
+        // Check for exit
+        if (should_exit_calendar()) {
+            break
+        }
+        
+        // Sleep for a short time
+        sleep_ms(1000)  // Update every second
+    }
+    
+    // Cleanup
+    cleanup_calendar()
+    
+    khat_log("[CALENDAR] Khat Calendar terminated")
+    return 0
+}
+
+// Create event
+fungsi create_event(name: string, traditional_name: string, type: EventType,
+                   year: uint32_t, month: uint32_t, day: uint32_t) -> int {
+    mutex_acquire(&g_calendar.calendar_lock)
+    
+    if (g_calendar.event_count >= 1000) {
+        mutex_release(&g_calendar.calendar_lock)
+        return -1
+    }
+    
+    var event = &g_calendar.events[g_calendar.event_count]
+    memset(event, 0, sizeof(CalendarEvent))
+    
+    event->event_id = g_calendar.event_count + 1
+    strncpy(event->event_name, name, 127)
+    strncpy(event->traditional_name, traditional_name, 127)
+    event->type = type
+    event->year = year
+    event->month = month
+    event->day = day
+    event->calendar_type = g_calendar.default_calendar
+    event->theme = g_calendar.calendar_theme
+    event->status = STATUS_SCHEDULED
+    event->creation_time = get_system_time()
+    
+    // Set cultural attributes based on event type
+    set_event_cultural_attributes(event, type)
+    
+    g_calendar.event_count++
+    g_calendar.events_created++
+    
+    // Update category statistics
+    switch (type) {
+        case EVENT_BUDAYA:
+        case EVENT_UPACARA_ADAT:
+            g_calendar.cultural_events_count++
+            break
+        case EVENT_SPIRITUAL:
+            g_calendar.spiritual_events_count++
+            break
+        case EVENT_GOTONG_ROYONG:
+        case EVENT_MUSYAWARAH:
+            g_calendar.community_events_count++
+            break
+    }
+    
+    mutex_release(&g_calendar.calendar_lock)
+    
+    khat_log("[CALENDAR] Created event: " + traditional_name)
+    
+    return event->event_id
+}
+
+// Convert to Hijri calendar
+fungsi convert_to_hijri(greg_year: uint32_t, greg_month: uint32_t, greg_day: uint32_t,
+                       hijri_year: uint32_t*, hijri_month: uint32_t*, hijri_day: uint32_t*) -> int {
+    // Simplified Hijri conversion (approximate)
+    // In real implementation, use proper astronomical calculations
+    
+    var julian_day = gregorian_to_julian(greg_year, greg_month, greg_day)
+    var hijri_julian = julian_day - 1948439  // Hijri epoch adjustment
+    
+    *hijri_year = (hijri_julian / 354) + 1
+    var remaining_days = hijri_julian % 354
+    *hijri_month = (remaining_days / 29) + 1
+    *hijri_day = (remaining_days % 29) + 1
+    
+    // Adjust for proper Hijri calendar rules
+    if (*hijri_month > 12) {
+        *hijri_month = 12
+    }
+    if (*hijri_day > 30) {
+        *hijri_day = 30
+    }
+    
+    return 0
+}
+
+// Convert to Javanese calendar
+fungsi convert_to_javanese(greg_year: uint32_t, greg_month: uint32_t, greg_day: uint32_t,
+                          jav_year: uint32_t*, jav_month: uint32_t*, jav_day: uint32_t*) -> int {
+    // Simplified Javanese calendar conversion
+    // Javanese calendar has 8-year cycle (Windu)
+    
+    var base_year = 1633  // Approximate start of Javanese calendar
+    var years_since_base = greg_year - base_year
+    
+    *jav_year = years_since_base + 1555  // Javanese year
+    *jav_month = greg_month  // Simplified month mapping
+    *jav_day = greg_day
+    
+    return 0
+}
+
+// Get Javanese day information
+fungsi get_javanese_day_info(greg_year: uint32_t, greg_month: uint32_t, greg_day: uint32_t,
+                            day_name: char*, market_day: char*) -> void {
+    // Calculate day of week in Javanese
+    var julian_day = gregorian_to_julian(greg_year, greg_month, greg_day)
+    var day_of_week = julian_day % 7
+    
+    var javanese_days = ["Ahad", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"]
+    strcpy(day_name, javanese_days[day_of_week])
+    
+    // Calculate Pasaran (5-day market cycle)
+    var pasaran_cycle = julian_day % 5
+    var pasaran_names = ["Legi", "Pahing", "Pon", "Wage", "Kliwon"]
+    strcpy(market_day, pasaran_names[pasaran_cycle])
+}
+
+// Load traditional holidays
+fungsi load_traditional_holidays() -> int {
+    khat_log("[CALENDAR] Loading traditional holidays...")
+    
+    // Indonesian national holidays
+    create_event("Tahun Baru", "Tahun Baru Masehi", EVENT_HARI_NASIONAL, 2024, 1, 1)
+    create_event("Hari Kemerdekaan", "Hari Kemerdekaan RI", EVENT_HARI_NASIONAL, 2024, 8, 17)
+    create_event("Hari Pancasila", "Hari Lahir Pancasila", EVENT_HARI_NASIONAL, 2024, 6, 1)
+    
+    // Islamic holidays (approximate dates)
+    create_event("Idul Fitri", "Hari Raya Idul Fitri", EVENT_HARI_RAYA, 2024, 4, 10)
+    create_event("Idul Adha", "Hari Raya Idul Adha", EVENT_HARI_RAYA, 2024, 6, 17)
+    create_event("Maulid Nabi", "Maulid Nabi Muhammad SAW", EVENT_SPIRITUAL, 2024, 9, 16)
+    
+    // Traditional Javanese events
+    create_event("Satu Suro", "Tahun Baru Jawa", EVENT_BUDAYA, 2024, 7, 7)
+    create_event("Sekaten", "Sekaten Yogyakarta", EVENT_UPACARA_ADAT, 2024, 9, 20)
+    
+    khat_log("[CALENDAR] Traditional holidays loaded")
+    
+    return 0
+}
+
+// Set event cultural attributes
+fungsi set_event_cultural_attributes(event: CalendarEvent*, type: EventType) -> void {
+    switch (type) {
+        case EVENT_HARI_RAYA:
+            event->theme = THEME_KAWUNG
+            event->spiritual_event = true
+            event->requires_ceremony = true
+            strcpy(event->cultural_significance, "Hari raya keagamaan yang suci")
+            break
+        case EVENT_BUDAYA:
+            event->theme = THEME_PARANG
+            strcpy(event->cultural_significance, "Perayaan budaya tradisional Indonesia")
+            break
+        case EVENT_UPACARA_ADAT:
+            event->theme = THEME_MEGA_MENDUNG
+            event->requires_ceremony = true
+            event->organizer_role = ROLE_TETUA_ADAT
+            strcpy(event->cultural_significance, "Upacara adat dengan makna spiritual")
+            break
+        case EVENT_GOTONG_ROYONG:
+            event->theme = THEME_SEKAR_JAGAD
+            event->community_event = true
+            strcpy(event->cultural_significance, "Kegiatan gotong royong masyarakat")
+            break
+        case EVENT_SPIRITUAL:
+            event->theme = THEME_KAWUNG
+            event->spiritual_event = true
+            event->spiritual_reminder = true
+            strcpy(event->cultural_significance, "Kegiatan spiritual dan keagamaan")
+            break
+        default:
+            event->theme = THEME_DEFAULT
+            strcpy(event->cultural_significance, "Acara umum")
+            break
+    }
+}
+
+// Helper functions
+fungsi initialize_today_date() -> void {
+    var current_time = get_system_time()
+    
+    // Convert to date components (simplified)
+    g_calendar.today.gregorian_year = 2024
+    g_calendar.today.gregorian_month = 6
+    g_calendar.today.gregorian_day = 10
+    
+    // Convert to other calendar systems
+    convert_to_hijri(g_calendar.today.gregorian_year, g_calendar.today.gregorian_month, 
+                    g_calendar.today.gregorian_day, &g_calendar.today.hijri_year,
+                    &g_calendar.today.hijri_month, &g_calendar.today.hijri_day)
+    
+    convert_to_javanese(g_calendar.today.gregorian_year, g_calendar.today.gregorian_month,
+                       g_calendar.today.gregorian_day, &g_calendar.today.javanese_year,
+                       &g_calendar.today.javanese_month, &g_calendar.today.javanese_day)
+    
+    get_javanese_day_info(g_calendar.today.gregorian_year, g_calendar.today.gregorian_month,
+                         g_calendar.today.gregorian_day, g_calendar.today.javanese_day_name,
+                         g_calendar.today.javanese_market_day)
+}
+
+fungsi gregorian_to_julian(year: uint32_t, month: uint32_t, day: uint32_t) -> uint32_t {
+    // Simplified Julian day calculation
+    var a = (14 - month) / 12
+    var y = year - a
+    var m = month + 12 * a - 3
+    
+    return day + (153 * m + 2) / 5 + 365 * y + y / 4 - y / 100 + y / 400 + 1721119
+}
+
+// Placeholder implementations
+fungsi load_spiritual_events() -> int { return 0; }
+fungsi load_national_holidays() -> int { return 0; }
+fungsi update_today_date() -> void { }
+fungsi init_calendar_ui() -> int { return 0; }
+fungsi show_calendar_welcome() -> void { }
+fungsi handle_calendar_input() -> void { }
+fungsi handle_calendar_background_tasks() -> void { }
+fungsi should_exit_calendar() -> bool { return false; }
+fungsi cleanup_calendar() -> void { }

@@ -1,0 +1,321 @@
+{
+    "name": "KhatMultitask",
+    "version": "1.0.0",
+    "description": "Pengelola multitasking dengan split-screen dan overlay mode bertemakan panggung wayang",
+    "author": "Tim Khatulistiwa OS",
+    "category": "system",
+    "type": "multitask_manager",
+    "cultural": {
+        "indonesian_elements": true,
+        "batik_theme": "wayang",
+        "garuda_animations": true,
+        "traditional_sounds": true,
+        "cultural_colors": {
+            "primary": "#7C2D12",
+            "secondary": "#DC2626",
+            "accent": "#F87171",
+            "background": "#FEF2F2"
+        }
+    },
+    "permissions": [
+        "window_management",
+        "system_ui_control",
+        "application_switching",
+        "layout_management",
+        "gesture_recognition",
+        "cultural_assets_access",
+        "animation_control",
+        "keyboard_shortcuts",
+        "touch_gestures",
+        "display_management"
+    ],
+    "dependencies": [
+        "khatui_runtime.khat",
+        "khatcore_runtime.khat",
+        "windowmanager.khat",
+        "split.khat",
+        "overlay.khat"
+    ],
+    "min_os_version": "1.0.0",
+    "ui_framework": "KhatUI",
+    "features": {
+        "split_screen_management": true,
+        "overlay_window_control": true,
+        "gesture_recognition": true,
+        "keyboard_shortcuts": true,
+        "window_switching": true,
+        "cultural_multitasking_metaphors": true,
+        "traditional_stage_layout": true,
+        "indonesian_terminology": true,
+        "wayang_window_animations": true,
+        "gamelan_transition_sounds": true,
+        "batik_progress_indicators": true,
+        "cultural_gesture_feedback": true
+    },
+    "multitask_modes": [
+        {
+            "id": "single",
+            "name": "Single Window",
+            "cultural_name": "Panggung Tunggal",
+            "description": "Satu aplikasi penuh layar",
+            "icon": "single_mode",
+            "cultural_icon": "panggung_utama",
+            "shortcut": "Ctrl+1"
+        },
+        {
+            "id": "split_horizontal",
+            "name": "Split Horizontal",
+            "cultural_name": "Panggung Berdampingan",
+            "description": "Dua aplikasi kiri-kanan",
+            "icon": "split_horizontal",
+            "cultural_icon": "wayang_kiri_kanan",
+            "shortcut": "Ctrl+2"
+        },
+        {
+            "id": "split_vertical",
+            "name": "Split Vertical",
+            "cultural_name": "Panggung Bertingkat",
+            "description": "Dua aplikasi atas-bawah",
+            "icon": "split_vertical",
+            "cultural_icon": "wayang_atas_bawah",
+            "shortcut": "Ctrl+3"
+        },
+        {
+            "id": "overlay",
+            "name": "Overlay Mode",
+            "cultural_name": "Panggung Mengambang",
+            "description": "Aplikasi mengambang di atas",
+            "icon": "overlay_mode",
+            "cultural_icon": "wayang_terbang",
+            "shortcut": "Ctrl+4"
+        },
+        {
+            "id": "grid",
+            "name": "Grid Mode",
+            "cultural_name": "Panggung Empat Sudut",
+            "description": "Empat aplikasi dalam grid",
+            "icon": "grid_mode",
+            "cultural_icon": "wayang_empat_arah",
+            "shortcut": "Ctrl+5"
+        },
+        {
+            "id": "stack",
+            "name": "Stack Mode",
+            "cultural_name": "Panggung Berlapis",
+            "description": "Aplikasi bertumpuk dengan tab",
+            "icon": "stack_mode",
+            "cultural_icon": "wayang_berlapis",
+            "shortcut": "Ctrl+6"
+        }
+    ],
+    "gesture_controls": [
+        {
+            "id": "three_finger_swipe_left",
+            "name": "Three Finger Swipe Left",
+            "cultural_name": "Usap Tiga Jari Kiri",
+            "description": "Split horizontal mode",
+            "action": "split_horizontal",
+            "cultural_feedback": "Suara gamelan kiri"
+        },
+        {
+            "id": "three_finger_swipe_right",
+            "name": "Three Finger Swipe Right",
+            "cultural_name": "Usap Tiga Jari Kanan",
+            "description": "Split horizontal mode",
+            "action": "split_horizontal",
+            "cultural_feedback": "Suara gamelan kanan"
+        },
+        {
+            "id": "three_finger_swipe_up",
+            "name": "Three Finger Swipe Up",
+            "cultural_name": "Usap Tiga Jari Atas",
+            "description": "Split vertical mode",
+            "action": "split_vertical",
+            "cultural_feedback": "Suara gamelan atas"
+        },
+        {
+            "id": "three_finger_swipe_down",
+            "name": "Three Finger Swipe Down",
+            "cultural_name": "Usap Tiga Jari Bawah",
+            "description": "Split vertical mode",
+            "action": "split_vertical",
+            "cultural_feedback": "Suara gamelan bawah"
+        },
+        {
+            "id": "four_finger_tap",
+            "name": "Four Finger Tap",
+            "cultural_name": "Ketuk Empat Jari",
+            "description": "Show all windows",
+            "action": "show_all_windows",
+            "cultural_feedback": "Suara gong"
+        },
+        {
+            "id": "pinch_in",
+            "name": "Pinch In",
+            "cultural_name": "Cubit Masuk",
+            "description": "Minimize current window",
+            "action": "minimize_window",
+            "cultural_feedback": "Suara wayang mengecil"
+        },
+        {
+            "id": "pinch_out",
+            "name": "Pinch Out",
+            "cultural_name": "Cubit Keluar",
+            "description": "Maximize current window",
+            "action": "maximize_window",
+            "cultural_feedback": "Suara wayang membesar"
+        }
+    ],
+    "keyboard_shortcuts": [
+        {
+            "id": "alt_tab",
+            "keys": "Alt+Tab",
+            "cultural_name": "Ganti Wayang",
+            "description": "Switch between applications",
+            "action": "cycle_windows"
+        },
+        {
+            "id": "ctrl_left",
+            "keys": "Ctrl+Left",
+            "cultural_name": "Snap Kiri",
+            "description": "Snap window to left half",
+            "action": "snap_left"
+        },
+        {
+            "id": "ctrl_right",
+            "keys": "Ctrl+Right",
+            "cultural_name": "Snap Kanan",
+            "description": "Snap window to right half",
+            "action": "snap_right"
+        },
+        {
+            "id": "ctrl_up",
+            "keys": "Ctrl+Up",
+            "cultural_name": "Perbesar Wayang",
+            "description": "Maximize window",
+            "action": "maximize_window"
+        },
+        {
+            "id": "ctrl_down",
+            "keys": "Ctrl+Down",
+            "cultural_name": "Perkecil Wayang",
+            "description": "Minimize window",
+            "action": "minimize_window"
+        },
+        {
+            "id": "win_tab",
+            "keys": "Win+Tab",
+            "cultural_name": "Lihat Semua Panggung",
+            "description": "Show all windows overview",
+            "action": "show_overview"
+        }
+    ],
+    "window_animations": [
+        {
+            "id": "wayang_entrance",
+            "name": "Wayang Entrance",
+            "cultural_name": "Wayang Masuk Panggung",
+            "description": "Window appears like wayang entering stage",
+            "duration": 500,
+            "easing": "ease_out_back"
+        },
+        {
+            "id": "wayang_exit",
+            "name": "Wayang Exit",
+            "cultural_name": "Wayang Keluar Panggung",
+            "description": "Window disappears like wayang leaving stage",
+            "duration": 300,
+            "easing": "ease_in_back"
+        },
+        {
+            "id": "wayang_split",
+            "name": "Wayang Split",
+            "cultural_name": "Wayang Berpisah",
+            "description": "Windows split like wayang characters separating",
+            "duration": 400,
+            "easing": "ease_in_out_cubic"
+        },
+        {
+            "id": "wayang_merge",
+            "name": "Wayang Merge",
+            "cultural_name": "Wayang Bersatu",
+            "description": "Windows merge like wayang characters coming together",
+            "duration": 400,
+            "easing": "ease_in_out_cubic"
+        }
+    ],
+    "cultural_features": {
+        "wayang_stage_metaphor": true,
+        "traditional_multitasking_concepts": true,
+        "indonesian_window_terms": true,
+        "cultural_transition_animations": true,
+        "gamelan_audio_feedback": true,
+        "batik_visual_indicators": true,
+        "ornamental_window_decorations": true,
+        "traditional_gesture_recognition": true
+    },
+    "audio_feedback": [
+        {
+            "id": "mode_switch",
+            "name": "Mode Switch",
+            "cultural_name": "Ganti Mode Panggung",
+            "sound_file": "gamelan_transition.ogg",
+            "volume": 0.7
+        },
+        {
+            "id": "window_snap",
+            "name": "Window Snap",
+            "cultural_name": "Wayang Menempel",
+            "sound_file": "wayang_snap.ogg",
+            "volume": 0.5
+        },
+        {
+            "id": "gesture_recognized",
+            "name": "Gesture Recognized",
+            "cultural_name": "Gerakan Dikenali",
+            "sound_file": "gong_small.ogg",
+            "volume": 0.6
+        },
+        {
+            "id": "overview_show",
+            "name": "Overview Show",
+            "cultural_name": "Tampilkan Semua Panggung",
+            "sound_file": "gamelan_overview.ogg",
+            "volume": 0.8
+        }
+    ],
+    "visual_indicators": [
+        {
+            "id": "split_guide",
+            "name": "Split Guide",
+            "cultural_name": "Panduan Pembagian",
+            "description": "Visual guide for split positioning",
+            "style": "batik_lines"
+        },
+        {
+            "id": "snap_zones",
+            "name": "Snap Zones",
+            "cultural_name": "Zona Penempelan",
+            "description": "Areas where windows can snap",
+            "style": "ornamental_borders"
+        },
+        {
+            "id": "gesture_trail",
+            "name": "Gesture Trail",
+            "cultural_name": "Jejak Gerakan",
+            "description": "Visual trail following gestures",
+            "style": "batik_trail"
+        }
+    ],
+    "localization": {
+        "default_language": "id_ID",
+        "supported_languages": ["id_ID", "en_US", "jv_ID", "su_ID"]
+    },
+    "resources": {
+        "icons": "resources/icons/",
+        "sounds": "resources/sounds/",
+        "cultural_assets": "cultural/",
+        "themes": "resources/themes/",
+        "animations": "resources/animations/"
+    }
+}

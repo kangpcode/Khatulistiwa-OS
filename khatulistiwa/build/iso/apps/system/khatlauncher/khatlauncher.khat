@@ -1,0 +1,484 @@
+/*
+ * ============================================================================
+ * khatlauncher.khat - Launcher Utama Khatulistiwa OS
+ * Copyright (c) 2025 Dhafa Nazula Permadi & Team BIGCode By Cv Bintang Gumilang Group
+ * ============================================================================
+ * 
+ * Launcher utama dengan fitur:
+ * 1. Taskbar dengan motif batik
+ * 2. App grid dengan animasi Garuda
+ * 3. Search dengan AI cultural
+ * 4. Quick settings Indonesia
+ * 5. Widget kalender Indonesia
+ */
+
+import "khatui/runtime.khat"
+import "khatcore/system.khat"
+import "khatcore/apps.khat"
+import "khatui/cultural.khat"
+import "khatui/animation.khat"
+
+// Konstanta launcher
+konstan LAUNCHER_VERSION = "1.0.0"
+konstan TASKBAR_HEIGHT = 48
+konstan APP_GRID_COLS = 6
+konstan APP_GRID_ROWS = 4
+konstan SEARCH_MAX_RESULTS = 10
+
+// Mode tampilan launcher
+enum LauncherMode {
+    TASKBAR_ONLY = 0,
+    APP_GRID = 1,
+    SEARCH = 2,
+    QUICK_SETTINGS = 3
+}
+
+// Struktur aplikasi dalam launcher
+struct LauncherApp {
+    id: int,
+    nama: string,
+    icon_path: string,
+    kategori: string,
+    is_favorite: bool,
+    launch_count: int,
+    cultural_theme: string
+}
+
+// State launcher
+struct LauncherState {
+    mode: LauncherMode,
+    taskbar_visible: bool,
+    app_grid_visible: bool,
+    search_query: string,
+    selected_app: int,
+    cultural_mode: bool,
+    batik_pattern: string,
+    garuda_animation: bool
+}
+
+// Global state
+var launcher: LauncherState
+var installed_apps: LauncherApp[256]
+var app_count: int = 0
+var taskbar_window: int = -1
+var app_grid_window: int = -1
+
+// Inisialisasi launcher
+fungsi launcher_init() -> int {
+    khat_log("[LAUNCHER] Menginisialisasi KhatLauncher v" + LAUNCHER_VERSION)
+    
+    // Setup state awal
+    launcher.mode = TASKBAR_ONLY
+    launcher.taskbar_visible = true
+    launcher.app_grid_visible = false
+    launcher.search_query = ""
+    launcher.selected_app = -1
+    launcher.cultural_mode = true
+    launcher.batik_pattern = "parang"
+    launcher.garuda_animation = true
+    
+    // Scan aplikasi yang terinstal
+    if (scan_installed_apps() != 0) {
+        khat_log("[ERROR] Gagal memindai aplikasi terinstal")
+        return -1
+    }
+    
+    // Buat taskbar
+    if (create_taskbar() != 0) {
+        khat_log("[ERROR] Gagal membuat taskbar")
+        return -1
+    }
+    
+    // Setup event handlers
+    setup_event_handlers()
+    
+    // Load konfigurasi cultural
+    load_cultural_config()
+    
+    khat_log("[LAUNCHER] KhatLauncher berhasil diinisialisasi!")
+    return 0
+}
+
+// Scan aplikasi yang terinstal
+fungsi scan_installed_apps() -> int {
+    khat_log("[LAUNCHER] Memindai aplikasi terinstal...")
+    
+    app_count = 0
+    
+    // Scan aplikasi sistem
+    scan_apps_in_directory("/apps/system")
+    
+    // Scan aplikasi user
+    scan_apps_in_directory("/apps/user")
+    
+    // Scan aplikasi games
+    scan_apps_in_directory("/apps/games")
+    
+    // Scan aplikasi productivity
+    scan_apps_in_directory("/apps/productivity")
+    
+    // Sort berdasarkan kategori dan nama
+    sort_apps_by_category()
+    
+    khat_log("[LAUNCHER] Ditemukan " + app_count + " aplikasi")
+    return 0
+}
+
+// Scan aplikasi dalam direktori
+fungsi scan_apps_in_directory(dir_path: string) -> void {
+    var files = khat_dir_list(dir_path)
+    
+    for (var i = 0; i < files.length; i++) {
+        var file_path = dir_path + "/" + files[i]
+        
+        if (khat_string_ends_with(files[i], ".khapp")) {
+            add_app_to_launcher(file_path)
+        }
+    }
+}
+
+// Tambahkan aplikasi ke launcher
+fungsi add_app_to_launcher(khapp_path: string) -> void {
+    if (app_count >= 256) {
+        return
+    }
+    
+    // Load manifest aplikasi
+    var manifest = khatcore_load_app_manifest(khapp_path)
+    if (manifest == null) {
+        return
+    }
+    
+    var app = &installed_apps[app_count++]
+    app->id = app_count - 1
+    app->nama = khat_string_copy(manifest->nama)
+    app->icon_path = get_app_icon_path(khapp_path, manifest)
+    app->kategori = get_app_category(manifest)
+    app->is_favorite = false
+    app->launch_count = 0
+    app->cultural_theme = get_app_cultural_theme(manifest)
+}
+
+// Buat taskbar dengan motif budaya
+fungsi create_taskbar() -> int {
+    khat_log("[LAUNCHER] Membuat taskbar...")
+    
+    // Buat window taskbar
+    taskbar_window = khatui_create_window(
+        "KhatTaskbar",
+        0, khat_screen_height() - TASKBAR_HEIGHT,
+        khat_screen_width(), TASKBAR_HEIGHT,
+        -1  // System window
+    )
+    
+    if (taskbar_window < 0) {
+        return -1
+    }
+    
+    // Set window properties
+    khatui_set_window_always_on_top(taskbar_window, true)
+    khatui_set_window_resizable(taskbar_window, false)
+    khatui_set_window_cultural_theme(taskbar_window, launcher.batik_pattern)
+    
+    // Render taskbar
+    render_taskbar()
+    
+    return 0
+}
+
+// Render taskbar dengan elemen budaya
+fungsi render_taskbar() -> void {
+    // Clear taskbar
+    khatui_clear_window(taskbar_window)
+    
+    // Background dengan motif batik
+    draw_batik_taskbar_background()
+    
+    // Logo Khatulistiwa OS
+    draw_khatulistiwa_logo()
+    
+    // Tombol aplikasi aktif
+    draw_active_app_buttons()
+    
+    // Area notifikasi
+    draw_notification_area()
+    
+    // Jam Indonesia
+    draw_indonesian_clock()
+    
+    // Quick settings button
+    draw_quick_settings_button()
+    
+    // App grid button dengan animasi Garuda
+    draw_app_grid_button()
+}
+
+// Gambar background taskbar dengan motif batik
+fungsi draw_batik_taskbar_background() -> void {
+    var bg_color = get_cultural_color("taskbar_bg")
+    var pattern_color = get_cultural_color("batik_pattern")
+    
+    // Background dasar
+    khatui_fill_rect(taskbar_window, 0, 0, 
+                     khat_screen_width(), TASKBAR_HEIGHT, bg_color)
+    
+    // Overlay motif batik
+    khatui_draw_batik_pattern(taskbar_window, 
+                              0, 0, khat_screen_width(), TASKBAR_HEIGHT,
+                              launcher.batik_pattern, pattern_color, 0.3)
+    
+    // Border atas dengan ornamen
+    khatui_draw_cultural_border(taskbar_window,
+                                0, 0, khat_screen_width(), 2,
+                                "ornamen_jawa")
+}
+
+// Gambar logo Khatulistiwa OS
+fungsi draw_khatulistiwa_logo() -> void {
+    var logo_x = 8
+    var logo_y = 8
+    var logo_size = 32
+    
+    // Background logo dengan efek emas
+    khatui_draw_circle_gradient(taskbar_window,
+                                logo_x + logo_size/2, logo_y + logo_size/2,
+                                logo_size/2,
+                                get_cultural_color("emas"),
+                                get_cultural_color("emas_tua"))
+    
+    // Icon Garuda
+    khatui_draw_cultural_icon(taskbar_window,
+                              logo_x, logo_y, logo_size, logo_size,
+                              "garuda_head", get_cultural_color("putih"))
+    
+    // Animasi hover
+    if (launcher.garuda_animation) {
+        khatui_add_hover_animation(taskbar_window, logo_x, logo_y, 
+                                   logo_size, logo_size, "garuda_wings")
+    }
+}
+
+// Gambar tombol aplikasi aktif
+fungsi draw_active_app_buttons() -> void {
+    var button_x = 60
+    var button_width = 48
+    var button_height = 32
+    var button_y = (TASKBAR_HEIGHT - button_height) / 2
+    
+    // Dapatkan daftar aplikasi yang sedang berjalan
+    var running_apps = khatcore_get_running_apps()
+    
+    for (var i = 0; i < running_apps.length; i++) {
+        var app = running_apps[i]
+        
+        // Background tombol
+        var bg_color = (app->is_active) ? 
+                       get_cultural_color("active_app") : 
+                       get_cultural_color("inactive_app")
+        
+        khatui_draw_rounded_rect(taskbar_window,
+                                 button_x, button_y, button_width, button_height,
+                                 4, bg_color)
+        
+        // Icon aplikasi
+        khatui_draw_app_icon(taskbar_window,
+                             button_x + 8, button_y + 4, 24, 24,
+                             app->icon_path)
+        
+        // Indikator aktif dengan motif
+        if (app->is_active) {
+            khatui_draw_cultural_indicator(taskbar_window,
+                                           button_x + button_width/2 - 2, 
+                                           button_y + button_height - 3,
+                                           4, 2, "active_indicator")
+        }
+        
+        button_x += button_width + 4
+    }
+}
+
+// Gambar tombol app grid dengan animasi Garuda
+fungsi draw_app_grid_button() -> void {
+    var button_x = khat_screen_width() - 200
+    var button_y = 8
+    var button_size = 32
+    
+    // Background dengan efek hover
+    var bg_color = launcher.app_grid_visible ? 
+                   get_cultural_color("active_button") :
+                   get_cultural_color("normal_button")
+    
+    khatui_draw_rounded_rect(taskbar_window,
+                             button_x, button_y, button_size, button_size,
+                             6, bg_color)
+    
+    // Icon grid dengan ornamen
+    khatui_draw_cultural_icon(taskbar_window,
+                              button_x + 4, button_y + 4, 24, 24,
+                              "app_grid_garuda", get_cultural_color("icon"))
+    
+    // Animasi Garuda saat hover
+    if (launcher.garuda_animation) {
+        khatui_add_click_animation(taskbar_window, button_x, button_y,
+                                   button_size, button_size, "garuda_spread")
+    }
+}
+
+// Show app grid dengan animasi
+fungsi show_app_grid() -> void {
+    if (launcher.app_grid_visible) {
+        hide_app_grid()
+        return
+    }
+    
+    khat_log("[LAUNCHER] Menampilkan app grid...")
+    
+    // Buat window app grid
+    app_grid_window = khatui_create_window(
+        "App Grid",
+        100, 100,
+        600, 400,
+        -1
+    )
+    
+    if (app_grid_window < 0) {
+        return
+    }
+    
+    // Set properties
+    khatui_set_window_cultural_theme(app_grid_window, launcher.batik_pattern)
+    khatui_set_window_transparent_bg(app_grid_window, true)
+    
+    // Render app grid
+    render_app_grid()
+    
+    // Animasi masuk dengan efek Garuda
+    khatui_animate_window_enter(app_grid_window, "garuda_descent")
+    
+    launcher.app_grid_visible = true
+    launcher.mode = APP_GRID
+}
+
+// Render app grid dengan layout budaya
+fungsi render_app_grid() -> void {
+    // Background dengan motif batik transparan
+    draw_translucent_batik_background()
+    
+    // Header dengan ornamen
+    draw_app_grid_header()
+    
+    // Grid aplikasi
+    draw_app_icons_grid()
+    
+    // Search bar dengan placeholder Indonesia
+    draw_cultural_search_bar()
+    
+    // Kategori dengan nama Indonesia
+    draw_app_categories()
+}
+
+// Gambar grid icon aplikasi
+fungsi draw_app_icons_grid() -> void {
+    var grid_x = 20
+    var grid_y = 60
+    var icon_size = 64
+    var icon_spacing = 80
+    var row = 0
+    var col = 0
+    
+    for (var i = 0; i < app_count; i++) {
+        var app = &installed_apps[i]
+        
+        var x = grid_x + (col * icon_spacing)
+        var y = grid_y + (row * icon_spacing)
+        
+        // Background icon dengan efek cultural
+        draw_cultural_icon_background(x, y, icon_size, app->cultural_theme)
+        
+        // Icon aplikasi
+        khatui_draw_app_icon(app_grid_window, x + 8, y + 8, 
+                             icon_size - 16, icon_size - 16, app->icon_path)
+        
+        // Label aplikasi
+        khatui_draw_text_cultural(app_grid_window, x, y + icon_size + 4,
+                                  app->nama, get_cultural_color("text"),
+                                  "small_traditional")
+        
+        // Animasi hover
+        khatui_add_hover_animation(app_grid_window, x, y, icon_size, icon_size,
+                                   "icon_glow_" + app->cultural_theme)
+        
+        col++
+        if (col >= APP_GRID_COLS) {
+            col = 0
+            row++
+        }
+    }
+}
+
+// Handle klik aplikasi
+fungsi handle_app_click(app_id: int) -> void {
+    if (app_id < 0 || app_id >= app_count) {
+        return
+    }
+    
+    var app = &installed_apps[app_id]
+    
+    khat_log("[LAUNCHER] Meluncurkan aplikasi: " + app->nama)
+    
+    // Animasi launch dengan efek Garuda
+    play_app_launch_animation(app_id)
+    
+    // Launch aplikasi
+    var result = khatcore_launch_app(app->id)
+    
+    if (result >= 0) {
+        // Update launch count
+        app->launch_count++
+        
+        // Hide app grid
+        hide_app_grid()
+        
+        // Update taskbar
+        render_taskbar()
+        
+        // Play sound cultural
+        if (launcher.cultural_mode) {
+            khat_audio_play_cultural_sound("app_launch")
+        }
+    } else {
+        khat_log("[ERROR] Gagal meluncurkan aplikasi: " + app->nama)
+        show_error_notification("Gagal meluncurkan " + app->nama)
+    }
+}
+
+// Main loop launcher
+fungsi launcher_main_loop() -> void {
+    while (true) {
+        // Handle events
+        handle_launcher_events()
+        
+        // Update animasi
+        update_cultural_animations()
+        
+        // Update clock
+        update_indonesian_clock()
+        
+        // Update notifications
+        update_notification_area()
+        
+        // Sleep
+        khat_sleep(16)  // ~60 FPS
+    }
+}
+
+// Entry point
+fungsi main() -> int {
+    if (launcher_init() != 0) {
+        return -1
+    }
+    
+    launcher_main_loop()
+    
+    return 0
+}

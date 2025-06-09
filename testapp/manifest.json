@@ -1,0 +1,17 @@
+{
+  "name": "Testapp",
+  "version": "1.0.0",
+  "description": "Aplikasi testapp untuk Khatulistiwa OS",
+  "author": "Tim Khatulistiwa",
+  "category": "productivity",
+  "type": "application",
+  "permissions": [
+    "khatui_access"
+  ],
+  "dependencies": [
+    "khatui_runtime.khat",
+    "khatcore_runtime.khat"
+  ],
+  "min_os_version": "1.0.0",
+  "ui_framework": "KhatUI"
+}

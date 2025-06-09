@@ -1,0 +1,488 @@
+/*
+ * ============================================================================
+ * khatnotes.khat - Aplikasi Catatan Harian dengan Tema Lontar Indonesia
+ * Copyright (c) 2025 Dhafa Nazula Permadi & Team BIGCode By Cv Bintang Gumilang Group
+ * ============================================================================
+ * 
+ * Aplikasi catatan lengkap dengan fitur:
+ * 1. Editor teks kaya dengan tema lontar
+ * 2. Template budaya Indonesia
+ * 3. Dukungan aksara tradisional
+ * 4. Kategorisasi dengan icon budaya
+ * 5. Export dengan layout tradisional
+ */
+
+import "khatui/runtime.khat"
+import "khatcore/system.khat"
+import "khatcore/file.khat"
+import "khattext/editor.khat"
+import "khatui/cultural.khat"
+import "khatcultural/fonts.khat"
+
+// Konstanta aplikasi
+konstan NOTES_VERSION = "1.0.0"
+konstan WINDOW_WIDTH = 1200
+konstan WINDOW_HEIGHT = 800
+konstan SIDEBAR_WIDTH = 280
+konstan TOOLBAR_HEIGHT = 60
+konstan MAX_NOTES = 1000
+
+// Kategori catatan
+enum NoteCategory {
+    PERSONAL = 0,
+    WORK = 1,
+    STUDY = 2,
+    CULTURAL = 3,
+    RECIPE = 4
+}
+
+// Tema kertas
+enum PaperTheme {
+    LONTAR = 0,
+    BAMBOO = 1,
+    BATIK = 2,
+    MODERN = 3
+}
+
+// Format teks
+enum TextFormat {
+    PLAIN = 0,
+    BOLD = 1,
+    ITALIC = 2,
+    UNDERLINE = 3,
+    STRIKETHROUGH = 4,
+    AKSARA_JAWA = 5,
+    AKSARA_BALI = 6,
+    AKSARA_SUNDA = 7
+}
+
+// Struktur catatan
+struct Note {
+    id: string,
+    title: string,
+    content: string,
+    category: NoteCategory,
+    paper_theme: PaperTheme,
+    created_date: time_t,
+    modified_date: time_t,
+    tags: string[],
+    is_favorite: bool,
+    word_count: int,
+    character_count: int,
+    cultural_elements: bool,
+    font_family: string,
+    font_size: int
+}
+
+// State aplikasi
+struct NotesState {
+    current_note: Note*,
+    notes_list: Note[],
+    note_count: int,
+    selected_category: NoteCategory,
+    current_paper_theme: PaperTheme,
+    show_sidebar: bool,
+    editor_mode: string,
+    search_query: string,
+    cultural_mode: bool,
+    batik_theme: string,
+    main_window: int,
+    editor_window: int,
+    sidebar_window: int,
+    is_editing: bool,
+    auto_save_enabled: bool
+}
+
+// Global state
+var notes: NotesState
+var note_templates: string[10]
+
+// Inisialisasi aplikasi
+fungsi notes_init() -> int {
+    khat_log("[NOTES] Menginisialisasi KhatNotes v" + NOTES_VERSION)
+    
+    // Setup state awal
+    notes.current_note = null
+    notes.note_count = 0
+    notes.selected_category = PERSONAL
+    notes.current_paper_theme = LONTAR
+    notes.show_sidebar = true
+    notes.editor_mode = "rich_text"
+    notes.search_query = ""
+    notes.cultural_mode = true
+    notes.batik_theme = "parang_rusak"
+    notes.is_editing = false
+    notes.auto_save_enabled = true
+    
+    // Buat window utama
+    if (create_main_window() != 0) {
+        khat_log("[ERROR] Gagal membuat window utama")
+        return -1
+    }
+    
+    // Load font aksara tradisional
+    if (load_traditional_fonts() != 0) {
+        khat_log("[WARNING] Gagal memuat font aksara tradisional")
+    }
+    
+    // Load template budaya
+    if (load_cultural_templates() != 0) {
+        khat_log("[WARNING] Gagal memuat template budaya")
+    }
+    
+    // Load catatan yang tersimpan
+    if (load_saved_notes() != 0) {
+        khat_log("[WARNING] Gagal memuat catatan tersimpan")
+    }
+    
+    // Setup event handlers
+    setup_notes_events()
+    
+    khat_log("[NOTES] KhatNotes berhasil diinisialisasi!")
+    return 0
+}
+
+// Buat window utama
+fungsi create_main_window() -> int {
+    khat_log("[NOTES] Membuat window utama...")
+    
+    notes.main_window = khatui_create_window(
+        "KhatNotes - Catatan Lontar Nusantara",
+        (khat_screen_width() - WINDOW_WIDTH) / 2,
+        (khat_screen_height() - WINDOW_HEIGHT) / 2,
+        WINDOW_WIDTH, WINDOW_HEIGHT,
+        khat_get_current_app_id()
+    )
+    
+    if (notes.main_window < 0) {
+        return -1
+    }
+    
+    // Set window properties
+    khatui_set_window_cultural_theme(notes.main_window, notes.batik_theme)
+    khatui_set_window_resizable(notes.main_window, true)
+    khatui_set_window_min_size(notes.main_window, 900, 600)
+    
+    // Render window
+    render_notes_window()
+    
+    return 0
+}
+
+// Render window catatan
+fungsi render_notes_window() -> void {
+    // Clear window
+    khatui_clear_window(notes.main_window)
+    
+    // Background dengan motif lontar
+    draw_lontar_background()
+    
+    // Toolbar dengan tools penulisan
+    draw_notes_toolbar()
+    
+    // Sidebar dengan daftar catatan
+    if (notes.show_sidebar) {
+        draw_notes_sidebar()
+    }
+    
+    // Area editor utama
+    draw_main_editor_area()
+    
+    // Status bar dengan info catatan
+    draw_notes_statusbar()
+}
+
+// Gambar background dengan motif lontar
+fungsi draw_lontar_background() -> void {
+    var bg_color = get_paper_theme_color(notes.current_paper_theme)
+    var texture = get_paper_theme_texture(notes.current_paper_theme)
+    
+    // Background dasar
+    khatui_fill_rect(notes.main_window, 0, 0, 
+                     WINDOW_WIDTH, WINDOW_HEIGHT, bg_color)
+    
+    // Overlay tekstur kertas
+    khatui_draw_texture_overlay(notes.main_window,
+                                0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
+                                texture, 0.1)
+    
+    // Border ornamen tradisional
+    khatui_draw_cultural_border(notes.main_window,
+                                0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
+                                "ornamen_lontar")
+}
+
+// Gambar toolbar
+fungsi draw_notes_toolbar() -> void {
+    var toolbar_color = get_cultural_color("notes_toolbar_bg")
+    
+    // Background toolbar
+    khatui_fill_rect(notes.main_window, 0, 0, 
+                     WINDOW_WIDTH, TOOLBAR_HEIGHT, toolbar_color)
+    
+    // Logo dan judul
+    khatui_draw_cultural_icon(notes.main_window, 15, 15, 30, 30,
+                              "lontar_scroll", get_cultural_color("toolbar_icon"))
+    
+    khatui_draw_text_cultural(notes.main_window, 55, 20,
+                              "KhatNotes", get_cultural_color("notes_title"),
+                              "notes_title")
+    
+    // Tools formatting
+    draw_formatting_tools(200, 10, 400, 40)
+    
+    // Paper theme selector
+    draw_paper_theme_selector(650, 10, 150, 40)
+    
+    // Menu actions
+    draw_toolbar_actions(820, 10, 150, 40)
+}
+
+// Gambar tools formatting
+fungsi draw_formatting_tools(x: int, y: int, width: int, height: int) -> void {
+    var tool_size = 30
+    var tool_spacing = 5
+    var current_x = x
+    
+    // Bold
+    draw_format_button(current_x, y + 5, tool_size, tool_size, "B", "bold", TextFormat.BOLD)
+    current_x += tool_size + tool_spacing
+    
+    // Italic
+    draw_format_button(current_x, y + 5, tool_size, tool_size, "I", "italic", TextFormat.ITALIC)
+    current_x += tool_size + tool_spacing
+    
+    // Underline
+    draw_format_button(current_x, y + 5, tool_size, tool_size, "U", "underline", TextFormat.UNDERLINE)
+    current_x += tool_size + tool_spacing
+    
+    // Separator
+    khatui_draw_line(notes.main_window, current_x + 5, y + 10,
+                     current_x + 5, y + height - 10,
+                     get_cultural_color("toolbar_separator"))
+    current_x += 15
+    
+    // Aksara Jawa
+    draw_format_button(current_x, y + 5, tool_size, tool_size, "ꦗ", "aksara_jawa", TextFormat.AKSARA_JAWA)
+    current_x += tool_size + tool_spacing
+    
+    // Aksara Bali
+    draw_format_button(current_x, y + 5, tool_size, tool_size, "ᬩ", "aksara_bali", TextFormat.AKSARA_BALI)
+    current_x += tool_size + tool_spacing
+    
+    // Aksara Sunda
+    draw_format_button(current_x, y + 5, tool_size, tool_size, "ᮘ", "aksara_sunda", TextFormat.AKSARA_SUNDA)
+}
+
+// Gambar tombol format
+fungsi draw_format_button(x: int, y: int, width: int, height: int,
+                         label: string, style: string, format: TextFormat) -> void {
+    var is_active = is_format_active(format)
+    var button_bg = is_active ? 
+                    get_cultural_color("format_button_active") :
+                    get_cultural_color("format_button_normal")
+    
+    // Background tombol
+    khatui_draw_rounded_rect(notes.main_window, x, y, width, height, 4, button_bg)
+    
+    // Label tombol
+    var text_color = is_active ?
+                     get_cultural_color("format_text_active") :
+                     get_cultural_color("format_text_normal")
+    
+    khatui_draw_text_cultural(notes.main_window, x + width/2 - 8, y + height/2 - 8,
+                              label, text_color, style)
+    
+    // Click handler
+    khatui_add_click_handler(notes.main_window, x, y, width, height,
+                            "format_click", format)
+}
+
+// Gambar sidebar catatan
+fungsi draw_notes_sidebar() -> void {
+    var sidebar_x = 0
+    var sidebar_y = TOOLBAR_HEIGHT
+    var sidebar_height = WINDOW_HEIGHT - TOOLBAR_HEIGHT - 30
+    var sidebar_bg = get_cultural_color("sidebar_bg")
+    
+    // Background sidebar
+    khatui_fill_rect(notes.main_window, sidebar_x, sidebar_y,
+                     SIDEBAR_WIDTH, sidebar_height, sidebar_bg)
+    
+    // Header sidebar
+    draw_sidebar_header(sidebar_x, sidebar_y, SIDEBAR_WIDTH, 40)
+    
+    // Search box
+    draw_search_box(sidebar_x + 10, sidebar_y + 50, SIDEBAR_WIDTH - 20, 30)
+    
+    // Category filter
+    draw_category_filter(sidebar_x + 10, sidebar_y + 90, SIDEBAR_WIDTH - 20, 120)
+    
+    // Notes list
+    draw_notes_list(sidebar_x + 10, sidebar_y + 220, SIDEBAR_WIDTH - 20, sidebar_height - 230)
+}
+
+// Gambar area editor utama
+fungsi draw_main_editor_area() -> void {
+    var editor_x = notes.show_sidebar ? SIDEBAR_WIDTH + 10 : 10
+    var editor_y = TOOLBAR_HEIGHT + 10
+    var editor_width = WINDOW_WIDTH - editor_x - 10
+    var editor_height = WINDOW_HEIGHT - editor_y - 40
+    
+    if (notes.current_note) {
+        draw_note_editor(editor_x, editor_y, editor_width, editor_height)
+    } else {
+        draw_welcome_screen(editor_x, editor_y, editor_width, editor_height)
+    }
+}
+
+// Gambar editor catatan
+fungsi draw_note_editor(x: int, y: int, width: int, height: int) -> void {
+    // Background editor dengan tema kertas
+    var paper_bg = get_paper_theme_background(notes.current_paper_theme)
+    khatui_fill_rect(notes.main_window, x, y, width, height, paper_bg)
+    
+    // Overlay tekstur kertas
+    draw_paper_texture_overlay(x, y, width, height)
+    
+    // Header catatan
+    draw_note_header(x, y, width, 50)
+    
+    // Area konten
+    draw_note_content_area(x, y + 60, width, height - 60)
+    
+    // Margin lines (seperti kertas bergaris)
+    if (notes.current_paper_theme == LONTAR || notes.current_paper_theme == BAMBOO) {
+        draw_traditional_margins(x, y + 60, width, height - 60)
+    }
+}
+
+// Gambar header catatan
+fungsi draw_note_header(x: int, y: int, width: int, height: int) -> void {
+    // Background header
+    var header_bg = get_cultural_color("note_header_bg")
+    khatui_fill_rect(notes.main_window, x, y, width, height, header_bg)
+    
+    // Judul catatan
+    if (notes.is_editing) {
+        draw_editable_title(x + 20, y + 10, width - 100, 30)
+    } else {
+        khatui_draw_text_cultural(notes.main_window, x + 20, y + 15,
+                                  notes.current_note->title, get_cultural_color("note_title"),
+                                  "note_title")
+    }
+    
+    // Info catatan
+    draw_note_info(x + width - 200, y + 10, 180, 30)
+}
+
+// Gambar area konten catatan
+fungsi draw_note_content_area(x: int, y: int, width: int, height: int) -> void {
+    // Padding untuk konten
+    var content_x = x + 40
+    var content_y = y + 20
+    var content_width = width - 80
+    var content_height = height - 40
+    
+    if (notes.is_editing) {
+        // Mode editing dengan text editor
+        draw_text_editor(content_x, content_y, content_width, content_height)
+    } else {
+        // Mode viewing dengan formatted text
+        draw_formatted_content(content_x, content_y, content_width, content_height)
+    }
+}
+
+// Buat catatan baru
+fungsi create_new_note(title: string, category: NoteCategory) -> int {
+    if (notes.note_count >= MAX_NOTES) {
+        return -1
+    }
+    
+    var note: Note
+    note.id = generate_note_id()
+    note.title = title
+    note.content = ""
+    note.category = category
+    note.paper_theme = notes.current_paper_theme
+    note.created_date = khat_get_current_time()
+    note.modified_date = note.created_date
+    note.is_favorite = false
+    note.word_count = 0
+    note.character_count = 0
+    note.cultural_elements = notes.cultural_mode
+    note.font_family = "traditional_latin"
+    note.font_size = 12
+    
+    notes.notes_list[notes.note_count] = note
+    notes.note_count++
+    
+    // Set sebagai catatan aktif
+    notes.current_note = &notes.notes_list[notes.note_count - 1]
+    notes.is_editing = true
+    
+    // Refresh display
+    render_notes_window()
+    
+    khat_log("[NOTES] Catatan baru dibuat: " + title)
+    return 0
+}
+
+// Load template budaya
+fungsi load_cultural_templates() -> int {
+    khat_log("[NOTES] Memuat template budaya...")
+    
+    // Template entri harian
+    note_templates[0] = "# Catatan Hari Ini\n\n**Tanggal:** {date}\n**Cuaca:** \n**Mood:** \n\n## Kegiatan Hari Ini\n\n\n## Refleksi\n\n\n## Rencana Besok\n\n"
+    
+    // Template notulen rapat
+    note_templates[1] = "# Notulen Rapat\n\n**Tanggal:** {date}\n**Waktu:** \n**Tempat:** \n**Peserta:** \n\n## Agenda\n\n\n## Pembahasan\n\n\n## Keputusan\n\n\n## Tindak Lanjut\n\n"
+    
+    // Template resep masakan
+    note_templates[2] = "# Resep {nama_masakan}\n\n**Asal Daerah:** \n**Porsi:** \n**Waktu Memasak:** \n\n## Bahan-bahan\n\n\n## Bumbu Halus\n\n\n## Cara Memasak\n\n\n## Tips\n\n"
+    
+    // Template cerita budaya
+    note_templates[3] = "# Cerita: {judul}\n\n**Asal Daerah:** \n**Jenis:** Legenda/Dongeng/Sejarah\n**Sumber:** \n\n## Ringkasan\n\n\n## Tokoh Utama\n\n\n## Pesan Moral\n\n\n## Nilai Budaya\n\n"
+    
+    return 0
+}
+
+// API untuk aplikasi lain
+fungsi khatnotes_create_note(title: string, content: string, category: NoteCategory) -> int {
+    var note_id = create_new_note(title, category)
+    if (note_id >= 0) {
+        notes.current_note->content = content
+        update_note_statistics(notes.current_note)
+        save_note(notes.current_note)
+    }
+    return note_id
+}
+
+// Entry point aplikasi
+fungsi main() -> int {
+    if (notes_init() != 0) {
+        return -1
+    }
+    
+    // Main event loop
+    while (true) {
+        var event = khatui_get_next_event()
+        if (event.type == "quit") {
+            break
+        }
+        
+        handle_notes_event(event.type, event.data)
+        
+        // Auto-save jika diperlukan
+        if (notes.auto_save_enabled && notes.is_editing) {
+            auto_save_current_note()
+        }
+        
+        khat_sleep(16)
+    }
+    
+    // Cleanup
+    notes_cleanup()
+    
+    return 0
+}

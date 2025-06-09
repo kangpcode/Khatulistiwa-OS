@@ -1,0 +1,552 @@
+/*
+ * ============================================================================
+ * diskmanager.khat - Manajemen Disk dan Partisi Khatulistiwa OS
+ * Copyright (c) 2025 Dhafa Nazula Permadi & Team BIGCode By Cv Bintang Gumilang Group
+ * ============================================================================
+ * 
+ * Aplikasi manajemen disk lengkap dengan fitur:
+ * 1. Partitioning dengan tema lumbung data
+ * 2. Filesystem formatting dengan ornamen tradisional
+ * 3. Mount/unmount management dengan metafora gudang
+ * 4. Disk health monitoring dengan indikator budaya
+ * 5. Backup operations dengan konsep penyimpanan tradisional
+ */
+
+import "khatui/runtime.khat"
+import "khatcore/system.khat"
+import "khatcore/storage.khat"
+import "khatfilesystem/manager.khat"
+import "khatui/cultural.khat"
+import "khatui/animations.khat"
+
+// Konstanta aplikasi
+konstan DISK_VERSION = "1.0.0"
+konstan WINDOW_WIDTH = 1200
+konstan WINDOW_HEIGHT = 800
+konstan SIDEBAR_WIDTH = 280
+konstan HEADER_HEIGHT = 70
+konstan MAX_DISKS = 32
+
+// Tipe penyimpanan
+enum StorageType {
+    HDD = 0,
+    SSD = 1,
+    USB = 2,
+    OPTICAL = 3,
+    NETWORK = 4
+}
+
+// Tipe filesystem
+enum FilesystemType {
+    KHATFS = 0,
+    EXT4 = 1,
+    NTFS = 2,
+    FAT32 = 3,
+    EXFAT = 4
+}
+
+// Status disk
+enum DiskStatus {
+    HEALTHY = 0,
+    WARNING = 1,
+    ERROR = 2,
+    OFFLINE = 3,
+    UNKNOWN = 4
+}
+
+// Operasi disk
+enum DiskOperation {
+    FORMAT = 0,
+    PARTITION = 1,
+    MOUNT = 2,
+    UNMOUNT = 3,
+    CHECK = 4,
+    DEFRAG = 5
+}
+
+// Struktur disk
+struct Disk {
+    id: string,
+    name: string,
+    cultural_name: string,
+    device_path: string,
+    storage_type: StorageType,
+    total_size: size_t,
+    used_size: size_t,
+    free_size: size_t,
+    filesystem: FilesystemType,
+    status: DiskStatus,
+    health_percentage: int,
+    is_mounted: bool,
+    mount_point: string,
+    partitions: Partition[],
+    partition_count: int,
+    cultural_icon: string,
+    last_checked: time_t
+}
+
+// Struktur partisi
+struct Partition {
+    id: string,
+    name: string,
+    cultural_name: string,
+    start_sector: size_t,
+    end_sector: size_t,
+    size: size_t,
+    filesystem: FilesystemType,
+    is_mounted: bool,
+    mount_point: string,
+    is_bootable: bool,
+    cultural_icon: string
+}
+
+// State aplikasi
+struct DiskManagerState {
+    disks: Disk[],
+    disk_count: int,
+    selected_disk: int,
+    current_operation: DiskOperation,
+    show_advanced: bool,
+    auto_mount: bool,
+    cultural_mode: bool,
+    batik_theme: string,
+    main_window: int,
+    disk_list_window: int,
+    partition_window: int,
+    operations_window: int,
+    scanning: bool,
+    operation_in_progress: bool
+}
+
+// Global state
+var disk_manager: DiskManagerState
+
+// Inisialisasi aplikasi
+fungsi disk_manager_init() -> int {
+    khat_log("[DISK] Menginisialisasi DiskManager v" + DISK_VERSION)
+    
+    // Setup state awal
+    disk_manager.disk_count = 0
+    disk_manager.selected_disk = -1
+    disk_manager.current_operation = CHECK
+    disk_manager.show_advanced = false
+    disk_manager.auto_mount = true
+    disk_manager.cultural_mode = true
+    disk_manager.batik_theme = "kawung"
+    disk_manager.scanning = false
+    disk_manager.operation_in_progress = false
+    
+    // Buat window utama
+    if (create_main_window() != 0) {
+        khat_log("[ERROR] Gagal membuat window utama")
+        return -1
+    }
+    
+    // Initialize storage subsystem
+    if (init_storage_subsystem() != 0) {
+        khat_log("[ERROR] Gagal menginisialisasi subsistem storage")
+        return -1
+    }
+    
+    // Scan disk yang tersedia
+    start_disk_scan()
+    
+    // Setup event handlers
+    setup_disk_events()
+    
+    khat_log("[DISK] DiskManager berhasil diinisialisasi!")
+    return 0
+}
+
+// Buat window utama
+fungsi create_main_window() -> int {
+    khat_log("[DISK] Membuat window utama...")
+    
+    disk_manager.main_window = khatui_create_window(
+        "DiskManager - Pengelola Lumbung Data Nusantara",
+        (khat_screen_width() - WINDOW_WIDTH) / 2,
+        (khat_screen_height() - WINDOW_HEIGHT) / 2,
+        WINDOW_WIDTH, WINDOW_HEIGHT,
+        khat_get_current_app_id()
+    )
+    
+    if (disk_manager.main_window < 0) {
+        return -1
+    }
+    
+    // Set window properties
+    khatui_set_window_cultural_theme(disk_manager.main_window, disk_manager.batik_theme)
+    khatui_set_window_resizable(disk_manager.main_window, true)
+    khatui_set_window_min_size(disk_manager.main_window, 1000, 600)
+    
+    // Render window
+    render_disk_manager_window()
+    
+    return 0
+}
+
+// Render window disk manager
+fungsi render_disk_manager_window() -> void {
+    // Clear window
+    khatui_clear_window(disk_manager.main_window)
+    
+    // Background dengan motif lumbung
+    draw_storage_warehouse_background()
+    
+    // Header dengan info storage
+    draw_disk_manager_header()
+    
+    // Sidebar dengan daftar disk
+    draw_disk_list_sidebar()
+    
+    // Area utama dengan detail disk
+    draw_main_disk_area()
+    
+    // Status bar dengan operasi
+    draw_disk_manager_statusbar()
+}
+
+// Gambar background dengan motif lumbung
+fungsi draw_storage_warehouse_background() -> void {
+    var bg_color = get_cultural_color("storage_bg")
+    var pattern_color = get_cultural_color("warehouse_pattern")
+    
+    // Background dasar
+    khatui_fill_rect(disk_manager.main_window, 0, 0, 
+                     WINDOW_WIDTH, WINDOW_HEIGHT, bg_color)
+    
+    // Overlay motif lumbung halus
+    khatui_draw_warehouse_pattern(disk_manager.main_window,
+                                  0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
+                                  pattern_color, 0.04)
+    
+    // Border ornamen penyimpanan
+    khatui_draw_cultural_border(disk_manager.main_window,
+                                0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
+                                "ornamen_lumbung")
+}
+
+// Gambar header disk manager
+fungsi draw_disk_manager_header() -> void {
+    var header_color = get_cultural_color("disk_header_bg")
+    
+    // Background header dengan gradien
+    khatui_draw_gradient_rect(disk_manager.main_window, 0, 0, 
+                              WINDOW_WIDTH, HEADER_HEIGHT,
+                              header_color, get_cultural_color("disk_header_gradient"))
+    
+    // Logo dengan lumbung data
+    khatui_draw_cultural_icon(disk_manager.main_window, 20, 15, 40, 40,
+                              "lumbung_data", get_cultural_color("header_icon"))
+    
+    // Judul dengan font tradisional
+    khatui_draw_text_cultural(disk_manager.main_window, 75, 20,
+                              "DiskManager", get_cultural_color("disk_title"),
+                              "disk_title")
+    
+    khatui_draw_text_cultural(disk_manager.main_window, 75, 40,
+                              "Pengelola Lumbung Data", get_cultural_color("disk_subtitle"),
+                              "disk_subtitle")
+    
+    // Info storage total
+    draw_storage_summary(400, 15, 300, 40)
+    
+    // Tools operasi
+    draw_disk_operations_tools(750, 15, 400, 40)
+}
+
+// Gambar ringkasan storage
+fungsi draw_storage_summary(x: int, y: int, width: int, height: int) -> void {
+    var total_capacity = calculate_total_capacity()
+    var used_capacity = calculate_used_capacity()
+    var free_capacity = total_capacity - used_capacity
+    
+    // Background ringkasan
+    var summary_bg = get_cultural_color("storage_summary_bg")
+    khatui_draw_rounded_rect(disk_manager.main_window, x, y, width, height, 8, summary_bg)
+    
+    // Icon lumbung dengan ornamen
+    khatui_draw_cultural_icon(disk_manager.main_window, x + 10, y + 5, 30, 30,
+                              "gudang_total", get_cultural_color("summary_icon"))
+    
+    // Kapasitas total
+    var capacity_text = "Total: " + format_size(total_capacity)
+    khatui_draw_text_cultural(disk_manager.main_window, x + 50, y + 8,
+                              capacity_text, get_cultural_color("capacity_text"),
+                              "capacity_text")
+    
+    // Kapasitas terpakai
+    var used_text = "Terpakai: " + format_size(used_capacity)
+    khatui_draw_text_cultural(disk_manager.main_window, x + 50, y + 25,
+                              used_text, get_cultural_color("used_text"),
+                              "used_text")
+    
+    // Progress bar dengan motif batik
+    draw_cultural_progress_bar(x + 200, y + 15, 80, 10, 
+                               (float)used_capacity / total_capacity)
+}
+
+// Gambar sidebar daftar disk
+fungsi draw_disk_list_sidebar() -> void {
+    var sidebar_x = 0
+    var sidebar_y = HEADER_HEIGHT
+    var sidebar_height = WINDOW_HEIGHT - HEADER_HEIGHT - 30
+    var sidebar_bg = get_cultural_color("sidebar_bg")
+    
+    // Background sidebar
+    khatui_fill_rect(disk_manager.main_window, sidebar_x, sidebar_y,
+                     SIDEBAR_WIDTH, sidebar_height, sidebar_bg)
+    
+    // Header sidebar
+    khatui_draw_text_cultural(disk_manager.main_window, sidebar_x + 20, sidebar_y + 20,
+                              "Daftar Lumbung", get_cultural_color("sidebar_header"),
+                              "sidebar_header")
+    
+    // Tombol scan
+    draw_scan_disks_button(sidebar_x + 20, sidebar_y + 50, SIDEBAR_WIDTH - 40, 30)
+    
+    // Daftar disk dengan icon budaya
+    draw_disk_list(sidebar_x, sidebar_y + 90, SIDEBAR_WIDTH, sidebar_height - 100)
+}
+
+// Gambar daftar disk
+fungsi draw_disk_list(x: int, y: int, width: int, height: int) -> void {
+    if (disk_manager.scanning) {
+        draw_scanning_animation(x, y, width, height)
+        return
+    }
+    
+    var item_height = 80
+    var current_y = y
+    
+    for (var i = 0; i < disk_manager.disk_count && current_y + item_height <= y + height; i++) {
+        var disk = &disk_manager.disks[i]
+        var is_selected = (i == disk_manager.selected_disk)
+        
+        draw_disk_item(x + 10, current_y, width - 20, item_height, disk, i, is_selected)
+        
+        current_y += item_height + 10
+    }
+    
+    if (disk_manager.disk_count == 0) {
+        draw_no_disks_message(x, y, width, height)
+    }
+}
+
+// Gambar item disk
+fungsi draw_disk_item(x: int, y: int, width: int, height: int, 
+                     disk: Disk*, index: int, is_selected: bool) -> void {
+    var item_bg = is_selected ?
+                  get_cultural_color("disk_selected_bg") :
+                  get_cultural_color("disk_item_bg")
+    
+    // Background item
+    khatui_draw_rounded_rect(disk_manager.main_window, x, y, width, height, 8, item_bg)
+    
+    // Icon disk dengan tema budaya
+    khatui_draw_cultural_icon(disk_manager.main_window, x + 10, y + 10, 40, 40,
+                              disk->cultural_icon, get_cultural_color("disk_icon"))
+    
+    // Health indicator dengan ornamen
+    draw_disk_health_indicator(x + 10, y + 10, 40, 40, disk->health_percentage)
+    
+    // Info disk
+    khatui_draw_text_cultural(disk_manager.main_window, x + 60, y + 10,
+                              disk->cultural_name, get_cultural_color("disk_name"),
+                              "disk_name")
+    
+    // Kapasitas
+    var capacity_text = format_size(disk->total_size)
+    khatui_draw_text_cultural(disk_manager.main_window, x + 60, y + 30,
+                              capacity_text, get_cultural_color("disk_capacity"),
+                              "disk_capacity")
+    
+    // Status mount
+    if (disk->is_mounted) {
+        khatui_draw_text_cultural(disk_manager.main_window, x + 60, y + 50,
+                                  "Terpasang", get_cultural_color("disk_mounted"),
+                                  "disk_status")
+    } else {
+        khatui_draw_text_cultural(disk_manager.main_window, x + 60, y + 50,
+                                  "Tidak Terpasang", get_cultural_color("disk_unmounted"),
+                                  "disk_status")
+    }
+    
+    // Click handler
+    khatui_add_click_handler(disk_manager.main_window, x, y, width, height,
+                            "disk_click", index)
+}
+
+// Gambar area utama disk
+fungsi draw_main_disk_area() -> void {
+    var disk_x = SIDEBAR_WIDTH + 20
+    var disk_y = HEADER_HEIGHT + 20
+    var disk_width = WINDOW_WIDTH - SIDEBAR_WIDTH - 40
+    var disk_height = WINDOW_HEIGHT - disk_y - 50
+    
+    if (disk_manager.selected_disk >= 0 && disk_manager.selected_disk < disk_manager.disk_count) {
+        var selected_disk = &disk_manager.disks[disk_manager.selected_disk]
+        draw_disk_details(disk_x, disk_y, disk_width, disk_height, selected_disk)
+    } else {
+        draw_no_disk_selected_message(disk_x, disk_y, disk_width, disk_height)
+    }
+}
+
+// Gambar detail disk
+fungsi draw_disk_details(x: int, y: int, width: int, height: int, disk: Disk*) -> void {
+    // Header detail
+    draw_disk_detail_header(x, y, width, 60, disk)
+    
+    // Partisi disk
+    draw_disk_partitions(x, y + 70, width, height - 140)
+    
+    // Operations panel
+    draw_disk_operations_panel(x, y + height - 60, width, 50)
+}
+
+// Format disk
+fungsi format_disk(disk: Disk*, filesystem: FilesystemType) -> int {
+    if (!disk) {
+        return -1
+    }
+    
+    disk_manager.operation_in_progress = true
+    khat_log("[DISK] Formatting disk: " + disk->name)
+    
+    // Show confirmation dialog
+    if (!show_format_confirmation_dialog(disk, filesystem)) {
+        disk_manager.operation_in_progress = false
+        return -1
+    }
+    
+    // Unmount jika terpasang
+    if (disk->is_mounted) {
+        if (unmount_disk(disk) != 0) {
+            disk_manager.operation_in_progress = false
+            return -1
+        }
+    }
+    
+    // Format disk
+    if (khat_storage_format_disk(disk->device_path, filesystem) != 0) {
+        disk_manager.operation_in_progress = false
+        return -1
+    }
+    
+    // Update disk info
+    disk->filesystem = filesystem
+    disk->used_size = 0
+    disk->free_size = disk->total_size
+    
+    disk_manager.operation_in_progress = false
+    
+    // Refresh display
+    render_disk_manager_window()
+    
+    khat_log("[DISK] Disk formatted successfully")
+    return 0
+}
+
+// Scan disk yang tersedia
+fungsi start_disk_scan() -> void {
+    disk_manager.scanning = true
+    khat_log("[DISK] Memulai scan disk...")
+    
+    // Render ulang untuk menampilkan animasi scanning
+    render_disk_manager_window()
+    
+    // Reset daftar disk
+    disk_manager.disk_count = 0
+    
+    // Scan berbagai jenis storage
+    scan_internal_disks()
+    scan_usb_devices()
+    scan_optical_drives()
+    scan_network_storage()
+    
+    disk_manager.scanning = false
+    
+    // Render ulang untuk menampilkan hasil
+    render_disk_manager_window()
+    
+    khat_log("[DISK] Scan selesai, ditemukan " + khat_int_to_string(disk_manager.disk_count) + " disk")
+}
+
+// Scan disk internal
+fungsi scan_internal_disks() -> void {
+    // Simulate internal disk scan
+    add_disk("Disk Utama", "Lumbung Utama", "/dev/sda", SSD, 
+             500 * 1024 * 1024 * 1024, // 500GB
+             200 * 1024 * 1024 * 1024, // 200GB used
+             KHATFS, HEALTHY, 95, true, "/", "lumbung_utama")
+    
+    add_disk("Disk Data", "Lumbung Data", "/dev/sdb", HDD,
+             1024 * 1024 * 1024 * 1024, // 1TB
+             512 * 1024 * 1024 * 1024,  // 512GB used
+             EXT4, HEALTHY, 88, true, "/home", "lumbung_data")
+}
+
+// Tambah disk ke daftar
+fungsi add_disk(name: string, cultural_name: string, device_path: string,
+               storage_type: StorageType, total_size: size_t, used_size: size_t,
+               filesystem: FilesystemType, status: DiskStatus, health: int,
+               is_mounted: bool, mount_point: string, cultural_icon: string) -> void {
+    if (disk_manager.disk_count >= MAX_DISKS) {
+        return
+    }
+    
+    var disk: Disk
+    disk.id = generate_disk_id()
+    disk.name = name
+    disk.cultural_name = cultural_name
+    disk.device_path = device_path
+    disk.storage_type = storage_type
+    disk.total_size = total_size
+    disk.used_size = used_size
+    disk.free_size = total_size - used_size
+    disk.filesystem = filesystem
+    disk.status = status
+    disk.health_percentage = health
+    disk.is_mounted = is_mounted
+    disk.mount_point = mount_point
+    disk.partition_count = 0
+    disk.cultural_icon = cultural_icon
+    disk.last_checked = khat_get_current_time()
+    
+    disk_manager.disks[disk_manager.disk_count] = disk
+    disk_manager.disk_count++
+}
+
+// API untuk aplikasi lain
+fungsi diskmanager_get_disks() -> Disk[] {
+    return disk_manager.disks
+}
+
+// Entry point aplikasi
+fungsi main() -> int {
+    if (disk_manager_init() != 0) {
+        return -1
+    }
+    
+    // Main event loop
+    while (true) {
+        var event = khatui_get_next_event()
+        if (event.type == "quit") {
+            break
+        }
+        
+        handle_disk_event(event.type, event.data)
+        
+        // Auto refresh disk status
+        if (!disk_manager.operation_in_progress) {
+            update_disk_status()
+        }
+        
+        khat_sleep(16)
+    }
+    
+    // Cleanup
+    disk_manager_cleanup()
+    
+    return 0
+}

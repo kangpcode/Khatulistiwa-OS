@@ -1,0 +1,565 @@
+/*
+ * ============================================================================
+ * khatsettings.khat - Aplikasi Pengaturan Sistem Khatulistiwa OS
+ * Copyright (c) 2025 Dhafa Nazula Permadi & Team BIGCode By Cv Bintang Gumilang Group
+ * ============================================================================
+ * 
+ * Aplikasi pengaturan lengkap dengan fitur:
+ * 1. Manajemen akun pengguna
+ * 2. Pengaturan budaya Indonesia
+ * 3. Konfigurasi tema dan tampilan
+ * 4. Pengaturan jaringan dan keamanan
+ * 5. Manajemen bahasa dan wilayah
+ * 6. Kontrol privasi dan sistem
+ */
+
+import "khatui/runtime.khat"
+import "khatcore/system.khat"
+import "khatcore/security.khat"
+import "khatcore/network.khat"
+import "khatui/cultural.khat"
+
+// Konstanta aplikasi
+konstan SETTINGS_VERSION = "1.0.0"
+konstan WINDOW_WIDTH = 800
+konstan WINDOW_HEIGHT = 600
+konstan SIDEBAR_WIDTH = 200
+
+// Kategori pengaturan
+enum SettingsCategory {
+    USER_ACCOUNT = 0,
+    CULTURAL = 1,
+    APPEARANCE = 2,
+    NETWORK = 3,
+    SECURITY = 4,
+    LANGUAGE = 5,
+    PRIVACY = 6,
+    SYSTEM = 7
+}
+
+// Struktur item pengaturan
+struct SettingsItem {
+    id: string,
+    nama: string,
+    deskripsi: string,
+    kategori: SettingsCategory,
+    icon: string,
+    cultural_icon: string,
+    value_type: string,
+    current_value: string,
+    default_value: string,
+    requires_restart: bool
+}
+
+// State aplikasi
+struct SettingsState {
+    current_category: SettingsCategory,
+    selected_item: int,
+    search_query: string,
+    cultural_mode: bool,
+    batik_theme: string,
+    has_changes: bool,
+    main_window: int,
+    sidebar_scroll: int,
+    content_scroll: int
+}
+
+// Global state
+var settings: SettingsState
+var settings_items: SettingsItem[256]
+var item_count: int = 0
+
+// Inisialisasi aplikasi
+fungsi settings_init() -> int {
+    khat_log("[SETTINGS] Menginisialisasi KhatSettings v" + SETTINGS_VERSION)
+    
+    // Setup state awal
+    settings.current_category = USER_ACCOUNT
+    settings.selected_item = -1
+    settings.search_query = ""
+    settings.cultural_mode = true
+    settings.batik_theme = "kawung"
+    settings.has_changes = false
+    settings.sidebar_scroll = 0
+    settings.content_scroll = 0
+    
+    // Load pengaturan sistem
+    if (load_system_settings() != 0) {
+        khat_log("[ERROR] Gagal memuat pengaturan sistem")
+        return -1
+    }
+    
+    // Buat window utama
+    if (create_main_window() != 0) {
+        khat_log("[ERROR] Gagal membuat window utama")
+        return -1
+    }
+    
+    // Setup event handlers
+    setup_settings_events()
+    
+    khat_log("[SETTINGS] KhatSettings berhasil diinisialisasi!")
+    return 0
+}
+
+// Load pengaturan sistem
+fungsi load_system_settings() -> int {
+    khat_log("[SETTINGS] Memuat pengaturan sistem...")
+    
+    item_count = 0
+    
+    // Load kategori User Account
+    load_user_account_settings()
+    
+    // Load kategori Cultural
+    load_cultural_settings()
+    
+    // Load kategori Appearance
+    load_appearance_settings()
+    
+    // Load kategori Network
+    load_network_settings()
+    
+    // Load kategori Security
+    load_security_settings()
+    
+    // Load kategori Language
+    load_language_settings()
+    
+    // Load kategori Privacy
+    load_privacy_settings()
+    
+    // Load kategori System
+    load_system_settings_items()
+    
+    khat_log("[SETTINGS] Dimuat " + item_count + " item pengaturan")
+    return 0
+}
+
+// Load pengaturan budaya Indonesia
+fungsi load_cultural_settings() -> void {
+    // Tema Batik
+    add_settings_item("cultural.batik_theme", "Tema Batik", 
+                      "Pilih motif batik untuk antarmuka sistem",
+                      CULTURAL, "batik_icon", "batik_pattern",
+                      "select", "parang", "parang", false)
+    
+    // Animasi Garuda
+    add_settings_item("cultural.garuda_animation", "Animasi Garuda",
+                      "Aktifkan animasi Garuda pada transisi",
+                      CULTURAL, "animation_icon", "garuda_wings",
+                      "boolean", "true", "true", false)
+    
+    // Suara Tradisional
+    add_settings_item("cultural.traditional_sounds", "Suara Tradisional",
+                      "Gunakan suara gamelan dan tradisional",
+                      CULTURAL, "sound_icon", "gamelan_icon",
+                      "boolean", "true", "true", false)
+    
+    // Kalender Indonesia
+    add_settings_item("cultural.indonesian_calendar", "Kalender Indonesia",
+                      "Tampilkan kalender Jawa dan hari raya",
+                      CULTURAL, "calendar_icon", "calendar_jawa",
+                      "boolean", "true", "true", false)
+    
+    // Ornamen Tradisional
+    add_settings_item("cultural.traditional_ornaments", "Ornamen Tradisional",
+                      "Tampilkan ornamen ukiran pada window",
+                      CULTURAL, "ornament_icon", "ukiran_jawa",
+                      "boolean", "true", "true", true)
+    
+    // Warna Budaya
+    add_settings_item("cultural.cultural_colors", "Warna Budaya",
+                      "Gunakan palet warna tradisional Indonesia",
+                      CULTURAL, "color_icon", "color_traditional",
+                      "boolean", "true", "true", false)
+}
+
+// Load pengaturan tampilan
+fungsi load_appearance_settings() -> void {
+    // Tema Sistem
+    add_settings_item("appearance.system_theme", "Tema Sistem",
+                      "Pilih tema terang, gelap, atau otomatis",
+                      APPEARANCE, "theme_icon", "garuda_theme",
+                      "select", "garuda_terang", "garuda_terang", false)
+    
+    // Wallpaper
+    add_settings_item("appearance.wallpaper", "Wallpaper",
+                      "Pilih wallpaper desktop",
+                      APPEARANCE, "wallpaper_icon", "nusantara_bg",
+                      "file", "/system/wallpapers/garuda.jpg", 
+                      "/system/wallpapers/garuda.jpg", false)
+    
+    // Ukuran Font
+    add_settings_item("appearance.font_size", "Ukuran Font",
+                      "Atur ukuran font sistem",
+                      APPEARANCE, "font_icon", "aksara_jawa",
+                      "range", "12", "12", true)
+    
+    // Transparansi
+    add_settings_item("appearance.transparency", "Transparansi",
+                      "Tingkat transparansi window",
+                      APPEARANCE, "transparency_icon", "glass_effect",
+                      "range", "80", "80", false)
+    
+    // Animasi Sistem
+    add_settings_item("appearance.system_animations", "Animasi Sistem",
+                      "Aktifkan animasi transisi sistem",
+                      APPEARANCE, "animation_icon", "smooth_transition",
+                      "boolean", "true", "true", false)
+}
+
+// Load pengaturan keamanan
+fungsi load_security_settings() -> void {
+    // Kunci Layar
+    add_settings_item("security.screen_lock", "Kunci Layar",
+                      "Aktifkan kunci layar otomatis",
+                      SECURITY, "lock_icon", "keris_lock",
+                      "boolean", "true", "true", false)
+    
+    // Timeout Kunci
+    add_settings_item("security.lock_timeout", "Timeout Kunci",
+                      "Waktu sebelum layar terkunci (menit)",
+                      SECURITY, "timer_icon", "hourglass_traditional",
+                      "range", "5", "5", false)
+    
+    // Biometrik
+    add_settings_item("security.biometric", "Biometrik",
+                      "Gunakan sidik jari atau wajah",
+                      SECURITY, "biometric_icon", "identity_mask",
+                      "boolean", "false", "false", false)
+    
+    // Enkripsi Data
+    add_settings_item("security.data_encryption", "Enkripsi Data",
+                      "Enkripsi data pengguna",
+                      SECURITY, "encryption_icon", "secret_scroll",
+                      "boolean", "true", "true", true)
+    
+    // Firewall
+    add_settings_item("security.firewall", "Firewall",
+                      "Aktifkan firewall sistem",
+                      SECURITY, "firewall_icon", "shield_traditional",
+                      "boolean", "true", "true", false)
+}
+
+// Buat window utama
+fungsi create_main_window() -> int {
+    khat_log("[SETTINGS] Membuat window utama...")
+    
+    settings.main_window = khatui_create_window(
+        "Pengaturan Khatulistiwa OS",
+        (khat_screen_width() - WINDOW_WIDTH) / 2,
+        (khat_screen_height() - WINDOW_HEIGHT) / 2,
+        WINDOW_WIDTH, WINDOW_HEIGHT,
+        khat_get_current_app_id()
+    )
+    
+    if (settings.main_window < 0) {
+        return -1
+    }
+    
+    // Set window properties
+    khatui_set_window_cultural_theme(settings.main_window, settings.batik_theme)
+    khatui_set_window_resizable(settings.main_window, true)
+    khatui_set_window_min_size(settings.main_window, 600, 400)
+    
+    // Render window
+    render_settings_window()
+    
+    return 0
+}
+
+// Render window pengaturan
+fungsi render_settings_window() -> void {
+    // Clear window
+    khatui_clear_window(settings.main_window)
+    
+    // Background dengan motif batik halus
+    draw_cultural_background()
+    
+    // Header dengan logo dan judul
+    draw_settings_header()
+    
+    // Sidebar kategori
+    draw_settings_sidebar()
+    
+    // Content area
+    draw_settings_content()
+    
+    // Footer dengan tombol aksi
+    draw_settings_footer()
+}
+
+// Gambar background dengan motif budaya
+fungsi draw_cultural_background() -> void {
+    var bg_color = get_cultural_color("settings_bg")
+    var pattern_color = get_cultural_color("batik_subtle")
+    
+    // Background dasar
+    khatui_fill_rect(settings.main_window, 0, 0, 
+                     WINDOW_WIDTH, WINDOW_HEIGHT, bg_color)
+    
+    // Overlay motif batik halus
+    khatui_draw_batik_pattern(settings.main_window,
+                              0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
+                              settings.batik_theme, pattern_color, 0.1)
+    
+    // Border ornamen
+    khatui_draw_cultural_border(settings.main_window,
+                                0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
+                                "ornamen_settings")
+}
+
+// Gambar header pengaturan
+fungsi draw_settings_header() -> void {
+    var header_height = 60
+    var header_color = get_cultural_color("header_bg")
+    
+    // Background header
+    khatui_fill_rect(settings.main_window, 0, 0, 
+                     WINDOW_WIDTH, header_height, header_color)
+    
+    // Logo Khatulistiwa
+    khatui_draw_cultural_icon(settings.main_window, 16, 16, 32, 32,
+                              "khatulistiwa_logo", get_cultural_color("logo"))
+    
+    // Judul
+    khatui_draw_text_cultural(settings.main_window, 60, 20,
+                              "Pengaturan Khatulistiwa OS",
+                              get_cultural_color("header_text"), "header")
+    
+    // Search box
+    draw_settings_search_box()
+    
+    // Separator dengan ornamen
+    khatui_draw_cultural_separator(settings.main_window,
+                                   0, header_height - 2, WINDOW_WIDTH, 2)
+}
+
+// Gambar sidebar kategori
+fungsi draw_settings_sidebar() -> void {
+    var sidebar_x = 0
+    var sidebar_y = 60
+    var sidebar_height = WINDOW_HEIGHT - 120
+    var sidebar_bg = get_cultural_color("sidebar_bg")
+    
+    // Background sidebar
+    khatui_fill_rect(settings.main_window, sidebar_x, sidebar_y,
+                     SIDEBAR_WIDTH, sidebar_height, sidebar_bg)
+    
+    // Daftar kategori
+    var categories = [
+        {CULTURAL, "Budaya Indonesia", "batik_pattern"},
+        {APPEARANCE, "Tampilan", "garuda_theme"},
+        {USER_ACCOUNT, "Akun Pengguna", "wayang_profile"},
+        {NETWORK, "Jaringan", "nusantara_network"},
+        {SECURITY, "Keamanan", "keris_security"},
+        {LANGUAGE, "Bahasa & Wilayah", "indonesia_flag"},
+        {PRIVACY, "Privasi", "privacy_mask"},
+        {SYSTEM, "Sistem", "candi_system"}
+    ]
+    
+    var item_y = sidebar_y + 10
+    var item_height = 40
+    
+    for (var i = 0; i < categories.length; i++) {
+        var category = categories[i]
+        var is_selected = (category.id == settings.current_category)
+        
+        // Background item
+        var item_bg = is_selected ? 
+                      get_cultural_color("selected_item") :
+                      get_cultural_color("normal_item")
+        
+        if (is_selected) {
+            khatui_fill_rect(settings.main_window, sidebar_x + 4, item_y,
+                             SIDEBAR_WIDTH - 8, item_height, item_bg)
+        }
+        
+        // Icon budaya
+        khatui_draw_cultural_icon(settings.main_window,
+                                  sidebar_x + 12, item_y + 8, 24, 24,
+                                  category.cultural_icon,
+                                  get_cultural_color("sidebar_icon"))
+        
+        // Nama kategori
+        var text_color = is_selected ?
+                         get_cultural_color("selected_text") :
+                         get_cultural_color("normal_text")
+        
+        khatui_draw_text_cultural(settings.main_window,
+                                  sidebar_x + 44, item_y + 12,
+                                  category.name, text_color, "sidebar")
+        
+        item_y += item_height + 2
+    }
+}
+
+// Gambar content pengaturan
+fungsi draw_settings_content() -> void {
+    var content_x = SIDEBAR_WIDTH + 10
+    var content_y = 70
+    var content_width = WINDOW_WIDTH - SIDEBAR_WIDTH - 20
+    var content_height = WINDOW_HEIGHT - 140
+    
+    // Background content
+    var content_bg = get_cultural_color("content_bg")
+    khatui_fill_rect(settings.main_window, content_x, content_y,
+                     content_width, content_height, content_bg)
+    
+    // Judul kategori
+    var category_name = get_category_name(settings.current_category)
+    khatui_draw_text_cultural(settings.main_window,
+                              content_x + 10, content_y + 10,
+                              category_name, get_cultural_color("category_title"),
+                              "category_header")
+    
+    // Daftar pengaturan dalam kategori
+    draw_category_settings(content_x, content_y + 40, content_width, content_height - 50)
+}
+
+// Gambar pengaturan dalam kategori
+fungsi draw_category_settings(x: int, y: int, width: int, height: int) -> void {
+    var item_y = y
+    var item_height = 60
+    
+    for (var i = 0; i < item_count; i++) {
+        var item = &settings_items[i]
+        
+        if (item->kategori != settings.current_category) {
+            continue
+        }
+        
+        // Background item
+        khatui_fill_rect(settings.main_window, x, item_y,
+                         width - 20, item_height - 2,
+                         get_cultural_color("setting_item_bg"))
+        
+        // Icon pengaturan
+        khatui_draw_cultural_icon(settings.main_window,
+                                  x + 10, item_y + 10, 32, 32,
+                                  item->cultural_icon,
+                                  get_cultural_color("setting_icon"))
+        
+        // Nama dan deskripsi
+        khatui_draw_text_cultural(settings.main_window,
+                                  x + 50, item_y + 8,
+                                  item->nama, get_cultural_color("setting_name"),
+                                  "setting_title")
+        
+        khatui_draw_text_cultural(settings.main_window,
+                                  x + 50, item_y + 28,
+                                  item->deskripsi, get_cultural_color("setting_desc"),
+                                  "setting_desc")
+        
+        // Control pengaturan
+        draw_setting_control(item, x + width - 200, item_y + 15, 180, 30)
+        
+        item_y += item_height
+    }
+}
+
+// Gambar kontrol pengaturan
+fungsi draw_setting_control(item: SettingsItem*, x: int, y: int, 
+                           width: int, height: int) -> void {
+    switch (item->value_type) {
+        case "boolean":
+            draw_toggle_switch(item, x, y, width, height)
+            break
+            
+        case "select":
+            draw_dropdown_select(item, x, y, width, height)
+            break
+            
+        case "range":
+            draw_range_slider(item, x, y, width, height)
+            break
+            
+        case "file":
+            draw_file_picker(item, x, y, width, height)
+            break
+            
+        case "text":
+            draw_text_input(item, x, y, width, height)
+            break
+    }
+}
+
+// Handle event pengaturan
+fungsi handle_settings_event(event_type: string, data: void*) -> void {
+    switch (event_type) {
+        case "category_click":
+            var category = *(SettingsCategory*)data
+            change_category(category)
+            break
+            
+        case "setting_change":
+            var change_data = (SettingChangeData*)data
+            apply_setting_change(change_data)
+            break
+            
+        case "search":
+            var query = (string)data
+            search_settings(query)
+            break
+            
+        case "save":
+            save_all_settings()
+            break
+            
+        case "reset":
+            reset_to_defaults()
+            break
+    }
+}
+
+// Terapkan perubahan pengaturan
+fungsi apply_setting_change(change_data: SettingChangeData*) -> void {
+    var item = find_setting_item(change_data->setting_id)
+    if (item == null) {
+        return
+    }
+    
+    khat_log("[SETTINGS] Mengubah " + item->nama + " ke: " + change_data->new_value)
+    
+    // Update nilai
+    item->current_value = khat_string_copy(change_data->new_value)
+    settings.has_changes = true
+    
+    // Terapkan perubahan langsung jika memungkinkan
+    if (!item->requires_restart) {
+        apply_setting_immediately(item)
+    }
+    
+    // Update UI
+    render_settings_content()
+    
+    // Show notification jika perlu restart
+    if (item->requires_restart) {
+        show_restart_notification()
+    }
+}
+
+// Entry point aplikasi
+fungsi main() -> int {
+    if (settings_init() != 0) {
+        return -1
+    }
+    
+    // Main event loop
+    while (true) {
+        var event = khatui_get_next_event()
+        if (event.type == "quit") {
+            break
+        }
+        
+        handle_settings_event(event.type, event.data)
+        
+        khat_sleep(16)
+    }
+    
+    // Cleanup
+    settings_cleanup()
+    
+    return 0
+}

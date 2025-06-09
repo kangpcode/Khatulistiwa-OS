@@ -1,0 +1,115 @@
+{
+    "name": "KhatSettings",
+    "version": "1.0.0",
+    "description": "Pengaturan sistem lengkap Khatulistiwa OS dengan elemen budaya Indonesia",
+    "author": "Tim Khatulistiwa OS",
+    "category": "system",
+    "type": "settings",
+    "cultural": {
+        "indonesian_elements": true,
+        "batik_theme": "kawung",
+        "garuda_animations": true,
+        "traditional_sounds": true,
+        "cultural_colors": {
+            "primary": "#2F1B14",
+            "secondary": "#8B4513",
+            "accent": "#CD853F",
+            "background": "#F5DEB3"
+        }
+    },
+    "permissions": [
+        "system_settings_access",
+        "user_account_management",
+        "network_configuration",
+        "driver_management",
+        "security_settings",
+        "cultural_configuration",
+        "theme_management",
+        "language_settings",
+        "privacy_settings",
+        "system_update",
+        "file_system_write"
+    ],
+    "dependencies": [
+        "khatui_runtime.khat",
+        "khatcore_runtime.khat",
+        "khatsecurity.khat"
+    ],
+    "min_os_version": "1.0.0",
+    "ui_framework": "KhatUI",
+    "features": {
+        "user_accounts": true,
+        "system_preferences": true,
+        "network_settings": true,
+        "security_center": true,
+        "cultural_settings": true,
+        "theme_customization": true,
+        "language_region": true,
+        "privacy_controls": true,
+        "driver_manager": true,
+        "update_center": true,
+        "backup_restore": true,
+        "accessibility": true
+    },
+    "settings_categories": [
+        {
+            "id": "user_account",
+            "name": "Akun Pengguna",
+            "icon": "user_profile",
+            "cultural_icon": "wayang_profile"
+        },
+        {
+            "id": "cultural",
+            "name": "Budaya Indonesia",
+            "icon": "cultural_settings",
+            "cultural_icon": "batik_pattern"
+        },
+        {
+            "id": "appearance",
+            "name": "Tampilan",
+            "icon": "theme_settings",
+            "cultural_icon": "garuda_theme"
+        },
+        {
+            "id": "network",
+            "name": "Jaringan",
+            "icon": "network_settings",
+            "cultural_icon": "nusantara_network"
+        },
+        {
+            "id": "security",
+            "name": "Keamanan",
+            "icon": "security_settings",
+            "cultural_icon": "keris_security"
+        },
+        {
+            "id": "language",
+            "name": "Bahasa & Wilayah",
+            "icon": "language_settings",
+            "cultural_icon": "indonesia_flag"
+        },
+        {
+            "id": "privacy",
+            "name": "Privasi",
+            "icon": "privacy_settings",
+            "cultural_icon": "privacy_mask"
+        },
+        {
+            "id": "system",
+            "name": "Sistem",
+            "icon": "system_settings",
+            "cultural_icon": "candi_system"
+        }
+    ],
+    "localization": {
+        "default_language": "id_ID",
+        "supported_languages": ["id_ID", "en_US", "jv_ID", "su_ID", "ms_MY"]
+    },
+    "resources": {
+        "icons": "resources/icons/",
+        "sounds": "resources/sounds/",
+        "cultural_assets": "cultural/",
+        "themes": "resources/themes/",
+        "help_docs": "resources/help/"
+    }
+}

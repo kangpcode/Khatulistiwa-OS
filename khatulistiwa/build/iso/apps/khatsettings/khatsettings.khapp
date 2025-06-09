@@ -1,0 +1,603 @@
+/*
+ * ============================================================================
+ * khatsettings.khapp - Khat Settings untuk Khatulistiwa OS
+ * Copyright (c) 2025 Dhafa Nazula Permadi & Team BIGCode By Cv Bintang Gumilang Group
+ * ============================================================================
+ * 
+ * Khat Settings dengan fitur:
+ * 1. Cultural system configuration
+ * 2. Traditional Indonesian preferences
+ * 3. Gotong royong network settings
+ * 4. Spiritual protection configuration
+ * 5. Adat-based access control
+ * 6. Batik theme customization
+ */
+
+import "system/khatcore_runtime.khat"
+import "system/khatui_runtime.khat"
+
+// Settings constants
+konstan SETTINGS_VERSION = "2.0.0"
+konstan MAX_SETTINGS_CATEGORIES = 16
+konstan MAX_SETTINGS_PER_CATEGORY = 32
+
+// Settings categories dengan nama Indonesia
+enum SettingsCategory {
+    KATEGORI_UMUM = 0,              // General (umum)
+    KATEGORI_TAMPILAN = 1,          // Display (tampilan)
+    KATEGORI_SUARA = 2,             // Sound (suara)
+    KATEGORI_JARINGAN = 3,          // Network (jaringan)
+    KATEGORI_KEAMANAN = 4,          // Security (keamanan)
+    KATEGORI_BUDAYA = 5,            // Cultural (budaya)
+    KATEGORI_SPIRITUAL = 6,         // Spiritual (spiritual)
+    KATEGORI_GOTONG_ROYONG = 7,     // Gotong royong (gotong royong)
+    KATEGORI_ADAT = 8,              // Traditional rules (adat)
+    KATEGORI_BAHASA = 9,            // Language (bahasa)
+    KATEGORI_WAKTU = 10,            // Time (waktu)
+    KATEGORI_PRIVASI = 11,          // Privacy (privasi)
+    KATEGORI_AKSESIBILITAS = 12,    // Accessibility (aksesibilitas)
+    KATEGORI_SISTEM = 13            // System (sistem)
+}
+
+// Setting types
+enum SettingType {
+    TYPE_BOOLEAN = 0,               // Boolean setting
+    TYPE_INTEGER = 1,               // Integer setting
+    TYPE_STRING = 2,                // String setting
+    TYPE_ENUM = 3,                  // Enumeration setting
+    TYPE_COLOR = 4,                 // Color setting
+    TYPE_CULTURAL_THEME = 5,        // Cultural theme setting
+    TYPE_TRADITIONAL_ROLE = 6,      // Traditional role setting
+    TYPE_SPIRITUAL_LEVEL = 7        // Spiritual level setting
+}
+
+// Setting information
+struct SettingInfo {
+    char setting_id[64];
+    char setting_name[64];
+    char traditional_name[64];
+    char description[256];
+    char cultural_meaning[128];
+    
+    // Setting properties
+    SettingType type;
+    SettingsCategory category;
+    bool requires_restart;
+    bool requires_ceremony;
+    bool affects_gotong_royong;
+    
+    // Value constraints
+    union {
+        struct {
+            int min_value;
+            int max_value;
+            int default_value;
+            int current_value;
+        } integer_setting;
+        
+        struct {
+            bool default_value;
+            bool current_value;
+        } boolean_setting;
+        
+        struct {
+            char default_value[256];
+            char current_value[256];
+            uint32_t max_length;
+        } string_setting;
+        
+        struct {
+            uint32_t option_count;
+            char options[16][64];
+            char traditional_options[16][64];
+            uint32_t default_option;
+            uint32_t current_option;
+        } enum_setting;
+        
+        struct {
+            warna_indonesia_t default_color;
+            warna_indonesia_t current_color;
+        } color_setting;
+        
+        struct {
+            cultural_theme_t default_theme;
+            cultural_theme_t current_theme;
+        } theme_setting;
+        
+        struct {
+            traditional_role_t default_role;
+            traditional_role_t current_role;
+        } role_setting;
+    } value;
+    
+    // Cultural attributes
+    traditional_role_t required_role;
+    bool spiritual_setting;
+    char origin_region[32];
+    
+    // Change tracking
+    bool has_changed;
+    uint64_t last_changed_time;
+    uint32_t change_count;
+}
+
+// Settings category
+struct SettingsCategory_Info {
+    SettingsCategory category;
+    char category_name[64];
+    char traditional_name[64];
+    char description[128];
+    
+    // Visual attributes
+    cultural_theme_t theme;
+    warna_indonesia_t primary_color;
+    char icon_path[256];
+    
+    // Settings in category
+    SettingInfo *settings[MAX_SETTINGS_PER_CATEGORY];
+    uint32_t setting_count;
+    
+    // Category properties
+    bool requires_admin;
+    bool cultural_category;
+    bool spiritual_category;
+    traditional_role_t required_role;
+}
+
+// Settings application state
+struct KhatSettings {
+    // Settings registry
+    SettingInfo settings[MAX_SETTINGS_CATEGORIES * MAX_SETTINGS_PER_CATEGORY];
+    uint32_t total_settings;
+    
+    // Categories
+    SettingsCategory_Info categories[MAX_SETTINGS_CATEGORIES];
+    uint32_t category_count;
+    
+    // Current view
+    SettingsCategory current_category;
+    SettingInfo *selected_setting;
+    
+    // UI state
+    bool settings_visible;
+    bool edit_mode;
+    bool show_advanced;
+    bool show_cultural_only;
+    
+    // Search functionality
+    char search_query[128];
+    SettingInfo *search_results[64];
+    uint32_t search_result_count;
+    
+    // Cultural features
+    bool cultural_mode_enabled;
+    bool spiritual_guidance_enabled;
+    bool adat_compliance_checking;
+    cultural_theme_t ui_theme;
+    
+    // Change tracking
+    uint32_t pending_changes;
+    bool requires_restart;
+    bool requires_ceremony;
+    
+    // Statistics
+    uint64_t settings_changed_count;
+    uint64_t cultural_settings_changed;
+    uint64_t spiritual_ceremonies_performed;
+    
+    // Synchronization
+    mutex_t settings_lock;
+}
+
+// Global settings instance
+static KhatSettings g_settings;
+
+// Function prototypes
+int khatsettings_init(void);
+int khatsettings_main(int argc, char *argv[]);
+
+// Settings management
+int register_setting(const char *setting_id, const char *name, const char *traditional_name,
+                    SettingType type, SettingsCategory category);
+int set_setting_value(const char *setting_id, void *value);
+int get_setting_value(const char *setting_id, void *value);
+SettingInfo* find_setting(const char *setting_id);
+
+// Category management
+int create_settings_category(SettingsCategory category, const char *name, const char *traditional_name);
+SettingsCategory_Info* get_settings_category(SettingsCategory category);
+
+// Configuration management
+int load_settings_from_file(const char *config_path);
+int save_settings_to_file(const char *config_path);
+int apply_pending_changes(void);
+int reset_to_defaults(SettingsCategory category);
+
+// Cultural settings
+int perform_settings_ceremony(SettingInfo *setting);
+int check_adat_compliance(SettingInfo *setting, void *new_value);
+int validate_spiritual_setting(SettingInfo *setting, void *new_value);
+
+// UI functions
+void render_settings_ui(void);
+void render_category_list(void);
+void render_settings_list(SettingsCategory category);
+void render_setting_editor(SettingInfo *setting);
+
+// Initialize Khat Settings
+fungsi khatsettings_init() -> int {
+    khat_log("[SETTINGS] Initializing Khat Settings v" + SETTINGS_VERSION)
+    
+    // Initialize settings state
+    memset(&g_settings, 0, sizeof(KhatSettings))
+    
+    // Initialize synchronization
+    mutex_init(&g_settings.settings_lock)
+    
+    // Set default configuration
+    g_settings.cultural_mode_enabled = true
+    g_settings.spiritual_guidance_enabled = true
+    g_settings.adat_compliance_checking = true
+    g_settings.ui_theme = THEME_PARANG
+    g_settings.current_category = KATEGORI_UMUM
+    
+    // Create default categories
+    create_default_categories()
+    
+    // Register default settings
+    register_default_settings()
+    
+    // Load settings from configuration file
+    load_settings_from_file("/system/config/settings.conf")
+    
+    khat_log("[SETTINGS] Khat Settings initialized successfully")
+    
+    return 0
+}
+
+// Main settings function
+fungsi khatsettings_main(argc: int, argv: char*[]) -> int {
+    khat_log("[SETTINGS] Starting Khat Settings")
+    
+    // Initialize settings
+    if (khatsettings_init() != 0) {
+        khat_log("[ERROR] Failed to initialize settings")
+        return -1
+    }
+    
+    // Initialize UI
+    if (init_settings_ui() != 0) {
+        khat_log("[ERROR] Failed to initialize settings UI")
+        return -2
+    }
+    
+    // Show welcome message
+    show_settings_welcome()
+    
+    // Set settings visible
+    g_settings.settings_visible = true
+    
+    // Main settings loop
+    while (g_settings.settings_visible) {
+        // Handle input events
+        handle_settings_input()
+        
+        // Update UI
+        render_settings_ui()
+        
+        // Handle background tasks
+        handle_settings_background_tasks()
+        
+        // Sleep for a short time
+        sleep_ms(16)  // ~60 FPS
+    }
+    
+    // Apply any pending changes
+    if (g_settings.pending_changes > 0) {
+        apply_pending_changes()
+    }
+    
+    // Save settings
+    save_settings_to_file("/system/config/settings.conf")
+    
+    // Cleanup
+    cleanup_settings()
+    
+    khat_log("[SETTINGS] Khat Settings terminated")
+    return 0
+}
+
+// Register setting
+fungsi register_setting(setting_id: string, name: string, traditional_name: string,
+                       type: SettingType, category: SettingsCategory) -> int {
+    mutex_acquire(&g_settings.settings_lock)
+    
+    if (g_settings.total_settings >= MAX_SETTINGS_CATEGORIES * MAX_SETTINGS_PER_CATEGORY) {
+        mutex_release(&g_settings.settings_lock)
+        return -1
+    }
+    
+    // Check if setting already exists
+    if (find_setting_unlocked(setting_id)) {
+        mutex_release(&g_settings.settings_lock)
+        return -2
+    }
+    
+    var setting = &g_settings.settings[g_settings.total_settings]
+    memset(setting, 0, sizeof(SettingInfo))
+    
+    // Set basic information
+    strncpy(setting->setting_id, setting_id, 63)
+    strncpy(setting->setting_name, name, 63)
+    strncpy(setting->traditional_name, traditional_name, 63)
+    setting->type = type
+    setting->category = category
+    
+    // Set cultural attributes based on category
+    set_setting_cultural_attributes(setting, category)
+    
+    g_settings.total_settings++
+    
+    // Add to category
+    add_setting_to_category(category, setting)
+    
+    mutex_release(&g_settings.settings_lock)
+    
+    khat_log("[SETTINGS] Registered setting: " + traditional_name + " (" + setting_id + ")")
+    
+    return 0
+}
+
+// Set setting value
+fungsi set_setting_value(setting_id: string, value: void*) -> int {
+    var setting = find_setting(setting_id)
+    if (!setting) {
+        return -1
+    }
+    
+    // Check adat compliance
+    if (g_settings.adat_compliance_checking) {
+        if (check_adat_compliance(setting, value) != 0) {
+            khat_log("[WARNING] Setting change violates adat rules: " + setting_id)
+            return -2
+        }
+    }
+    
+    // Check spiritual requirements
+    if (setting->spiritual_setting && g_settings.spiritual_guidance_enabled) {
+        if (validate_spiritual_setting(setting, value) != 0) {
+            khat_log("[WARNING] Spiritual validation failed for setting: " + setting_id)
+            return -3
+        }
+    }
+    
+    // Perform ceremony if required
+    if (setting->requires_ceremony) {
+        if (perform_settings_ceremony(setting) != 0) {
+            khat_log("[WARNING] Settings ceremony failed for: " + setting_id)
+        }
+    }
+    
+    // Set the value based on type
+    switch (setting->type) {
+        case TYPE_BOOLEAN:
+            setting->value.boolean_setting.current_value = *(bool*)value
+            break
+        case TYPE_INTEGER:
+            setting->value.integer_setting.current_value = *(int*)value
+            break
+        case TYPE_STRING:
+            strncpy(setting->value.string_setting.current_value, (char*)value, 255)
+            break
+        case TYPE_CULTURAL_THEME:
+            setting->value.theme_setting.current_theme = *(cultural_theme_t*)value
+            break
+        case TYPE_TRADITIONAL_ROLE:
+            setting->value.role_setting.current_role = *(traditional_role_t*)value
+            break
+        default:
+            return -4
+    }
+    
+    // Mark as changed
+    setting->has_changed = true
+    setting->last_changed_time = get_system_time()
+    setting->change_count++
+    
+    // Update global change tracking
+    g_settings.pending_changes++
+    g_settings.settings_changed_count++
+    
+    if (setting->category == KATEGORI_BUDAYA || setting->category == KATEGORI_SPIRITUAL) {
+        g_settings.cultural_settings_changed++
+    }
+    
+    if (setting->requires_restart) {
+        g_settings.requires_restart = true
+    }
+    
+    khat_log("[SETTINGS] Setting changed: " + setting->traditional_name)
+    
+    return 0
+}
+
+// Create default categories
+fungsi create_default_categories() -> void {
+    create_settings_category(KATEGORI_UMUM, "General", "Umum")
+    create_settings_category(KATEGORI_TAMPILAN, "Display", "Tampilan")
+    create_settings_category(KATEGORI_SUARA, "Sound", "Suara")
+    create_settings_category(KATEGORI_JARINGAN, "Network", "Jaringan")
+    create_settings_category(KATEGORI_KEAMANAN, "Security", "Keamanan")
+    create_settings_category(KATEGORI_BUDAYA, "Cultural", "Budaya")
+    create_settings_category(KATEGORI_SPIRITUAL, "Spiritual", "Spiritual")
+    create_settings_category(KATEGORI_GOTONG_ROYONG, "Gotong Royong", "Gotong Royong")
+    create_settings_category(KATEGORI_ADAT, "Traditional Rules", "Adat")
+    create_settings_category(KATEGORI_BAHASA, "Language", "Bahasa")
+    create_settings_category(KATEGORI_WAKTU, "Time", "Waktu")
+    create_settings_category(KATEGORI_PRIVASI, "Privacy", "Privasi")
+    create_settings_category(KATEGORI_AKSESIBILITAS, "Accessibility", "Aksesibilitas")
+    create_settings_category(KATEGORI_SISTEM, "System", "Sistem")
+}
+
+// Register default settings
+fungsi register_default_settings() -> void {
+    // General settings
+    register_setting("language", "Language", "Bahasa", TYPE_ENUM, KATEGORI_BAHASA)
+    register_setting("timezone", "Timezone", "Zona Waktu", TYPE_ENUM, KATEGORI_WAKTU)
+    register_setting("date_format", "Date Format", "Format Tanggal", TYPE_ENUM, KATEGORI_WAKTU)
+    
+    // Display settings
+    register_setting("theme", "Theme", "Tema", TYPE_CULTURAL_THEME, KATEGORI_TAMPILAN)
+    register_setting("brightness", "Brightness", "Kecerahan", TYPE_INTEGER, KATEGORI_TAMPILAN)
+    register_setting("wallpaper", "Wallpaper", "Latar Belakang", TYPE_STRING, KATEGORI_TAMPILAN)
+    register_setting("batik_backgrounds", "Batik Backgrounds", "Latar Batik", TYPE_BOOLEAN, KATEGORI_BUDAYA)
+    
+    // Sound settings
+    register_setting("master_volume", "Master Volume", "Volume Utama", TYPE_INTEGER, KATEGORI_SUARA)
+    register_setting("gamelan_sounds", "Gamelan Sounds", "Suara Gamelan", TYPE_BOOLEAN, KATEGORI_BUDAYA)
+    register_setting("notification_sound", "Notification Sound", "Suara Notifikasi", TYPE_STRING, KATEGORI_SUARA)
+    
+    // Cultural settings
+    register_setting("cultural_mode", "Cultural Mode", "Mode Budaya", TYPE_BOOLEAN, KATEGORI_BUDAYA)
+    register_setting("wayang_animations", "Wayang Animations", "Animasi Wayang", TYPE_BOOLEAN, KATEGORI_BUDAYA)
+    register_setting("traditional_calendar", "Traditional Calendar", "Kalender Tradisional", TYPE_BOOLEAN, KATEGORI_BUDAYA)
+    register_setting("cultural_theme", "Cultural Theme", "Tema Budaya", TYPE_CULTURAL_THEME, KATEGORI_BUDAYA)
+    
+    // Spiritual settings
+    register_setting("spiritual_protection", "Spiritual Protection", "Perlindungan Spiritual", TYPE_BOOLEAN, KATEGORI_SPIRITUAL)
+    register_setting("prayer_reminders", "Prayer Reminders", "Pengingat Sholat", TYPE_BOOLEAN, KATEGORI_SPIRITUAL)
+    register_setting("spiritual_guidance", "Spiritual Guidance", "Bimbingan Spiritual", TYPE_BOOLEAN, KATEGORI_SPIRITUAL)
+    
+    // Gotong royong settings
+    register_setting("gotong_royong_enabled", "Enable Gotong Royong", "Aktifkan Gotong Royong", TYPE_BOOLEAN, KATEGORI_GOTONG_ROYONG)
+    register_setting("community_sharing", "Community Sharing", "Berbagi Komunitas", TYPE_BOOLEAN, KATEGORI_GOTONG_ROYONG)
+    register_setting("cooperation_level", "Cooperation Level", "Tingkat Kerjasama", TYPE_INTEGER, KATEGORI_GOTONG_ROYONG)
+    
+    // Security settings
+    register_setting("adat_access_control", "Adat Access Control", "Kontrol Akses Adat", TYPE_BOOLEAN, KATEGORI_KEAMANAN)
+    register_setting("spiritual_authentication", "Spiritual Authentication", "Autentikasi Spiritual", TYPE_BOOLEAN, KATEGORI_KEAMANAN)
+    register_setting("traditional_role", "Traditional Role", "Peran Tradisional", TYPE_TRADITIONAL_ROLE, KATEGORI_ADAT)
+    
+    // Network settings
+    register_setting("wifi_enabled", "WiFi Enabled", "WiFi Aktif", TYPE_BOOLEAN, KATEGORI_JARINGAN)
+    register_setting("gotong_royong_network", "Gotong Royong Network", "Jaringan Gotong Royong", TYPE_BOOLEAN, KATEGORI_JARINGAN)
+    register_setting("cultural_protocols", "Cultural Protocols", "Protokol Budaya", TYPE_BOOLEAN, KATEGORI_JARINGAN)
+    
+    // System settings
+    register_setting("auto_update", "Auto Update", "Pembaruan Otomatis", TYPE_BOOLEAN, KATEGORI_SISTEM)
+    register_setting("cultural_validation", "Cultural Validation", "Validasi Budaya", TYPE_BOOLEAN, KATEGORI_SISTEM)
+    register_setting("system_ceremonies", "System Ceremonies", "Upacara Sistem", TYPE_BOOLEAN, KATEGORI_SISTEM)
+}
+
+// Create settings category
+fungsi create_settings_category(category: SettingsCategory, name: string, traditional_name: string) -> int {
+    if (g_settings.category_count >= MAX_SETTINGS_CATEGORIES) {
+        return -1
+    }
+    
+    var cat = &g_settings.categories[g_settings.category_count]
+    memset(cat, 0, sizeof(SettingsCategory_Info))
+    
+    cat->category = category
+    strncpy(cat->category_name, name, 63)
+    strncpy(cat->traditional_name, traditional_name, 63)
+    
+    // Set cultural attributes
+    set_category_cultural_attributes(cat, category)
+    
+    g_settings.category_count++
+    
+    return 0
+}
+
+// Render settings UI
+fungsi render_settings_ui() -> void {
+    // Clear screen
+    clear_screen(WARNA_HITAM)
+    
+    // Render header
+    render_settings_header()
+    
+    // Render category list
+    render_category_list()
+    
+    // Render settings list for current category
+    render_settings_list(g_settings.current_category)
+    
+    // Render setting editor if in edit mode
+    if (g_settings.edit_mode && g_settings.selected_setting) {
+        render_setting_editor(g_settings.selected_setting)
+    }
+    
+    // Render footer
+    render_settings_footer()
+    
+    // Update display
+    update_display()
+}
+
+// Helper functions
+fungsi set_setting_cultural_attributes(setting: SettingInfo*, category: SettingsCategory) -> void {
+    switch (category) {
+        case KATEGORI_BUDAYA:
+            strcpy(setting->cultural_meaning, "Pengaturan untuk melestarikan budaya Indonesia")
+            strcpy(setting->origin_region, "Nusantara")
+            setting->required_role = ROLE_RAKYAT
+            break
+        case KATEGORI_SPIRITUAL:
+            strcpy(setting->cultural_meaning, "Pengaturan spiritual dan rohani")
+            setting->spiritual_setting = true
+            setting->required_role = ROLE_SPIRITUAL_LEADER
+            setting->requires_ceremony = true
+            break
+        case KATEGORI_ADAT:
+            strcpy(setting->cultural_meaning, "Pengaturan adat dan tradisi")
+            setting->required_role = ROLE_TETUA_ADAT
+            setting->requires_ceremony = true
+            break
+        default:
+            strcpy(setting->cultural_meaning, "Pengaturan umum sistem")
+            setting->required_role = ROLE_RAKYAT
+            break
+    }
+}
+
+fungsi set_category_cultural_attributes(cat: SettingsCategory_Info*, category: SettingsCategory) -> void {
+    switch (category) {
+        case KATEGORI_BUDAYA:
+            cat->theme = THEME_KAWUNG
+            cat->primary_color = WARNA_EMAS
+            cat->cultural_category = true
+            strcpy(cat->description, "Pengaturan budaya dan tradisi Indonesia")
+            break
+        case KATEGORI_SPIRITUAL:
+            cat->theme = THEME_PARANG
+            cat->primary_color = WARNA_PUTIH
+            cat->spiritual_category = true
+            cat->required_role = ROLE_SPIRITUAL_LEADER
+            strcpy(cat->description, "Pengaturan spiritual dan keagamaan")
+            break
+        case KATEGORI_GOTONG_ROYONG:
+            cat->theme = THEME_SEKAR_JAGAD
+            cat->primary_color = WARNA_HIJAU
+            cat->cultural_category = true
+            strcpy(cat->description, "Pengaturan gotong royong dan kerjasama")
+            break
+        default:
+            cat->theme = THEME_DEFAULT
+            cat->primary_color = WARNA_BIRU
+            strcpy(cat->description, "Pengaturan umum")
+            break
+    }
+}
+
+// Placeholder implementations
+fungsi find_setting_unlocked(setting_id: string) -> SettingInfo* { return null; }
+fungsi add_setting_to_category(category: SettingsCategory, setting: SettingInfo*) -> void { }
+fungsi init_settings_ui() -> int { return 0; }
+fungsi show_settings_welcome() -> void { }
+fungsi handle_settings_input() -> void { }
+fungsi handle_settings_background_tasks() -> void { }
+fungsi cleanup_settings() -> void { }
+fungsi render_settings_header() -> void { }
+fungsi render_settings_footer() -> void { }

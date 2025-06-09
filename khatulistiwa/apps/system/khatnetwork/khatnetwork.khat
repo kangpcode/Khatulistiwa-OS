@@ -1,0 +1,577 @@
+/*
+ * ============================================================================
+ * khatnetwork.khat - Manajemen Jaringan Khatulistiwa OS dengan Tema Jaring Nelayan
+ * Copyright (c) 2025 Dhafa Nazula Permadi & Team BIGCode By Cv Bintang Gumilang Group
+ * ============================================================================
+ * 
+ * Aplikasi manajemen jaringan lengkap dengan fitur:
+ * 1. WiFi management dengan visualisasi jaring nelayan
+ * 2. Bluetooth pairing dengan tema sambungan tradisional
+ * 3. VPN configuration dengan metafora terowongan
+ * 4. Network monitoring dengan ornamen batik
+ * 5. Diagnostik jaringan dengan tools tradisional
+ */
+
+import "khatui/runtime.khat"
+import "khatcore/system.khat"
+import "khatcore/network.khat"
+import "khatsecurity/encryption.khat"
+import "khatui/cultural.khat"
+import "khatui/animations.khat"
+
+// Konstanta aplikasi
+konstan NETWORK_VERSION = "1.0.0"
+konstan WINDOW_WIDTH = 1100
+konstan WINDOW_HEIGHT = 750
+konstan SIDEBAR_WIDTH = 280
+konstan HEADER_HEIGHT = 70
+
+// Tipe jaringan
+enum NetworkType {
+    WIFI = 0,
+    ETHERNET = 1,
+    BLUETOOTH = 2,
+    VPN = 3,
+    HOTSPOT = 4
+}
+
+// Status koneksi
+enum ConnectionStatus {
+    CONNECTED = 0,
+    CONNECTING = 1,
+    DISCONNECTED = 2,
+    LIMITED = 3,
+    ERROR = 4
+}
+
+// Level keamanan
+enum SecurityLevel {
+    OPEN = 0,
+    WEP = 1,
+    WPA = 2,
+    WPA2 = 3,
+    WPA3 = 4
+}
+
+// Struktur jaringan WiFi
+struct WiFiNetwork {
+    ssid: string,
+    bssid: string,
+    security: SecurityLevel,
+    signal_strength: int,
+    frequency: int,
+    channel: int,
+    is_saved: bool,
+    is_connected: bool,
+    cultural_icon: string,
+    last_connected: time_t
+}
+
+// Struktur perangkat Bluetooth
+struct BluetoothDevice {
+    name: string,
+    address: string,
+    device_type: string,
+    is_paired: bool,
+    is_connected: bool,
+    signal_strength: int,
+    cultural_icon: string,
+    last_seen: time_t
+}
+
+// Struktur koneksi VPN
+struct VPNConnection {
+    name: string,
+    server: string,
+    protocol: string,
+    username: string,
+    password: string,
+    is_connected: bool,
+    auto_connect: bool,
+    cultural_icon: string,
+    created_date: time_t
+}
+
+// State aplikasi
+struct NetworkState {
+    current_tab: int,
+    wifi_networks: WiFiNetwork[],
+    wifi_count: int,
+    bluetooth_devices: BluetoothDevice[],
+    bluetooth_count: int,
+    vpn_connections: VPNConnection[],
+    vpn_count: int,
+    current_connection: ConnectionStatus,
+    wifi_enabled: bool,
+    bluetooth_enabled: bool,
+    vpn_enabled: bool,
+    hotspot_enabled: bool,
+    cultural_mode: bool,
+    batik_theme: string,
+    main_window: int,
+    scanning: bool,
+    connection_speed: float,
+    data_usage: size_t
+}
+
+// Global state
+var network: NetworkState
+
+// Inisialisasi aplikasi
+fungsi network_init() -> int {
+    khat_log("[NETWORK] Menginisialisasi KhatNetwork v" + NETWORK_VERSION)
+    
+    // Setup state awal
+    network.current_tab = 0
+    network.wifi_count = 0
+    network.bluetooth_count = 0
+    network.vpn_count = 0
+    network.current_connection = DISCONNECTED
+    network.wifi_enabled = true
+    network.bluetooth_enabled = true
+    network.vpn_enabled = false
+    network.hotspot_enabled = false
+    network.cultural_mode = true
+    network.batik_theme = "jlamprang"
+    network.scanning = false
+    network.connection_speed = 0.0
+    network.data_usage = 0
+    
+    // Buat window utama
+    if (create_main_window() != 0) {
+        khat_log("[ERROR] Gagal membuat window utama")
+        return -1
+    }
+    
+    // Initialize network subsystems
+    if (init_network_subsystems() != 0) {
+        khat_log("[ERROR] Gagal menginisialisasi subsistem jaringan")
+        return -1
+    }
+    
+    // Scan jaringan yang tersedia
+    start_network_scan()
+    
+    // Setup event handlers
+    setup_network_events()
+    
+    khat_log("[NETWORK] KhatNetwork berhasil diinisialisasi!")
+    return 0
+}
+
+// Buat window utama
+fungsi create_main_window() -> int {
+    khat_log("[NETWORK] Membuat window utama...")
+    
+    network.main_window = khatui_create_window(
+        "KhatNetwork - Jaringan Nusantara",
+        (khat_screen_width() - WINDOW_WIDTH) / 2,
+        (khat_screen_height() - WINDOW_HEIGHT) / 2,
+        WINDOW_WIDTH, WINDOW_HEIGHT,
+        khat_get_current_app_id()
+    )
+    
+    if (network.main_window < 0) {
+        return -1
+    }
+    
+    // Set window properties
+    khatui_set_window_cultural_theme(network.main_window, network.batik_theme)
+    khatui_set_window_resizable(network.main_window, true)
+    khatui_set_window_min_size(network.main_window, 900, 600)
+    
+    // Render window
+    render_network_window()
+    
+    return 0
+}
+
+// Render window jaringan
+fungsi render_network_window() -> void {
+    // Clear window
+    khatui_clear_window(network.main_window)
+    
+    // Background dengan motif jaring nelayan
+    draw_fishing_net_background()
+    
+    // Header dengan status koneksi
+    draw_network_header()
+    
+    // Sidebar dengan tab navigasi
+    draw_network_sidebar()
+    
+    // Content area berdasarkan tab aktif
+    draw_network_content()
+    
+    // Status bar dengan info koneksi
+    draw_network_statusbar()
+}
+
+// Gambar background dengan motif jaring nelayan
+fungsi draw_fishing_net_background() -> void {
+    var bg_color = get_cultural_color("network_bg")
+    var net_color = get_cultural_color("fishing_net")
+    
+    // Background dasar
+    khatui_fill_rect(network.main_window, 0, 0, 
+                     WINDOW_WIDTH, WINDOW_HEIGHT, bg_color)
+    
+    // Overlay motif jaring nelayan halus
+    khatui_draw_fishing_net_pattern(network.main_window,
+                                    0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
+                                    net_color, 0.05)
+    
+    // Border ornamen jaringan
+    khatui_draw_cultural_border(network.main_window,
+                                0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
+                                "ornamen_jaringan")
+}
+
+// Gambar header dengan status koneksi
+fungsi draw_network_header() -> void {
+    var header_color = get_cultural_color("network_header_bg")
+    
+    // Background header dengan gradien
+    khatui_draw_gradient_rect(network.main_window, 0, 0, 
+                              WINDOW_WIDTH, HEADER_HEIGHT,
+                              header_color, get_cultural_color("network_header_gradient"))
+    
+    // Logo jaringan dengan jaring nelayan
+    khatui_draw_cultural_icon(network.main_window, 20, 15, 40, 40,
+                              "jaring_nelayan", get_cultural_color("header_icon"))
+    
+    // Judul dengan font tradisional
+    khatui_draw_text_cultural(network.main_window, 75, 20,
+                              "KhatNetwork", get_cultural_color("network_title"),
+                              "network_title")
+    
+    khatui_draw_text_cultural(network.main_window, 75, 40,
+                              "Jaringan Nusantara", get_cultural_color("network_subtitle"),
+                              "network_subtitle")
+    
+    // Status koneksi utama
+    draw_main_connection_status(400, 15, 300, 40)
+    
+    // Tools jaringan
+    draw_network_tools(750, 15, 300, 40)
+}
+
+// Gambar status koneksi utama
+fungsi draw_main_connection_status(x: int, y: int, width: int, height: int) -> void {
+    var status_color = get_connection_status_color(network.current_connection)
+    var status_icon = get_connection_status_icon(network.current_connection)
+    var status_text = get_connection_status_text(network.current_connection)
+    
+    // Background status
+    khatui_draw_rounded_rect(network.main_window, x, y, width, height, 8,
+                             get_cultural_color("status_bg"))
+    
+    // Icon status dengan animasi
+    khatui_draw_cultural_icon_animated(network.main_window, x + 10, y + 5, 30, 30,
+                                       status_icon, status_color, "pulse")
+    
+    // Text status
+    khatui_draw_text_cultural(network.main_window, x + 50, y + 8,
+                              status_text, status_color, "status_text")
+    
+    // Info kecepatan
+    if (network.current_connection == CONNECTED) {
+        var speed_text = format_speed(network.connection_speed)
+        khatui_draw_text_cultural(network.main_window, x + 50, y + 25,
+                                  speed_text, get_cultural_color("speed_text"),
+                                  "speed_info")
+    }
+}
+
+// Gambar sidebar navigasi
+fungsi draw_network_sidebar() -> void {
+    var sidebar_x = 0
+    var sidebar_y = HEADER_HEIGHT
+    var sidebar_height = WINDOW_HEIGHT - HEADER_HEIGHT - 30
+    var sidebar_bg = get_cultural_color("sidebar_bg")
+    
+    // Background sidebar
+    khatui_fill_rect(network.main_window, sidebar_x, sidebar_y,
+                     SIDEBAR_WIDTH, sidebar_height, sidebar_bg)
+    
+    // Header sidebar
+    khatui_draw_text_cultural(network.main_window, sidebar_x + 20, sidebar_y + 20,
+                              "Jenis Jaringan", get_cultural_color("sidebar_header"),
+                              "sidebar_header")
+    
+    // Tab jaringan dengan icon budaya
+    draw_network_tabs(sidebar_x, sidebar_y + 50, SIDEBAR_WIDTH, sidebar_height - 70)
+}
+
+// Gambar tab jaringan
+fungsi draw_network_tabs(x: int, y: int, width: int, height: int) -> void {
+    var tabs = [
+        {0, "WiFi", "jaring_udara"},
+        {1, "Ethernet", "jaring_kabel"},
+        {2, "Bluetooth", "sambung_dekat"},
+        {3, "VPN", "terowongan_rahasia"},
+        {4, "Hotspot", "titik_berbagi"}
+    ]
+    
+    var tab_height = 60
+    var current_y = y
+    
+    for (var i = 0; i < tabs.length; i++) {
+        var tab = tabs[i]
+        var is_selected = (tab.id == network.current_tab)
+        
+        // Background tab
+        if (is_selected) {
+            var selected_bg = get_cultural_color("tab_selected")
+            khatui_fill_rect(network.main_window, x + 10, current_y,
+                             width - 20, tab_height, selected_bg)
+        }
+        
+        // Icon budaya
+        khatui_draw_cultural_icon(network.main_window, x + 20, current_y + 15,
+                                  30, 30, tab.cultural_icon,
+                                  get_cultural_color("tab_icon"))
+        
+        // Nama tab
+        var text_color = is_selected ?
+                         get_cultural_color("tab_selected_text") :
+                         get_cultural_color("tab_text")
+        
+        khatui_draw_text_cultural(network.main_window, x + 60, current_y + 25,
+                                  tab.name, text_color, "tab_item")
+        
+        // Status indicator
+        draw_network_type_status(x + width - 30, current_y + 25, 15, 15, tab.id)
+        
+        // Click handler
+        khatui_add_click_handler(network.main_window, x + 10, current_y,
+                                width - 20, tab_height, "tab_click", i)
+        
+        current_y += tab_height + 10
+    }
+}
+
+// Gambar content berdasarkan tab aktif
+fungsi draw_network_content() -> void {
+    var content_x = SIDEBAR_WIDTH + 20
+    var content_y = HEADER_HEIGHT + 20
+    var content_width = WINDOW_WIDTH - SIDEBAR_WIDTH - 40
+    var content_height = WINDOW_HEIGHT - content_y - 50
+    
+    switch (network.current_tab) {
+        case 0: // WiFi
+            draw_wifi_content(content_x, content_y, content_width, content_height)
+            break
+        case 1: // Ethernet
+            draw_ethernet_content(content_x, content_y, content_width, content_height)
+            break
+        case 2: // Bluetooth
+            draw_bluetooth_content(content_x, content_y, content_width, content_height)
+            break
+        case 3: // VPN
+            draw_vpn_content(content_x, content_y, content_width, content_height)
+            break
+        case 4: // Hotspot
+            draw_hotspot_content(content_x, content_y, content_width, content_height)
+            break
+    }
+}
+
+// Gambar konten WiFi
+fungsi draw_wifi_content(x: int, y: int, width: int, height: int) -> void {
+    // Header WiFi
+    draw_wifi_header(x, y, width, 50)
+    
+    // Daftar jaringan WiFi
+    draw_wifi_networks_list(x, y + 60, width, height - 60)
+}
+
+// Gambar header WiFi
+fungsi draw_wifi_header(x: int, y: int, width: int, height: int) -> void {
+    // Judul
+    khatui_draw_text_cultural(network.main_window, x, y,
+                              "Jaringan WiFi Tersedia", get_cultural_color("content_header"),
+                              "content_header")
+    
+    // Toggle WiFi
+    draw_wifi_toggle(x + 300, y + 5, 100, 30)
+    
+    // Tombol scan
+    draw_scan_button(x + 420, y + 5, 80, 30)
+    
+    // Tombol tambah jaringan
+    draw_add_network_button(x + 520, y + 5, 120, 30)
+}
+
+// Gambar daftar jaringan WiFi
+fungsi draw_wifi_networks_list(x: int, y: int, width: int, height: int) -> void {
+    if (!network.wifi_enabled) {
+        draw_wifi_disabled_message(x, y, width, height)
+        return
+    }
+    
+    if (network.scanning) {
+        draw_scanning_animation(x, y, width, height)
+        return
+    }
+    
+    var item_height = 70
+    var current_y = y
+    
+    for (var i = 0; i < network.wifi_count && current_y + item_height <= y + height; i++) {
+        var wifi = &network.wifi_networks[i]
+        
+        draw_wifi_network_item(x, current_y, width, item_height, wifi)
+        
+        current_y += item_height + 10
+    }
+    
+    if (network.wifi_count == 0) {
+        draw_no_networks_message(x, y, width, height)
+    }
+}
+
+// Gambar item jaringan WiFi
+fungsi draw_wifi_network_item(x: int, y: int, width: int, height: int, wifi: WiFiNetwork*) -> void {
+    var item_bg = wifi->is_connected ?
+                  get_cultural_color("wifi_connected_bg") :
+                  get_cultural_color("wifi_item_bg")
+    
+    // Background item
+    khatui_draw_rounded_rect(network.main_window, x, y, width, height, 8, item_bg)
+    
+    // Icon keamanan dengan tema tradisional
+    var security_icon = get_security_cultural_icon(wifi->security)
+    khatui_draw_cultural_icon(network.main_window, x + 15, y + 15, 40, 40,
+                              security_icon, get_cultural_color("security_icon"))
+    
+    // SSID
+    khatui_draw_text_cultural(network.main_window, x + 70, y + 15,
+                              wifi->ssid, get_cultural_color("wifi_ssid"),
+                              "wifi_ssid")
+    
+    // Status koneksi
+    if (wifi->is_connected) {
+        khatui_draw_text_cultural(network.main_window, x + 70, y + 35,
+                                  "Tersambung", get_cultural_color("wifi_connected"),
+                                  "wifi_status")
+    } else if (wifi->is_saved) {
+        khatui_draw_text_cultural(network.main_window, x + 70, y + 35,
+                                  "Tersimpan", get_cultural_color("wifi_saved"),
+                                  "wifi_status")
+    }
+    
+    // Signal strength dengan ornamen
+    draw_signal_strength_traditional(x + width - 100, y + 15, 80, 40, wifi->signal_strength)
+    
+    // Click handler
+    khatui_add_click_handler(network.main_window, x, y, width, height,
+                            "wifi_click", i)
+}
+
+// Scan jaringan WiFi
+fungsi start_network_scan() -> void {
+    if (!network.wifi_enabled) {
+        return
+    }
+    
+    network.scanning = true
+    khat_log("[NETWORK] Memulai scan jaringan WiFi...")
+    
+    // Render ulang untuk menampilkan animasi scanning
+    render_network_window()
+    
+    // Simulate network scan (dalam implementasi nyata, ini akan memanggil API sistem)
+    simulate_wifi_scan()
+    
+    network.scanning = false
+    
+    // Render ulang untuk menampilkan hasil
+    render_network_window()
+    
+    khat_log("[NETWORK] Scan jaringan selesai, ditemukan " + khat_int_to_string(network.wifi_count) + " jaringan")
+}
+
+// Simulasi scan WiFi
+fungsi simulate_wifi_scan() -> void {
+    // Reset daftar
+    network.wifi_count = 0
+    
+    // Tambah beberapa jaringan contoh
+    add_wifi_network("WiFi-Rumah", "aa:bb:cc:dd:ee:ff", WPA2, 85, 2437, 6, true, false)
+    add_wifi_network("Indihome-Tetangga", "11:22:33:44:55:66", WPA2, 65, 2462, 11, false, false)
+    add_wifi_network("Warung-WiFi", "99:88:77:66:55:44", WPA, 45, 2412, 1, false, false)
+    add_wifi_network("Hotspot-Gratis", "aa:aa:aa:aa:aa:aa", OPEN, 30, 2437, 6, false, false)
+}
+
+// Tambah jaringan WiFi ke daftar
+fungsi add_wifi_network(ssid: string, bssid: string, security: SecurityLevel,
+                       signal: int, freq: int, channel: int,
+                       saved: bool, connected: bool) -> void {
+    if (network.wifi_count >= MAX_WIFI_NETWORKS) {
+        return
+    }
+    
+    var wifi: WiFiNetwork
+    wifi.ssid = ssid
+    wifi.bssid = bssid
+    wifi.security = security
+    wifi.signal_strength = signal
+    wifi.frequency = freq
+    wifi.channel = channel
+    wifi.is_saved = saved
+    wifi.is_connected = connected
+    wifi.cultural_icon = get_wifi_cultural_icon(security, signal)
+    wifi.last_connected = connected ? khat_get_current_time() : 0
+    
+    network.wifi_networks[network.wifi_count] = wifi
+    network.wifi_count++
+}
+
+// API untuk aplikasi lain
+fungsi khatnetwork_connect_wifi(ssid: string, password: string) -> int {
+    khat_log("[NETWORK] Menghubungkan ke WiFi: " + ssid)
+    
+    // Cari jaringan dalam daftar
+    for (var i = 0; i < network.wifi_count; i++) {
+        if (network.wifi_networks[i].ssid == ssid) {
+            // Simulate connection
+            network.wifi_networks[i].is_connected = true
+            network.current_connection = CONNECTED
+            
+            // Update UI
+            render_network_window()
+            
+            return 0
+        }
+    }
+    
+    return -1
+}
+
+// Entry point aplikasi
+fungsi main() -> int {
+    if (network_init() != 0) {
+        return -1
+    }
+    
+    // Main event loop
+    while (true) {
+        var event = khatui_get_next_event()
+        if (event.type == "quit") {
+            break
+        }
+        
+        handle_network_event(event.type, event.data)
+        
+        // Update status koneksi
+        update_connection_status()
+        
+        khat_sleep(16)
+    }
+    
+    // Cleanup
+    network_cleanup()
+    
+    return 0
+}

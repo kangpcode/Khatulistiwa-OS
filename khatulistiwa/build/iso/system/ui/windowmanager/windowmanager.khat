@@ -1,0 +1,576 @@
+/*
+ * ============================================================================
+ * windowmanager.khat - Engine Pengelola Jendela Multitasking Khatulistiwa OS
+ * Copyright (c) 2025 Dhafa Nazula Permadi & Team BIGCode By Cv Bintang Gumilang Group
+ * ============================================================================
+ * 
+ * WindowManager modern dengan fitur:
+ * 1. Split-screen mode (desktop & tablet) dengan tema wayang
+ * 2. Floating overlay mode (mobile & desktop) dengan animasi garuda
+ * 3. Drag, resize, close dengan gesture budaya Indonesia
+ * 4. Context switching dengan ornamen batik
+ * 5. Multi-display support dengan konsep panggung tradisional
+ */
+
+import "khatcore/system.khat"
+import "khatcore/memory.khat"
+import "khatcore/process.khat"
+import "khatui/runtime.khat"
+import "khatui/cultural.khat"
+import "khatui/animations.khat"
+
+// Konstanta WindowManager
+konstan WM_VERSION = "1.0.0"
+konstan MAX_WINDOWS = 64
+konstan MAX_WORKSPACES = 8
+konstan WINDOW_BORDER_SIZE = 4
+konstan TITLEBAR_HEIGHT = 32
+konstan TASKBAR_HEIGHT = 48
+
+// Mode tampilan
+enum DisplayMode {
+    SINGLE = 0,        // Satu aplikasi penuh
+    SPLIT_HORIZONTAL = 1,  // Split kiri-kanan
+    SPLIT_VERTICAL = 2,    // Split atas-bawah
+    OVERLAY = 3,       // Aplikasi mengambang
+    GRID = 4,          // Grid 2x2
+    STACK = 5          // Stack dengan tab
+}
+
+// Status jendela
+enum WindowState {
+    NORMAL = 0,
+    MINIMIZED = 1,
+    MAXIMIZED = 2,
+    FULLSCREEN = 3,
+    FLOATING = 4,
+    SNAPPED_LEFT = 5,
+    SNAPPED_RIGHT = 6,
+    SNAPPED_TOP = 7,
+    SNAPPED_BOTTOM = 8
+}
+
+// Tipe jendela
+enum WindowType {
+    APPLICATION = 0,
+    DIALOG = 1,
+    POPUP = 2,
+    NOTIFICATION = 3,
+    OVERLAY = 4,
+    SYSTEM = 5
+}
+
+// Struktur jendela
+struct Window {
+    id: int,
+    app_id: int,
+    title: string,
+    cultural_title: string,
+    x: int,
+    y: int,
+    width: int,
+    height: int,
+    min_width: int,
+    min_height: int,
+    max_width: int,
+    max_height: int,
+    state: WindowState,
+    type: WindowType,
+    is_visible: bool,
+    is_focused: bool,
+    is_resizable: bool,
+    is_movable: bool,
+    has_titlebar: bool,
+    has_border: bool,
+    z_order: int,
+    workspace_id: int,
+    parent_window: int,
+    child_windows: int[],
+    child_count: int,
+    cultural_theme: string,
+    batik_pattern: string,
+    animation_state: int,
+    last_update: time_t
+}
+
+// Workspace (ruang kerja)
+struct Workspace {
+    id: int,
+    name: string,
+    cultural_name: string,
+    display_mode: DisplayMode,
+    windows: int[],
+    window_count: int,
+    active_window: int,
+    background_theme: string,
+    cultural_ornament: string,
+    is_active: bool
+}
+
+// State WindowManager
+struct WindowManagerState {
+    windows: Window[],
+    window_count: int,
+    workspaces: Workspace[],
+    workspace_count: int,
+    active_workspace: int,
+    focused_window: int,
+    screen_width: int,
+    screen_height: int,
+    taskbar_visible: bool,
+    cultural_mode: bool,
+    animation_enabled: bool,
+    gesture_enabled: bool,
+    snap_threshold: int,
+    resize_border: int,
+    drag_window: int,
+    resize_window: int,
+    drag_start_x: int,
+    drag_start_y: int,
+    last_gesture_time: time_t
+}
+
+// Global state
+var wm: WindowManagerState
+
+// Inisialisasi WindowManager
+fungsi wm_init() -> int {
+    khat_log("[WM] Menginisialisasi WindowManager v" + WM_VERSION)
+    
+    // Setup state awal
+    wm.window_count = 0
+    wm.workspace_count = 1
+    wm.active_workspace = 0
+    wm.focused_window = -1
+    wm.screen_width = khat_screen_width()
+    wm.screen_height = khat_screen_height()
+    wm.taskbar_visible = true
+    wm.cultural_mode = true
+    wm.animation_enabled = true
+    wm.gesture_enabled = true
+    wm.snap_threshold = 20
+    wm.resize_border = 8
+    wm.drag_window = -1
+    wm.resize_window = -1
+    
+    // Buat workspace default
+    create_default_workspace()
+    
+    // Setup event handlers
+    setup_window_events()
+    
+    // Initialize cultural themes
+    init_cultural_window_themes()
+    
+    khat_log("[WM] WindowManager berhasil diinisialisasi!")
+    return 0
+}
+
+// Buat workspace default
+fungsi create_default_workspace() -> void {
+    var workspace: Workspace
+    workspace.id = 0
+    workspace.name = "Desktop"
+    workspace.cultural_name = "Panggung Utama"
+    workspace.display_mode = SINGLE
+    workspace.window_count = 0
+    workspace.active_window = -1
+    workspace.background_theme = "batik_kawung"
+    workspace.cultural_ornament = "ornamen_panggung"
+    workspace.is_active = true
+    
+    wm.workspaces[0] = workspace
+}
+
+// Buat jendela baru
+fungsi wm_create_window(app_id: int, title: string, x: int, y: int, 
+                       width: int, height: int, type: WindowType) -> int {
+    if (wm.window_count >= MAX_WINDOWS) {
+        khat_log("[WM] Maximum windows reached")
+        return -1
+    }
+    
+    var window_id = wm.window_count
+    var window: Window
+    
+    // Setup window properties
+    window.id = window_id
+    window.app_id = app_id
+    window.title = title
+    window.cultural_title = translate_to_cultural(title)
+    window.x = x
+    window.y = y
+    window.width = width
+    window.height = height
+    window.min_width = 200
+    window.min_height = 150
+    window.max_width = wm.screen_width
+    window.max_height = wm.screen_height
+    window.state = NORMAL
+    window.type = type
+    window.is_visible = true
+    window.is_focused = false
+    window.is_resizable = true
+    window.is_movable = true
+    window.has_titlebar = (type == APPLICATION || type == DIALOG)
+    window.has_border = true
+    window.z_order = wm.window_count
+    window.workspace_id = wm.active_workspace
+    window.parent_window = -1
+    window.child_count = 0
+    window.cultural_theme = get_app_cultural_theme(app_id)
+    window.batik_pattern = get_app_batik_pattern(app_id)
+    window.animation_state = 0
+    window.last_update = khat_get_current_time()
+    
+    // Validasi posisi dan ukuran
+    validate_window_bounds(&window)
+    
+    // Tambah ke daftar windows
+    wm.windows[window_id] = window
+    wm.window_count++
+    
+    // Tambah ke workspace aktif
+    add_window_to_workspace(window_id, wm.active_workspace)
+    
+    // Focus window baru
+    wm_focus_window(window_id)
+    
+    // Animasi pembukaan dengan tema budaya
+    if (wm.animation_enabled) {
+        start_window_open_animation(window_id)
+    }
+    
+    khat_log("[WM] Window created: " + title + " (ID: " + khat_int_to_string(window_id) + ")")
+    return window_id
+}
+
+// Focus jendela
+fungsi wm_focus_window(window_id: int) -> int {
+    if (window_id < 0 || window_id >= wm.window_count) {
+        return -1
+    }
+    
+    // Unfocus window lama
+    if (wm.focused_window >= 0) {
+        wm.windows[wm.focused_window].is_focused = false
+        update_window_titlebar(wm.focused_window)
+    }
+    
+    // Focus window baru
+    wm.focused_window = window_id
+    wm.windows[window_id].is_focused = true
+    
+    // Bring to front
+    bring_window_to_front(window_id)
+    
+    // Update titlebar dengan ornamen fokus
+    update_window_titlebar(window_id)
+    
+    // Update workspace active window
+    wm.workspaces[wm.active_workspace].active_window = window_id
+    
+    // Notify aplikasi
+    notify_app_focus_change(wm.windows[window_id].app_id, true)
+    
+    return 0
+}
+
+// Pindah jendela
+fungsi wm_move_window(window_id: int, new_x: int, new_y: int) -> int {
+    if (window_id < 0 || window_id >= wm.window_count) {
+        return -1
+    }
+    
+    var window = &wm.windows[window_id]
+    
+    if (!window->is_movable) {
+        return -1
+    }
+    
+    // Validasi posisi baru
+    var validated_x = new_x
+    var validated_y = new_y
+    
+    // Snap to edges jika dekat
+    if (abs(validated_x) < wm.snap_threshold) {
+        validated_x = 0
+    }
+    if (abs(validated_y) < wm.snap_threshold) {
+        validated_y = 0
+    }
+    if (abs(validated_x + window->width - wm.screen_width) < wm.snap_threshold) {
+        validated_x = wm.screen_width - window->width
+    }
+    if (abs(validated_y + window->height - wm.screen_height) < wm.snap_threshold) {
+        validated_y = wm.screen_height - window->height
+    }
+    
+    // Update posisi
+    window->x = validated_x
+    window->y = validated_y
+    window->last_update = khat_get_current_time()
+    
+    // Redraw window
+    redraw_window(window_id)
+    
+    return 0
+}
+
+// Resize jendela
+fungsi wm_resize_window(window_id: int, new_width: int, new_height: int) -> int {
+    if (window_id < 0 || window_id >= wm.window_count) {
+        return -1
+    }
+    
+    var window = &wm.windows[window_id]
+    
+    if (!window->is_resizable) {
+        return -1
+    }
+    
+    // Validasi ukuran
+    var validated_width = new_width
+    var validated_height = new_height
+    
+    if (validated_width < window->min_width) {
+        validated_width = window->min_width
+    }
+    if (validated_height < window->min_height) {
+        validated_height = window->min_height
+    }
+    if (validated_width > window->max_width) {
+        validated_width = window->max_width
+    }
+    if (validated_height > window->max_height) {
+        validated_height = window->max_height
+    }
+    
+    // Update ukuran
+    window->width = validated_width
+    window->height = validated_height
+    window->last_update = khat_get_current_time()
+    
+    // Notify aplikasi tentang resize
+    notify_app_resize(window->app_id, validated_width, validated_height)
+    
+    // Redraw window
+    redraw_window(window_id)
+    
+    return 0
+}
+
+// Set mode split-screen
+fungsi wm_set_split_mode(mode: DisplayMode) -> int {
+    var workspace = &wm.workspaces[wm.active_workspace]
+    
+    if (workspace->window_count < 2 && mode != SINGLE) {
+        khat_log("[WM] Tidak cukup window untuk split mode")
+        return -1
+    }
+    
+    workspace->display_mode = mode
+    
+    // Arrange windows berdasarkan mode
+    switch (mode) {
+        case SINGLE:
+            arrange_single_mode()
+            break
+        case SPLIT_HORIZONTAL:
+            arrange_split_horizontal()
+            break
+        case SPLIT_VERTICAL:
+            arrange_split_vertical()
+            break
+        case OVERLAY:
+            arrange_overlay_mode()
+            break
+        case GRID:
+            arrange_grid_mode()
+            break
+        case STACK:
+            arrange_stack_mode()
+            break
+    }
+    
+    // Animasi transisi dengan tema budaya
+    if (wm.animation_enabled) {
+        start_layout_transition_animation(mode)
+    }
+    
+    khat_log("[WM] Split mode changed to: " + khat_int_to_string(mode))
+    return 0
+}
+
+// Arrange split horizontal (kiri-kanan)
+fungsi arrange_split_horizontal() -> void {
+    var workspace = &wm.workspaces[wm.active_workspace]
+    var available_width = wm.screen_width
+    var available_height = wm.screen_height - (wm.taskbar_visible ? TASKBAR_HEIGHT : 0)
+    
+    if (workspace->window_count >= 2) {
+        var left_window = workspace->windows[0]
+        var right_window = workspace->windows[1]
+        
+        // Window kiri
+        wm_move_window(left_window, 0, 0)
+        wm_resize_window(left_window, available_width / 2 - 2, available_height)
+        
+        // Window kanan
+        wm_move_window(right_window, available_width / 2 + 2, 0)
+        wm_resize_window(right_window, available_width / 2 - 2, available_height)
+        
+        // Hide windows lainnya
+        for (var i = 2; i < workspace->window_count; i++) {
+            wm.windows[workspace->windows[i]].is_visible = false
+        }
+    }
+}
+
+// Arrange split vertical (atas-bawah)
+fungsi arrange_split_vertical() -> void {
+    var workspace = &wm.workspaces[wm.active_workspace]
+    var available_width = wm.screen_width
+    var available_height = wm.screen_height - (wm.taskbar_visible ? TASKBAR_HEIGHT : 0)
+    
+    if (workspace->window_count >= 2) {
+        var top_window = workspace->windows[0]
+        var bottom_window = workspace->windows[1]
+        
+        // Window atas
+        wm_move_window(top_window, 0, 0)
+        wm_resize_window(top_window, available_width, available_height / 2 - 2)
+        
+        // Window bawah
+        wm_move_window(bottom_window, 0, available_height / 2 + 2)
+        wm_resize_window(bottom_window, available_width, available_height / 2 - 2)
+        
+        // Hide windows lainnya
+        for (var i = 2; i < workspace->window_count; i++) {
+            wm.windows[workspace->windows[i]].is_visible = false
+        }
+    }
+}
+
+// Handle gesture 3-jari untuk split
+fungsi wm_handle_three_finger_swipe(direction: string) -> void {
+    if (!wm.gesture_enabled) {
+        return
+    }
+    
+    var current_time = khat_get_current_time()
+    if (current_time - wm.last_gesture_time < 500) {
+        return  // Prevent gesture spam
+    }
+    
+    wm.last_gesture_time = current_time
+    
+    if (direction == "left" || direction == "right") {
+        wm_set_split_mode(SPLIT_HORIZONTAL)
+    } else if (direction == "up" || direction == "down") {
+        wm_set_split_mode(SPLIT_VERTICAL)
+    }
+    
+    // Play cultural gesture sound
+    play_cultural_gesture_sound(direction)
+}
+
+// Handle keyboard shortcut
+fungsi wm_handle_keyboard_shortcut(key: string, modifiers: int) -> void {
+    if (modifiers & KHAT_MOD_CTRL) {
+        switch (key) {
+            case "Left":
+                wm_snap_window_left(wm.focused_window)
+                break
+            case "Right":
+                wm_snap_window_right(wm.focused_window)
+                break
+            case "Up":
+                wm_maximize_window(wm.focused_window)
+                break
+            case "Down":
+                wm_minimize_window(wm.focused_window)
+                break
+            case "Tab":
+                wm_cycle_windows()
+                break
+        }
+    }
+}
+
+// Snap window ke kiri
+fungsi wm_snap_window_left(window_id: int) -> int {
+    if (window_id < 0 || window_id >= wm.window_count) {
+        return -1
+    }
+    
+    var available_width = wm.screen_width / 2
+    var available_height = wm.screen_height - (wm.taskbar_visible ? TASKBAR_HEIGHT : 0)
+    
+    wm_move_window(window_id, 0, 0)
+    wm_resize_window(window_id, available_width, available_height)
+    
+    wm.windows[window_id].state = SNAPPED_LEFT
+    
+    return 0
+}
+
+// Snap window ke kanan
+fungsi wm_snap_window_right(window_id: int) -> int {
+    if (window_id < 0 || window_id >= wm.window_count) {
+        return -1
+    }
+    
+    var available_width = wm.screen_width / 2
+    var available_height = wm.screen_height - (wm.taskbar_visible ? TASKBAR_HEIGHT : 0)
+    
+    wm_move_window(window_id, wm.screen_width / 2, 0)
+    wm_resize_window(window_id, available_width, available_height)
+    
+    wm.windows[window_id].state = SNAPPED_RIGHT
+    
+    return 0
+}
+
+// Render semua windows
+fungsi wm_render_all() -> void {
+    var workspace = &wm.workspaces[wm.active_workspace]
+    
+    // Render background workspace
+    render_workspace_background(wm.active_workspace)
+    
+    // Render windows berdasarkan z-order
+    for (var z = 0; z < wm.window_count; z++) {
+        for (var i = 0; i < wm.window_count; i++) {
+            if (wm.windows[i].z_order == z && 
+                wm.windows[i].workspace_id == wm.active_workspace &&
+                wm.windows[i].is_visible) {
+                render_window(i)
+            }
+        }
+    }
+    
+    // Render taskbar jika visible
+    if (wm.taskbar_visible) {
+        render_taskbar()
+    }
+}
+
+// API untuk aplikasi lain
+fungsi wm_get_focused_window() -> int {
+    return wm.focused_window
+}
+
+fungsi wm_get_window_count() -> int {
+    return wm.window_count
+}
+
+// Entry point untuk testing
+fungsi main() -> int {
+    if (wm_init() != 0) {
+        return -1
+    }
+    
+    khat_log("[WM] WindowManager ready for testing")
+    return 0
+}

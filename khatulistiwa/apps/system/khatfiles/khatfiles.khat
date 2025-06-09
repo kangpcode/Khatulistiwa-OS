@@ -1,0 +1,549 @@
+/*
+ * ============================================================================
+ * khatfiles.khat - File Manager Khatulistiwa OS dengan Tema Budaya Indonesia
+ * Copyright (c) 2025 Dhafa Nazula Permadi & Team BIGCode By Cv Bintang Gumilang Group
+ * ============================================================================
+ * 
+ * File manager lengkap dengan fitur:
+ * 1. Navigasi file dan folder dengan tema batik
+ * 2. Preview media dengan ornamen tradisional
+ * 3. Operasi file dengan animasi wayang
+ * 4. Integrasi cloud dengan motif Nusantara
+ * 5. Search dengan AI budaya Indonesia
+ */
+
+import "khatui/runtime.khat"
+import "khatcore/system.khat"
+import "khatcore/file.khat"
+import "khatcore/media.khat"
+import "khatui/cultural.khat"
+import "khatui/animation.khat"
+
+// Konstanta aplikasi
+konstan FILES_VERSION = "1.0.0"
+konstan WINDOW_WIDTH = 1000
+konstan WINDOW_HEIGHT = 700
+konstan SIDEBAR_WIDTH = 250
+konstan TOOLBAR_HEIGHT = 50
+konstan STATUSBAR_HEIGHT = 30
+
+// Mode tampilan file
+enum ViewMode {
+    LIST = 0,
+    GRID = 1,
+    GALLERY = 2,
+    TREE = 3
+}
+
+// Jenis file
+enum FileType {
+    FOLDER = 0,
+    DOCUMENT = 1,
+    IMAGE = 2,
+    VIDEO = 3,
+    AUDIO = 4,
+    ARCHIVE = 5,
+    CODE = 6,
+    CULTURAL = 7,
+    UNKNOWN = 8
+}
+
+// Struktur item file
+struct FileItem {
+    nama: string,
+    path: string,
+    type: FileType,
+    size: size_t,
+    modified_time: time_t,
+    permissions: int,
+    is_hidden: bool,
+    cultural_icon: string,
+    preview_available: bool,
+    thumbnail_path: string
+}
+
+// State aplikasi
+struct FilesState {
+    current_path: string,
+    view_mode: ViewMode,
+    selected_items: int[],
+    clipboard_items: FileItem[],
+    search_query: string,
+    show_hidden: bool,
+    cultural_mode: bool,
+    batik_theme: string,
+    sort_by: string,
+    sort_ascending: bool,
+    main_window: int,
+    sidebar_visible: bool,
+    preview_panel_visible: bool
+}
+
+// Global state
+var files: FilesState
+var current_items: FileItem[1024]
+var item_count: int = 0
+var bookmarks: string[32]
+var bookmark_count: int = 0
+
+// Inisialisasi aplikasi
+fungsi files_init() -> int {
+    khat_log("[FILES] Menginisialisasi KhatFiles v" + FILES_VERSION)
+    
+    // Setup state awal
+    files.current_path = khat_get_home_directory()
+    files.view_mode = LIST
+    files.selected_items = []
+    files.search_query = ""
+    files.show_hidden = false
+    files.cultural_mode = true
+    files.batik_theme = "mega_mendung"
+    files.sort_by = "name"
+    files.sort_ascending = true
+    files.sidebar_visible = true
+    files.preview_panel_visible = false
+    
+    // Load bookmarks
+    load_bookmarks()
+    
+    // Buat window utama
+    if (create_main_window() != 0) {
+        khat_log("[ERROR] Gagal membuat window utama")
+        return -1
+    }
+    
+    // Load direktori awal
+    if (load_directory(files.current_path) != 0) {
+        khat_log("[ERROR] Gagal memuat direktori awal")
+        return -1
+    }
+    
+    // Setup event handlers
+    setup_files_events()
+    
+    khat_log("[FILES] KhatFiles berhasil diinisialisasi!")
+    return 0
+}
+
+// Buat window utama
+fungsi create_main_window() -> int {
+    khat_log("[FILES] Membuat window utama...")
+    
+    files.main_window = khatui_create_window(
+        "KhatFiles - Pengelola Berkas",
+        (khat_screen_width() - WINDOW_WIDTH) / 2,
+        (khat_screen_height() - WINDOW_HEIGHT) / 2,
+        WINDOW_WIDTH, WINDOW_HEIGHT,
+        khat_get_current_app_id()
+    )
+    
+    if (files.main_window < 0) {
+        return -1
+    }
+    
+    // Set window properties
+    khatui_set_window_cultural_theme(files.main_window, files.batik_theme)
+    khatui_set_window_resizable(files.main_window, true)
+    khatui_set_window_min_size(files.main_window, 800, 500)
+    
+    // Render window
+    render_files_window()
+    
+    return 0
+}
+
+// Render window file manager
+fungsi render_files_window() -> void {
+    // Clear window
+    khatui_clear_window(files.main_window)
+    
+    // Background dengan motif batik
+    draw_cultural_background()
+    
+    // Toolbar dengan navigasi
+    draw_files_toolbar()
+    
+    // Sidebar dengan bookmarks
+    if (files.sidebar_visible) {
+        draw_files_sidebar()
+    }
+    
+    // Area konten utama
+    draw_files_content()
+    
+    // Status bar
+    draw_files_statusbar()
+    
+    // Preview panel jika aktif
+    if (files.preview_panel_visible) {
+        draw_preview_panel()
+    }
+}
+
+// Gambar background dengan motif budaya
+fungsi draw_cultural_background() -> void {
+    var bg_color = get_cultural_color("files_bg")
+    var pattern_color = get_cultural_color("batik_subtle")
+    
+    // Background dasar
+    khatui_fill_rect(files.main_window, 0, 0, 
+                     WINDOW_WIDTH, WINDOW_HEIGHT, bg_color)
+    
+    // Overlay motif batik halus
+    khatui_draw_batik_pattern(files.main_window,
+                              0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
+                              files.batik_theme, pattern_color, 0.05)
+    
+    // Border ornamen
+    khatui_draw_cultural_border(files.main_window,
+                                0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
+                                "ornamen_files")
+}
+
+// Gambar toolbar navigasi
+fungsi draw_files_toolbar() -> void {
+    var toolbar_color = get_cultural_color("toolbar_bg")
+    
+    // Background toolbar
+    khatui_fill_rect(files.main_window, 0, 0, 
+                     WINDOW_WIDTH, TOOLBAR_HEIGHT, toolbar_color)
+    
+    var button_x = 10
+    var button_size = 32
+    var button_y = (TOOLBAR_HEIGHT - button_size) / 2
+    
+    // Tombol Back
+    draw_toolbar_button(button_x, button_y, button_size, "back", "panah_kiri")
+    button_x += button_size + 5
+    
+    // Tombol Forward
+    draw_toolbar_button(button_x, button_y, button_size, "forward", "panah_kanan")
+    button_x += button_size + 5
+    
+    // Tombol Up
+    draw_toolbar_button(button_x, button_y, button_size, "up", "panah_atas")
+    button_x += button_size + 15
+    
+    // Address bar dengan ornamen
+    draw_address_bar(button_x, button_y, 400, button_size)
+    button_x += 400 + 15
+    
+    // Tombol Search
+    draw_toolbar_button(button_x, button_y, button_size, "search", "kaca_pembesar")
+    button_x += button_size + 5
+    
+    // Tombol View Mode
+    draw_view_mode_buttons(button_x, button_y, button_size)
+    
+    // Tombol Settings di kanan
+    var settings_x = WINDOW_WIDTH - button_size - 10
+    draw_toolbar_button(settings_x, button_y, button_size, "settings", "pengaturan")
+}
+
+// Gambar tombol toolbar dengan tema budaya
+fungsi draw_toolbar_button(x: int, y: int, size: int, action: string, cultural_icon: string) -> void {
+    var button_color = get_cultural_color("toolbar_button")
+    var hover_color = get_cultural_color("toolbar_button_hover")
+    
+    // Background tombol
+    khatui_draw_rounded_rect(files.main_window, x, y, size, size, 4, button_color)
+    
+    // Icon budaya
+    khatui_draw_cultural_icon(files.main_window, x + 4, y + 4, 
+                              size - 8, size - 8, cultural_icon,
+                              get_cultural_color("toolbar_icon"))
+    
+    // Hover effect
+    khatui_add_hover_animation(files.main_window, x, y, size, size, "button_glow")
+}
+
+// Gambar address bar dengan ornamen
+fungsi draw_address_bar(x: int, y: int, width: int, height: int) -> void {
+    var bg_color = get_cultural_color("address_bar_bg")
+    var text_color = get_cultural_color("address_bar_text")
+    
+    // Background dengan ornamen
+    khatui_draw_rounded_rect(files.main_window, x, y, width, height, 6, bg_color)
+    khatui_draw_cultural_border(files.main_window, x, y, width, height, "ornamen_input")
+    
+    // Path breadcrumb dengan separator tradisional
+    draw_path_breadcrumb(x + 8, y + 8, width - 16, height - 16)
+}
+
+// Gambar breadcrumb path
+fungsi draw_path_breadcrumb(x: int, y: int, width: int, height: int) -> void {
+    var path_parts = khat_string_split(files.current_path, "/")
+    var current_x = x
+    var text_color = get_cultural_color("breadcrumb_text")
+    var separator_color = get_cultural_color("breadcrumb_separator")
+    
+    for (var i = 0; i < path_parts.length; i++) {
+        if (i > 0) {
+            // Separator dengan motif tradisional
+            khatui_draw_cultural_icon(files.main_window, current_x, y, 16, height,
+                                      "separator_batik", separator_color)
+            current_x += 20
+        }
+        
+        // Nama folder
+        var part_width = khatui_get_text_width(path_parts[i], "breadcrumb")
+        khatui_draw_text_cultural(files.main_window, current_x, y + 4,
+                                  path_parts[i], text_color, "breadcrumb")
+        
+        // Clickable area
+        khatui_add_click_handler(files.main_window, current_x, y, 
+                                part_width, height, "breadcrumb_click", i)
+        
+        current_x += part_width + 5
+    }
+}
+
+// Gambar sidebar dengan bookmarks
+fungsi draw_files_sidebar() -> void {
+    var sidebar_x = 0
+    var sidebar_y = TOOLBAR_HEIGHT
+    var sidebar_height = WINDOW_HEIGHT - TOOLBAR_HEIGHT - STATUSBAR_HEIGHT
+    var sidebar_bg = get_cultural_color("sidebar_bg")
+    
+    // Background sidebar
+    khatui_fill_rect(files.main_window, sidebar_x, sidebar_y,
+                     SIDEBAR_WIDTH, sidebar_height, sidebar_bg)
+    
+    // Header sidebar
+    draw_sidebar_header(sidebar_x, sidebar_y, SIDEBAR_WIDTH, 40)
+    
+    // Quick access
+    draw_quick_access(sidebar_x, sidebar_y + 40, SIDEBAR_WIDTH, 200)
+    
+    // Bookmarks
+    draw_bookmarks_section(sidebar_x, sidebar_y + 240, SIDEBAR_WIDTH, 
+                          sidebar_height - 240)
+}
+
+// Gambar quick access dengan icon budaya
+fungsi draw_quick_access(x: int, y: int, width: int, height: int) -> void {
+    var item_height = 32
+    var current_y = y + 10
+    
+    // Header
+    khatui_draw_text_cultural(files.main_window, x + 10, current_y,
+                              "Akses Cepat", get_cultural_color("sidebar_header"),
+                              "sidebar_header")
+    current_y += 30
+    
+    // Quick access items dengan icon budaya
+    var quick_items = [
+        {"name": "Beranda", "path": khat_get_home_directory(), "icon": "rumah_adat"},
+        {"name": "Dokumen", "path": khat_get_documents_directory(), "icon": "lontar_dokumen"},
+        {"name": "Gambar", "path": khat_get_pictures_directory(), "icon": "lukisan_tradisional"},
+        {"name": "Musik", "path": khat_get_music_directory(), "icon": "gamelan_musik"},
+        {"name": "Video", "path": khat_get_videos_directory(), "icon": "wayang_video"},
+        {"name": "Unduhan", "path": khat_get_downloads_directory(), "icon": "keranjang_unduh"}
+    ]
+    
+    for (var i = 0; i < quick_items.length; i++) {
+        var item = quick_items[i]
+        var is_current = (item.path == files.current_path)
+        
+        // Background item
+        if (is_current) {
+            var selected_bg = get_cultural_color("sidebar_selected")
+            khatui_fill_rect(files.main_window, x + 5, current_y,
+                             width - 10, item_height, selected_bg)
+        }
+        
+        // Icon budaya
+        khatui_draw_cultural_icon(files.main_window, x + 15, current_y + 4,
+                                  24, 24, item.icon,
+                                  get_cultural_color("sidebar_icon"))
+        
+        // Nama
+        var text_color = is_current ? 
+                         get_cultural_color("sidebar_selected_text") :
+                         get_cultural_color("sidebar_text")
+        
+        khatui_draw_text_cultural(files.main_window, x + 45, current_y + 8,
+                                  item.name, text_color, "sidebar_item")
+        
+        // Click handler
+        khatui_add_click_handler(files.main_window, x + 5, current_y,
+                                width - 10, item_height, "quick_access", i)
+        
+        current_y += item_height + 2
+    }
+}
+
+// Load direktori dan tampilkan file
+fungsi load_directory(path: string) -> int {
+    khat_log("[FILES] Memuat direktori: " + path)
+    
+    // Clear items sebelumnya
+    item_count = 0
+    
+    // Baca direktori
+    var dir_entries = khat_dir_list_detailed(path)
+    if (dir_entries == null) {
+        khat_log("[ERROR] Gagal membaca direktori: " + path)
+        return -1
+    }
+    
+    // Proses setiap entry
+    for (var i = 0; i < dir_entries.length && item_count < 1024; i++) {
+        var entry = dir_entries[i]
+        
+        // Skip hidden files jika tidak ditampilkan
+        if (!files.show_hidden && entry.is_hidden) {
+            continue
+        }
+        
+        var item = &current_items[item_count++]
+        item->nama = khat_string_copy(entry.name)
+        item->path = path + "/" + entry.name
+        item->type = determine_file_type(entry.name, entry.is_directory)
+        item->size = entry.size
+        item->modified_time = entry.modified_time
+        item->permissions = entry.permissions
+        item->is_hidden = entry.is_hidden
+        item->cultural_icon = get_cultural_icon_for_file(item->type, entry.name)
+        item->preview_available = can_preview_file(item->type)
+        item->thumbnail_path = ""
+        
+        // Generate thumbnail jika diperlukan
+        if (item->preview_available && files.view_mode == GALLERY) {
+            generate_thumbnail(item)
+        }
+    }
+    
+    // Sort items
+    sort_items()
+    
+    // Update UI
+    files.current_path = khat_string_copy(path)
+    render_files_content()
+    
+    khat_log("[FILES] Dimuat " + item_count + " item dari " + path)
+    return 0
+}
+
+// Tentukan jenis file berdasarkan ekstensi
+fungsi determine_file_type(filename: string, is_directory: bool) -> FileType {
+    if (is_directory) {
+        return FOLDER
+    }
+    
+    var ext = khat_get_file_extension(filename)
+    ext = khat_string_to_lower(ext)
+    
+    // Document files
+    if (ext == ".pdf" || ext == ".doc" || ext == ".docx" || ext == ".txt" || ext == ".rtf") {
+        return DOCUMENT
+    }
+    
+    // Image files
+    if (ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".gif" || ext == ".bmp") {
+        return IMAGE
+    }
+    
+    // Video files
+    if (ext == ".mp4" || ext == ".avi" || ext == ".mkv" || ext == ".mov") {
+        return VIDEO
+    }
+    
+    // Audio files
+    if (ext == ".mp3" || ext == ".wav" || ext == ".flac" || ext == ".ogg") {
+        return AUDIO
+    }
+    
+    // Archive files
+    if (ext == ".zip" || ext == ".rar" || ext == ".7z" || ext == ".tar") {
+        return ARCHIVE
+    }
+    
+    // Code files
+    if (ext == ".khat" || ext == ".c" || ext == ".cpp" || ext == ".py" || ext == ".js") {
+        return CODE
+    }
+    
+    // Cultural files
+    if (ext == ".batik" || ext == ".wayang" || ext == ".gamelan") {
+        return CULTURAL
+    }
+    
+    return UNKNOWN
+}
+
+// Dapatkan icon budaya untuk file
+fungsi get_cultural_icon_for_file(type: FileType, filename: string) -> string {
+    switch (type) {
+        case FOLDER:
+            return "folder_batik"
+        case DOCUMENT:
+            return "lontar_dokumen"
+        case IMAGE:
+            return "lukisan_tradisional"
+        case VIDEO:
+            return "wayang_video"
+        case AUDIO:
+            return "gamelan_musik"
+        case ARCHIVE:
+            return "peti_arsip"
+        case CODE:
+            return "aksara_kode"
+        case CULTURAL:
+            return "warisan_budaya"
+        default:
+            return "berkas_umum"
+    }
+}
+
+// Handle double click pada file
+fungsi handle_file_double_click(item_index: int) -> void {
+    if (item_index < 0 || item_index >= item_count) {
+        return
+    }
+    
+    var item = &current_items[item_index]
+    
+    if (item->type == FOLDER) {
+        // Navigasi ke folder
+        load_directory(item->path)
+        
+        // Animasi transisi dengan efek wayang
+        khatui_animate_transition(files.main_window, "wayang_slide")
+        
+        // Play sound budaya
+        if (files.cultural_mode) {
+            khat_audio_play_cultural_sound("folder_open")
+        }
+    } else {
+        // Buka file dengan aplikasi default
+        open_file_with_default_app(item->path)
+        
+        // Animasi pembukaan file
+        khatui_animate_file_open(files.main_window, item->cultural_icon)
+    }
+}
+
+// Entry point aplikasi
+fungsi main() -> int {
+    if (files_init() != 0) {
+        return -1
+    }
+    
+    // Main event loop
+    while (true) {
+        var event = khatui_get_next_event()
+        if (event.type == "quit") {
+            break
+        }
+        
+        handle_files_event(event.type, event.data)
+        
+        khat_sleep(16)
+    }
+    
+    // Cleanup
+    files_cleanup()
+    
+    return 0
+}

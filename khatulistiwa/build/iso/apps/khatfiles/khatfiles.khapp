@@ -1,0 +1,500 @@
+/*
+ * ============================================================================
+ * khatfiles.khapp - Khat Files Manager untuk Khatulistiwa OS
+ * Copyright (c) 2025 Dhafa Nazula Permadi & Team BIGCode By Cv Bintang Gumilang Group
+ * ============================================================================
+ * 
+ * Khat Files dengan fitur:
+ * 1. Cultural file organization (Rumah Adat structure)
+ * 2. Traditional Indonesian file categories
+ * 3. Gotong royong file sharing
+ * 4. Spiritual file protection
+ * 5. Batik-inspired file icons
+ * 6. Gamelan sound effects
+ */
+
+import "system/khatcore_runtime.khat"
+import "system/khatui_runtime.khat"
+
+// File Manager constants
+konstan KHATFILES_VERSION = "2.0.0"
+konstan MAX_FILES_PER_FOLDER = 1000
+konstan MAX_FOLDER_DEPTH = 10
+
+// Cultural file categories
+enum CulturalFileCategory {
+    KATEGORI_DOKUMEN = 0,           // Documents (dokumen)
+    KATEGORI_GAMBAR = 1,            // Images (gambar)
+    KATEGORI_MUSIK = 2,             // Music (musik)
+    KATEGORI_VIDEO = 3,             // Video (video)
+    KATEGORI_PUSAKA = 4,            // Heritage files (pusaka)
+    KATEGORI_BUDAYA = 5,            // Cultural files (budaya)
+    KATEGORI_SPIRITUAL = 6,         // Spiritual files (spiritual)
+    KATEGORI_GOTONG_ROYONG = 7,     // Shared files (gotong royong)
+    KATEGORI_KELUARGA = 8,          // Family files (keluarga)
+    KATEGORI_KOMUNITAS = 9          // Community files (komunitas)
+}
+
+// File information with cultural attributes
+struct CulturalFileInfo {
+    char file_name[256];
+    char traditional_name[256];
+    char file_path[1024];
+    char cultural_meaning[128];
+    
+    // File properties
+    uint64_t file_size;
+    uint64_t creation_time;
+    uint64_t modification_time;
+    uint32_t permissions;
+    
+    // Cultural attributes
+    CulturalFileCategory category;
+    cultural_theme_t theme;
+    traditional_role_t owner_role;
+    bool spiritual_protected;
+    bool gotong_royong_shared;
+    
+    // File metadata
+    char file_type[32];
+    char mime_type[64];
+    char icon_path[256];
+    
+    // Cultural metadata
+    char origin_region[32];
+    char cultural_significance[256];
+    uint32_t spiritual_level;
+    bool requires_ceremony;
+    
+    // Sharing information
+    ProcessID shared_with[16];
+    uint32_t share_count;
+    bool community_accessible;
+}
+
+// Folder structure (Rumah Adat inspired)
+struct CulturalFolder {
+    char folder_name[256];
+    char traditional_name[256];
+    char folder_path[1024];
+    
+    // Folder type (inspired by traditional architecture)
+    enum {
+        FOLDER_RUMAH_UTAMA = 0,     // Main house (rumah utama)
+        FOLDER_LUMBUNG = 1,         // Storage (lumbung)
+        FOLDER_PENDOPO = 2,         // Meeting hall (pendopo)
+        FOLDER_DAPUR = 3,           // Kitchen (dapur)
+        FOLDER_KAMAR = 4,           // Room (kamar)
+        FOLDER_TAMAN = 5,           // Garden (taman)
+        FOLDER_PUSAKA = 6,          // Heritage vault (pusaka)
+        FOLDER_SPIRITUAL = 7        // Spiritual space (spiritual)
+    } folder_type;
+    
+    // Folder contents
+    CulturalFileInfo files[MAX_FILES_PER_FOLDER];
+    uint32_t file_count;
+    
+    struct CulturalFolder *subfolders[32];
+    uint32_t subfolder_count;
+    
+    // Cultural attributes
+    cultural_theme_t theme;
+    bool spiritual_protected;
+    bool gotong_royong_enabled;
+    traditional_role_t access_role;
+    
+    // Folder statistics
+    uint64_t total_size;
+    uint32_t total_files;
+    uint64_t last_accessed;
+}
+
+// File Manager state
+struct KhatFiles {
+    // Current navigation
+    CulturalFolder *current_folder;
+    CulturalFolder *root_folder;
+    char current_path[1024];
+    
+    // Selected items
+    CulturalFileInfo *selected_files[64];
+    uint32_t selected_count;
+    CulturalFolder *selected_folder;
+    
+    // View settings
+    enum {
+        VIEW_ICONS = 0,             // Icon view
+        VIEW_LIST = 1,              // List view
+        VIEW_RUMAH_ADAT = 2,        // Traditional house view
+        VIEW_BATIK_PATTERN = 3      // Batik pattern view
+    } view_mode;
+    
+    // Cultural features
+    bool cultural_mode_enabled;
+    bool spiritual_protection_enabled;
+    bool gotong_royong_sharing_enabled;
+    bool traditional_icons_enabled;
+    cultural_theme_t current_theme;
+    
+    // File operations
+    enum {
+        OP_NONE = 0,
+        OP_COPY = 1,
+        OP_MOVE = 2,
+        OP_DELETE = 3,
+        OP_SHARE = 4,
+        OP_CEREMONY = 5
+    } current_operation;
+    
+    // Clipboard
+    CulturalFileInfo *clipboard_files[32];
+    uint32_t clipboard_count;
+    bool clipboard_cut;
+    
+    // Search
+    char search_query[256];
+    CulturalFileInfo *search_results[256];
+    uint32_t search_result_count;
+    
+    // Statistics
+    uint64_t total_files_managed;
+    uint64_t cultural_files_count;
+    uint64_t spiritual_files_count;
+    uint64_t gotong_royong_shares;
+    
+    // Synchronization
+    mutex_t files_lock;
+}
+
+// Global file manager
+static KhatFiles g_files;
+
+// Function prototypes
+int khatfiles_init(void);
+int khatfiles_main(int argc, char *argv[]);
+
+// Navigation functions
+int navigate_to_folder(const char *path);
+int go_back(void);
+int go_forward(void);
+int go_to_parent(void);
+
+// File operations
+int create_file(const char *name, const char *traditional_name, CulturalFileCategory category);
+int create_folder(const char *name, const char *traditional_name, uint32_t folder_type);
+int copy_files(CulturalFileInfo **files, uint32_t count, const char *destination);
+int move_files(CulturalFileInfo **files, uint32_t count, const char *destination);
+int delete_files(CulturalFileInfo **files, uint32_t count);
+
+// Cultural file operations
+int set_file_cultural_attributes(const char *file_path, cultural_theme_t theme, const char *meaning);
+int activate_spiritual_protection(const char *file_path);
+int share_with_gotong_royong(const char *file_path, ProcessID *participants, uint32_t count);
+int perform_file_ceremony(const char *file_path, const char *ceremony_name);
+
+// Search and filtering
+int search_files(const char *query);
+int filter_by_category(CulturalFileCategory category);
+int filter_by_cultural_theme(cultural_theme_t theme);
+
+// UI functions
+void render_file_manager_ui(void);
+void render_folder_view(CulturalFolder *folder);
+void render_file_icons(CulturalFileInfo *files, uint32_t count);
+void render_traditional_house_view(CulturalFolder *folder);
+
+// Initialize Khat Files
+fungsi khatfiles_init() -> int {
+    khat_log("[FILES] Initializing Khat Files v" + KHATFILES_VERSION)
+    
+    // Initialize file manager state
+    memset(&g_files, 0, sizeof(KhatFiles))
+    
+    // Initialize synchronization
+    mutex_init(&g_files.files_lock)
+    
+    // Set default configuration
+    g_files.cultural_mode_enabled = true
+    g_files.spiritual_protection_enabled = true
+    g_files.gotong_royong_sharing_enabled = true
+    g_files.traditional_icons_enabled = true
+    g_files.current_theme = THEME_PARANG
+    g_files.view_mode = VIEW_RUMAH_ADAT
+    
+    // Create root folder structure (Rumah Adat)
+    create_traditional_folder_structure()
+    
+    // Set current folder to root
+    g_files.current_folder = g_files.root_folder
+    strcpy(g_files.current_path, "/")
+    
+    khat_log("[FILES] Khat Files initialized successfully")
+    
+    return 0
+}
+
+// Main file manager function
+fungsi khatfiles_main(argc: int, argv: char*[]) -> int {
+    khat_log("[FILES] Starting Khat Files Manager")
+    
+    // Initialize file manager
+    if (khatfiles_init() != 0) {
+        khat_log("[ERROR] Failed to initialize file manager")
+        return -1
+    }
+    
+    // Initialize UI
+    if (init_file_manager_ui() != 0) {
+        khat_log("[ERROR] Failed to initialize file manager UI")
+        return -2
+    }
+    
+    // Show welcome message
+    show_file_manager_welcome()
+    
+    // Main file manager loop
+    while (true) {
+        // Handle input events
+        handle_file_manager_input()
+        
+        // Update UI
+        render_file_manager_ui()
+        
+        // Handle file operations
+        handle_file_operations()
+        
+        // Check for exit
+        if (should_exit_file_manager()) {
+            break
+        }
+        
+        // Sleep for a short time
+        sleep_ms(16)  // ~60 FPS
+    }
+    
+    // Cleanup
+    cleanup_file_manager()
+    
+    khat_log("[FILES] Khat Files Manager terminated")
+    return 0
+}
+
+// Create traditional folder structure
+fungsi create_traditional_folder_structure() -> void {
+    // Create root folder (Rumah Utama)
+    g_files.root_folder = create_cultural_folder("/", "Rumah Utama", FOLDER_RUMAH_UTAMA)
+    
+    // Create main folders (inspired by traditional Javanese house)
+    create_cultural_folder("/pendopo", "Pendopo", FOLDER_PENDOPO)        // Meeting hall
+    create_cultural_folder("/lumbung", "Lumbung", FOLDER_LUMBUNG)        // Storage
+    create_cultural_folder("/dapur", "Dapur", FOLDER_DAPUR)              // Kitchen
+    create_cultural_folder("/kamar", "Kamar Tidur", FOLDER_KAMAR)        // Bedroom
+    create_cultural_folder("/taman", "Taman", FOLDER_TAMAN)              // Garden
+    create_cultural_folder("/pusaka", "Ruang Pusaka", FOLDER_PUSAKA)     // Heritage room
+    create_cultural_folder("/spiritual", "Ruang Spiritual", FOLDER_SPIRITUAL) // Spiritual room
+    
+    // Create category-based folders
+    create_cultural_folder("/dokumen", "Dokumen", FOLDER_LUMBUNG)
+    create_cultural_folder("/gambar", "Gambar", FOLDER_TAMAN)
+    create_cultural_folder("/musik", "Musik Gamelan", FOLDER_PENDOPO)
+    create_cultural_folder("/video", "Video", FOLDER_PENDOPO)
+    create_cultural_folder("/budaya", "Budaya", FOLDER_PUSAKA)
+    create_cultural_folder("/gotong_royong", "Gotong Royong", FOLDER_PENDOPO)
+}
+
+// Navigate to folder
+fungsi navigate_to_folder(path: string) -> int {
+    var folder = find_folder_by_path(path)
+    if (!folder) {
+        khat_log("[ERROR] Folder not found: " + path)
+        return -1
+    }
+    
+    // Check access permissions
+    if (!check_folder_access(folder)) {
+        khat_log("[ERROR] Access denied to folder: " + path)
+        return -2
+    }
+    
+    // Perform spiritual check if required
+    if (folder->spiritual_protected) {
+        if (!perform_spiritual_access_check(folder)) {
+            khat_log("[WARNING] Spiritual access check failed for: " + path)
+            return -3
+        }
+    }
+    
+    // Update current folder
+    g_files.current_folder = folder
+    strncpy(g_files.current_path, path, 1023)
+    
+    // Update access time
+    folder->last_accessed = get_system_time()
+    
+    khat_log("[FILES] Navigated to: " + folder->traditional_name)
+    
+    return 0
+}
+
+// Create cultural file
+fungsi create_file(name: string, traditional_name: string, category: CulturalFileCategory) -> int {
+    if (!g_files.current_folder) {
+        return -1
+    }
+    
+    if (g_files.current_folder->file_count >= MAX_FILES_PER_FOLDER) {
+        khat_log("[ERROR] Folder is full")
+        return -2
+    }
+    
+    var file = &g_files.current_folder->files[g_files.current_folder->file_count]
+    memset(file, 0, sizeof(CulturalFileInfo))
+    
+    strncpy(file->file_name, name, 255)
+    strncpy(file->traditional_name, traditional_name, 255)
+    file->category = category
+    file->creation_time = get_system_time()
+    file->modification_time = file->creation_time
+    file->theme = g_files.current_theme
+    file->owner_role = ROLE_RAKYAT
+    
+    // Set cultural attributes based on category
+    set_file_cultural_attributes_by_category(file, category)
+    
+    // Generate file path
+    snprintf(file->file_path, 1023, "%s/%s", g_files.current_path, name)
+    
+    g_files.current_folder->file_count++
+    g_files.total_files_managed++
+    
+    if (file->category == KATEGORI_BUDAYA || file->category == KATEGORI_SPIRITUAL) {
+        g_files.cultural_files_count++
+    }
+    
+    khat_log("[FILES] Created file: " + traditional_name)
+    
+    return 0
+}
+
+// Share with gotong royong
+fungsi share_with_gotong_royong(file_path: string, participants: ProcessID*, count: uint32_t) -> int {
+    var file = find_file_by_path(file_path)
+    if (!file) {
+        return -1
+    }
+    
+    // Add participants
+    for (var i = 0; i < count && i < 16; i++) {
+        file->shared_with[i] = participants[i]
+    }
+    file->share_count = (count > 16) ? 16 : count
+    file->gotong_royong_shared = true
+    file->community_accessible = true
+    
+    // Update statistics
+    g_files.gotong_royong_shares++
+    
+    khat_log("[FILES] File shared with gotong royong: " + file->traditional_name + 
+             " (" + khat_int_to_string(count) + " participants)")
+    
+    return 0
+}
+
+// Render file manager UI
+fungsi render_file_manager_ui() -> void {
+    // Clear screen with cultural background
+    apply_cultural_background(g_files.current_theme)
+    
+    // Render header with traditional design
+    render_traditional_header()
+    
+    // Render navigation breadcrumb
+    render_navigation_breadcrumb()
+    
+    // Render main content based on view mode
+    switch (g_files.view_mode) {
+        case VIEW_RUMAH_ADAT:
+            render_traditional_house_view(g_files.current_folder)
+            break
+        case VIEW_BATIK_PATTERN:
+            render_batik_pattern_view(g_files.current_folder)
+            break
+        case VIEW_ICONS:
+            render_icon_view(g_files.current_folder)
+            break
+        case VIEW_LIST:
+            render_list_view(g_files.current_folder)
+            break
+    }
+    
+    // Render sidebar with cultural information
+    render_cultural_sidebar()
+    
+    // Render status bar
+    render_status_bar()
+    
+    // Update display
+    update_display()
+}
+
+// Helper functions
+fungsi create_cultural_folder(path: string, traditional_name: string, folder_type: uint32_t) -> CulturalFolder* {
+    var folder = (CulturalFolder*)kmalloc_cultural(sizeof(CulturalFolder), g_files.current_theme, traditional_name)
+    if (!folder) {
+        return null
+    }
+    
+    memset(folder, 0, sizeof(CulturalFolder))
+    strncpy(folder->folder_path, path, 1023)
+    strncpy(folder->traditional_name, traditional_name, 255)
+    folder->folder_type = folder_type
+    folder->theme = g_files.current_theme
+    
+    return folder
+}
+
+fungsi set_file_cultural_attributes_by_category(file: CulturalFileInfo*, category: CulturalFileCategory) -> void {
+    switch (category) {
+        case KATEGORI_BUDAYA:
+            strcpy(file->cultural_meaning, "Berkas budaya Indonesia")
+            strcpy(file->origin_region, "Nusantara")
+            file->spiritual_level = 5
+            break
+        case KATEGORI_SPIRITUAL:
+            strcpy(file->cultural_meaning, "Berkas spiritual dan rohani")
+            file->spiritual_protected = true
+            file->spiritual_level = 9
+            file->requires_ceremony = true
+            break
+        case KATEGORI_PUSAKA:
+            strcpy(file->cultural_meaning, "Berkas pusaka keluarga")
+            file->spiritual_protected = true
+            file->spiritual_level = 8
+            file->owner_role = ROLE_TETUA_ADAT
+            break
+        default:
+            strcpy(file->cultural_meaning, "Berkas umum")
+            file->spiritual_level = 1
+            break
+    }
+}
+
+// Placeholder implementations
+fungsi find_folder_by_path(path: string) -> CulturalFolder* { return g_files.root_folder; }
+fungsi check_folder_access(folder: CulturalFolder*) -> bool { return true; }
+fungsi perform_spiritual_access_check(folder: CulturalFolder*) -> bool { return true; }
+fungsi find_file_by_path(path: string) -> CulturalFileInfo* { return null; }
+fungsi init_file_manager_ui() -> int { return 0; }
+fungsi show_file_manager_welcome() -> void { }
+fungsi handle_file_manager_input() -> void { }
+fungsi handle_file_operations() -> void { }
+fungsi should_exit_file_manager() -> bool { return false; }
+fungsi cleanup_file_manager() -> void { }
+fungsi render_traditional_header() -> void { }
+fungsi render_navigation_breadcrumb() -> void { }
+fungsi render_traditional_house_view(folder: CulturalFolder*) -> void { }
+fungsi render_batik_pattern_view(folder: CulturalFolder*) -> void { }
+fungsi render_icon_view(folder: CulturalFolder*) -> void { }
+fungsi render_list_view(folder: CulturalFolder*) -> void { }
+fungsi render_cultural_sidebar() -> void { }
+fungsi render_status_bar() -> void { }

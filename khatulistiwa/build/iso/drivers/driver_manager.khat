@@ -1,0 +1,593 @@
+/*
+ * ============================================================================
+ * driver_manager.khat - Driver Manager dengan Auto-Detection Khatulistiwa OS
+ * Copyright (c) 2025 Dhafa Nazula Permadi & Team BIGCode By Cv Bintang Gumilang Group
+ * ============================================================================
+ * 
+ * Driver manager dengan fitur:
+ * 1. Auto-detection hardware dengan dalang pengendali
+ * 2. Dynamic driver loading dengan sistem modular
+ * 3. Hardware abstraction layer (HAL)
+ * 4. Cultural driver integration
+ * 5. Plug and play support
+ */
+
+import "kernel/core/khatkernel.khat"
+import "drivers/hal/hardware_abstraction.khat"
+import "drivers/pci/pci_bus.khat"
+import "drivers/usb/usb_bus.khat"
+
+// Konstanta driver manager
+konstan DRIVER_MANAGER_VERSION = "1.0.0"
+konstan MAX_DRIVERS = 256
+konstan MAX_DEVICES = 1024
+konstan DRIVER_LOAD_TIMEOUT = 5000
+
+// Driver types
+enum DriverType {
+    GRAPHICS = 0,
+    AUDIO = 1,
+    NETWORK = 2,
+    STORAGE = 3,
+    INPUT = 4,
+    USB = 5,
+    CULTURAL = 6,
+    SYSTEM = 7
+}
+
+// Driver status
+enum DriverStatus {
+    UNLOADED = 0,
+    LOADING = 1,
+    LOADED = 2,
+    ACTIVE = 3,
+    ERROR = 4,
+    UNLOADING = 5
+}
+
+// Device status
+enum DeviceStatus {
+    UNKNOWN = 0,
+    DETECTED = 1,
+    CONFIGURED = 2,
+    ACTIVE = 3,
+    ERROR = 4,
+    REMOVED = 5
+}
+
+// Struktur driver info
+struct DriverInfo {
+    id: int,
+    name: string,
+    cultural_name: string,
+    version: string,
+    type: DriverType,
+    status: DriverStatus,
+    file_path: string,
+    vendor_id: int,
+    device_id: int,
+    supported_devices: int[],
+    device_count: int,
+    load_time: time_t,
+    cultural_integration: bool,
+    priority: int
+}
+
+// Struktur device info
+struct DeviceInfo {
+    id: int,
+    name: string,
+    cultural_name: string,
+    vendor_id: int,
+    device_id: int,
+    class_code: int,
+    subclass_code: int,
+    bus_type: string,
+    bus_address: string,
+    status: DeviceStatus,
+    driver_id: int,
+    cultural_support: bool,
+    detection_time: time_t
+}
+
+// Driver manager state
+struct DriverManagerState {
+    drivers: DriverInfo[MAX_DRIVERS],
+    driver_count: int,
+    devices: DeviceInfo[MAX_DEVICES],
+    device_count: int,
+    auto_detection_enabled: bool,
+    cultural_drivers_enabled: bool,
+    pnp_enabled: bool,
+    last_scan_time: time_t,
+    scan_interval: int,
+    cultural_mode: bool
+}
+
+// Global state
+var driver_manager: DriverManagerState
+
+// Inisialisasi driver manager
+fungsi driver_manager_init() -> int {
+    khat_log("[DRIVER] Menginisialisasi Driver Manager v" + DRIVER_MANAGER_VERSION)
+    
+    // Setup state awal
+    driver_manager.driver_count = 0
+    driver_manager.device_count = 0
+    driver_manager.auto_detection_enabled = true
+    driver_manager.cultural_drivers_enabled = true
+    driver_manager.pnp_enabled = true
+    driver_manager.last_scan_time = 0
+    driver_manager.scan_interval = 5000  // 5 seconds
+    driver_manager.cultural_mode = true
+    
+    // Initialize hardware abstraction layer
+    if (hal_init() != 0) {
+        khat_log("[ERROR] Gagal menginisialisasi HAL")
+        return -1
+    }
+    
+    // Initialize bus systems
+    if (pci_bus_init() != 0) {
+        khat_log("[ERROR] Gagal menginisialisasi PCI bus")
+        return -1
+    }
+    
+    if (usb_bus_init() != 0) {
+        khat_log("[ERROR] Gagal menginisialisasi USB bus")
+        return -1
+    }
+    
+    // Load built-in drivers
+    load_builtin_drivers()
+    
+    // Start auto-detection
+    if (driver_manager.auto_detection_enabled) {
+        start_auto_detection()
+    }
+    
+    khat_log("[DRIVER] Driver Manager berhasil diinisialisasi!")
+    return 0
+}
+
+// Load built-in drivers
+fungsi load_builtin_drivers() -> void {
+    khat_log("[DRIVER] Loading built-in drivers...")
+    
+    // Graphics drivers
+    register_driver("vga_driver", "Pengendali VGA", GRAPHICS, "drivers/graphics/vga.khat", 0x1234, 0x5678)
+    register_driver("intel_graphics", "Pengendali Intel Graphics", GRAPHICS, "drivers/graphics/intel.khat", 0x8086, 0x0000)
+    register_driver("amd_graphics", "Pengendali AMD Graphics", GRAPHICS, "drivers/graphics/amd.khat", 0x1002, 0x0000)
+    
+    // Audio drivers
+    register_driver("ac97_audio", "Pengendali Audio AC97", AUDIO, "drivers/audio/ac97.khat", 0x8086, 0x2415)
+    register_driver("hda_audio", "Pengendali Audio HD", AUDIO, "drivers/audio/hda.khat", 0x8086, 0x27D8)
+    register_driver("gamelan_audio", "Pengendali Audio Gamelan", CULTURAL, "drivers/cultural/gamelan.khat", 0x0000, 0x0001)
+    
+    // Network drivers
+    register_driver("rtl8139", "Pengendali Realtek RTL8139", NETWORK, "drivers/network/rtl8139.khat", 0x10EC, 0x8139)
+    register_driver("e1000", "Pengendali Intel E1000", NETWORK, "drivers/network/e1000.khat", 0x8086, 0x100E)
+    
+    // Storage drivers
+    register_driver("ahci_sata", "Pengendali AHCI SATA", STORAGE, "drivers/storage/ahci.khat", 0x8086, 0x2922)
+    register_driver("ide_controller", "Pengendali IDE", STORAGE, "drivers/storage/ide.khat", 0x8086, 0x7010)
+    
+    // Input drivers
+    register_driver("ps2_keyboard", "Pengendali Keyboard PS/2", INPUT, "drivers/input/ps2_kbd.khat", 0x0000, 0x0001)
+    register_driver("ps2_mouse", "Pengendali Mouse PS/2", INPUT, "drivers/input/ps2_mouse.khat", 0x0000, 0x0002)
+    register_driver("usb_hid", "Pengendali USB HID", INPUT, "drivers/input/usb_hid.khat", 0x0000, 0x0003)
+    
+    // Cultural drivers
+    register_driver("batik_display", "Pengendali Tampilan Batik", CULTURAL, "drivers/cultural/batik.khat", 0x0000, 0x0010)
+    register_driver("wayang_animation", "Pengendali Animasi Wayang", CULTURAL, "drivers/cultural/wayang.khat", 0x0000, 0x0011)
+    
+    khat_log("[DRIVER] Built-in drivers registered")
+}
+
+// Register driver
+fungsi register_driver(name: string, cultural_name: string, type: DriverType,
+                      file_path: string, vendor_id: int, device_id: int) -> int {
+    if (driver_manager.driver_count >= MAX_DRIVERS) {
+        khat_log("[ERROR] Maximum drivers reached")
+        return -1
+    }
+    
+    var driver_id = driver_manager.driver_count
+    var driver = &driver_manager.drivers[driver_id]
+    
+    driver->id = driver_id
+    driver->name = name
+    driver->cultural_name = cultural_name
+    driver->version = "1.0.0"
+    driver->type = type
+    driver->status = UNLOADED
+    driver->file_path = file_path
+    driver->vendor_id = vendor_id
+    driver->device_id = device_id
+    driver->device_count = 0
+    driver->load_time = 0
+    driver->cultural_integration = (type == CULTURAL)
+    driver->priority = get_driver_priority(type)
+    
+    driver_manager.driver_count++
+    
+    khat_log("[DRIVER] Registered driver: " + cultural_name)
+    return driver_id
+}
+
+// Start auto-detection
+fungsi start_auto_detection() -> void {
+    khat_log("[DRIVER] Starting hardware auto-detection...")
+    
+    // Scan PCI bus
+    scan_pci_devices()
+    
+    // Scan USB bus
+    scan_usb_devices()
+    
+    // Scan legacy devices
+    scan_legacy_devices()
+    
+    // Match devices with drivers
+    match_devices_with_drivers()
+    
+    // Load matched drivers
+    load_matched_drivers()
+    
+    driver_manager.last_scan_time = khat_get_current_time()
+    
+    khat_log("[DRIVER] Auto-detection completed")
+}
+
+// Scan PCI devices
+fungsi scan_pci_devices() -> void {
+    khat_log("[DRIVER] Scanning PCI devices...")
+    
+    for (var bus = 0; bus < 256; bus++) {
+        for (var device = 0; device < 32; device++) {
+            for (var function = 0; function < 8; function++) {
+                var vendor_id = pci_read_config_word(bus, device, function, 0x00)
+                
+                if (vendor_id != 0xFFFF) {
+                    var device_id = pci_read_config_word(bus, device, function, 0x02)
+                    var class_code = pci_read_config_byte(bus, device, function, 0x0B)
+                    var subclass_code = pci_read_config_byte(bus, device, function, 0x0A)
+                    
+                    // Register detected device
+                    register_detected_device(vendor_id, device_id, class_code, subclass_code,
+                                             "PCI", format_pci_address(bus, device, function))
+                }
+            }
+        }
+    }
+    
+    khat_log("[DRIVER] PCI scan completed")
+}
+
+// Scan USB devices
+fungsi scan_usb_devices() -> void {
+    khat_log("[DRIVER] Scanning USB devices...")
+    
+    // Get USB controllers
+    var usb_controllers = get_usb_controllers()
+    
+    for (var i = 0; i < usb_controllers.count; i++) {
+        var controller = usb_controllers.controllers[i]
+        
+        // Scan ports on this controller
+        for (var port = 0; port < controller.port_count; port++) {
+            if (usb_port_has_device(controller.id, port)) {
+                var device_desc = usb_get_device_descriptor(controller.id, port)
+                
+                if (device_desc.vendor_id != 0) {
+                    register_detected_device(device_desc.vendor_id, device_desc.product_id,
+                                             device_desc.device_class, device_desc.device_subclass,
+                                             "USB", format_usb_address(controller.id, port))
+                }
+            }
+        }
+    }
+    
+    khat_log("[DRIVER] USB scan completed")
+}
+
+// Register detected device
+fungsi register_detected_device(vendor_id: int, device_id: int, class_code: int, subclass_code: int,
+                                bus_type: string, bus_address: string) -> int {
+    if (driver_manager.device_count >= MAX_DEVICES) {
+        khat_log("[ERROR] Maximum devices reached")
+        return -1
+    }
+    
+    var dev_id = driver_manager.device_count
+    var device = &driver_manager.devices[dev_id]
+    
+    device->id = dev_id
+    device->name = get_device_name(vendor_id, device_id)
+    device->cultural_name = get_device_cultural_name(vendor_id, device_id, class_code)
+    device->vendor_id = vendor_id
+    device->device_id = device_id
+    device->class_code = class_code
+    device->subclass_code = subclass_code
+    device->bus_type = bus_type
+    device->bus_address = bus_address
+    device->status = DETECTED
+    device->driver_id = -1
+    device->cultural_support = has_cultural_support(vendor_id, device_id)
+    device->detection_time = khat_get_current_time()
+    
+    driver_manager.device_count++
+    
+    khat_log("[DRIVER] Detected device: " + device->cultural_name + 
+             " (VID: " + khat_int_to_hex_string(vendor_id) + 
+             ", PID: " + khat_int_to_hex_string(device_id) + ")")
+    
+    return dev_id
+}
+
+// Match devices with drivers
+fungsi match_devices_with_drivers() -> void {
+    khat_log("[DRIVER] Matching devices with drivers...")
+    
+    var matched_count = 0
+    
+    for (var i = 0; i < driver_manager.device_count; i++) {
+        var device = &driver_manager.devices[i]
+        
+        if (device->status == DETECTED) {
+            var driver_id = find_compatible_driver(device)
+            
+            if (driver_id >= 0) {
+                device->driver_id = driver_id
+                device->status = CONFIGURED
+                matched_count++
+                
+                khat_log("[DRIVER] Matched device " + device->cultural_name + 
+                         " with driver " + driver_manager.drivers[driver_id].cultural_name)
+            } else {
+                khat_log("[DRIVER] No driver found for device: " + device->cultural_name)
+            }
+        }
+    }
+    
+    khat_log("[DRIVER] Matched " + khat_int_to_string(matched_count) + " devices")
+}
+
+// Find compatible driver
+fungsi find_compatible_driver(device: DeviceInfo*) -> int {
+    var best_driver = -1
+    var best_priority = -1
+    
+    for (var i = 0; i < driver_manager.driver_count; i++) {
+        var driver = &driver_manager.drivers[i]
+        
+        // Check vendor/device ID match
+        if (driver->vendor_id == device->vendor_id && 
+            (driver->device_id == device->device_id || driver->device_id == 0x0000)) {
+            
+            // Prefer cultural drivers if device supports it
+            var priority = driver->priority
+            if (device->cultural_support && driver->cultural_integration) {
+                priority += 100
+            }
+            
+            if (priority > best_priority) {
+                best_priority = priority
+                best_driver = i
+            }
+        }
+        
+        // Check class code match for generic drivers
+        if (driver->vendor_id == 0x0000) {
+            var driver_class = get_driver_class_code(driver->type)
+            if (driver_class == device->class_code) {
+                if (driver->priority > best_priority) {
+                    best_priority = driver->priority
+                    best_driver = i
+                }
+            }
+        }
+    }
+    
+    return best_driver
+}
+
+// Load matched drivers
+fungsi load_matched_drivers() -> void {
+    khat_log("[DRIVER] Loading matched drivers...")
+    
+    var loaded_count = 0
+    
+    for (var i = 0; i < driver_manager.device_count; i++) {
+        var device = &driver_manager.devices[i]
+        
+        if (device->status == CONFIGURED && device->driver_id >= 0) {
+            var driver_id = device->driver_id
+            var driver = &driver_manager.drivers[driver_id]
+            
+            if (driver->status == UNLOADED) {
+                if (load_driver(driver_id) == 0) {
+                    device->status = ACTIVE
+                    loaded_count++
+                    
+                    khat_log("[DRIVER] Loaded driver " + driver->cultural_name + 
+                             " for device " + device->cultural_name)
+                } else {
+                    device->status = ERROR
+                    khat_log("[ERROR] Failed to load driver for device: " + device->cultural_name)
+                }
+            }
+        }
+    }
+    
+    khat_log("[DRIVER] Loaded " + khat_int_to_string(loaded_count) + " drivers")
+}
+
+// Load driver
+fungsi load_driver(driver_id: int) -> int {
+    if (driver_id < 0 || driver_id >= driver_manager.driver_count) {
+        return -1
+    }
+    
+    var driver = &driver_manager.drivers[driver_id]
+    
+    if (driver->status != UNLOADED) {
+        return 0  // Already loaded
+    }
+    
+    khat_log("[DRIVER] Loading driver: " + driver->cultural_name)
+    
+    driver->status = LOADING
+    driver->load_time = khat_get_current_time()
+    
+    // Load driver module
+    var module_handle = khat_load_module(driver->file_path)
+    if (module_handle == null) {
+        khat_log("[ERROR] Failed to load driver module: " + driver->file_path)
+        driver->status = ERROR
+        return -1
+    }
+    
+    // Get driver entry point
+    var driver_init = khat_get_module_symbol(module_handle, "driver_init")
+    if (driver_init == null) {
+        khat_log("[ERROR] Driver init function not found")
+        khat_unload_module(module_handle)
+        driver->status = ERROR
+        return -1
+    }
+    
+    // Initialize driver
+    var init_result = driver_init()
+    if (init_result != 0) {
+        khat_log("[ERROR] Driver initialization failed")
+        khat_unload_module(module_handle)
+        driver->status = ERROR
+        return -1
+    }
+    
+    driver->status = LOADED
+    
+    // If cultural driver, register cultural features
+    if (driver->cultural_integration) {
+        register_cultural_driver_features(driver_id)
+    }
+    
+    khat_log("[DRIVER] Driver loaded successfully: " + driver->cultural_name)
+    return 0
+}
+
+// Unload driver
+fungsi unload_driver(driver_id: int) -> int {
+    if (driver_id < 0 || driver_id >= driver_manager.driver_count) {
+        return -1
+    }
+    
+    var driver = &driver_manager.drivers[driver_id]
+    
+    if (driver->status != LOADED && driver->status != ACTIVE) {
+        return 0  // Not loaded
+    }
+    
+    khat_log("[DRIVER] Unloading driver: " + driver->cultural_name)
+    
+    driver->status = UNLOADING
+    
+    // Deactivate all devices using this driver
+    deactivate_driver_devices(driver_id)
+    
+    // Unregister cultural features
+    if (driver->cultural_integration) {
+        unregister_cultural_driver_features(driver_id)
+    }
+    
+    // Call driver cleanup
+    var driver_cleanup = khat_get_module_symbol(driver->module_handle, "driver_cleanup")
+    if (driver_cleanup != null) {
+        driver_cleanup()
+    }
+    
+    // Unload module
+    khat_unload_module(driver->module_handle)
+    
+    driver->status = UNLOADED
+    
+    khat_log("[DRIVER] Driver unloaded: " + driver->cultural_name)
+    return 0
+}
+
+// Periodic device scan
+fungsi periodic_device_scan() -> void {
+    var current_time = khat_get_current_time()
+    
+    if (current_time - driver_manager.last_scan_time >= driver_manager.scan_interval) {
+        if (driver_manager.auto_detection_enabled) {
+            khat_log("[DRIVER] Performing periodic device scan...")
+            
+            // Rescan for new devices
+            start_auto_detection()
+        }
+    }
+}
+
+// Get driver manager statistics
+fungsi get_driver_manager_stats() -> DriverManagerStats* {
+    static var stats: DriverManagerStats
+    
+    stats.total_drivers = driver_manager.driver_count
+    stats.loaded_drivers = 0
+    stats.active_drivers = 0
+    stats.cultural_drivers = 0
+    stats.total_devices = driver_manager.device_count
+    stats.active_devices = 0
+    stats.cultural_devices = 0
+    
+    // Count driver statistics
+    for (var i = 0; i < driver_manager.driver_count; i++) {
+        var driver = &driver_manager.drivers[i]
+        
+        if (driver->status == LOADED || driver->status == ACTIVE) {
+            stats.loaded_drivers++
+        }
+        
+        if (driver->status == ACTIVE) {
+            stats.active_drivers++
+        }
+        
+        if (driver->cultural_integration) {
+            stats.cultural_drivers++
+        }
+    }
+    
+    // Count device statistics
+    for (var i = 0; i < driver_manager.device_count; i++) {
+        var device = &driver_manager.devices[i]
+        
+        if (device->status == ACTIVE) {
+            stats.active_devices++
+        }
+        
+        if (device->cultural_support) {
+            stats.cultural_devices++
+        }
+    }
+    
+    return &stats
+}
+
+// Shutdown driver manager
+fungsi driver_manager_shutdown() -> void {
+    khat_log("[DRIVER] Shutting down driver manager...")
+    
+    // Unload all drivers
+    for (var i = 0; i < driver_manager.driver_count; i++) {
+        unload_driver(i)
+    }
+    
+    // Shutdown bus systems
+    usb_bus_shutdown()
+    pci_bus_shutdown()
+    hal_shutdown()
+    
+    khat_log("[DRIVER] Driver manager shutdown complete")
+}

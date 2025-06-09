@@ -1,0 +1,436 @@
+/*
+ * ============================================================================
+ * main.khat - Template Aplikasi Budaya Khatulistiwa OS
+ * Copyright (c) 2024 Developer Nusantara
+ * ============================================================================
+ * 
+ * Template aplikasi dengan fokus budaya Indonesia:
+ * 1. UI dengan ornamen tradisional lengkap
+ * 2. Animasi wayang dan garuda
+ * 3. Musik gamelan terintegrasi
+ * 4. Batik patterns dinamis
+ * 5. Terminologi Indonesia konsisten
+ */
+
+import "khatui/runtime.khat"
+import "khatcore/system.khat"
+import "khatui/cultural.khat"
+import "khatui/animations.khat"
+import "khatui/gamelan.khat"
+
+// Konstanta aplikasi budaya
+konstan APP_VERSION = "1.0.0"
+konstan WINDOW_WIDTH = 800
+konstan WINDOW_HEIGHT = 600
+konstan WINDOW_TITLE = "Aplikasi Budaya Nusantara"
+
+// Tema budaya yang tersedia
+var batik_themes = ["parang", "kawung", "mega_mendung", "ceplok", "nitik", "truntum", "sogan", "sekar_jagad"]
+var wayang_characters = ["arjuna", "bima", "yudhistira", "nakula", "sadewa", "semar", "gareng", "petruk"]
+var gamelan_instruments = ["gong", "kendang", "saron", "bonang", "gambang", "suling", "rebab"]
+
+// State aplikasi budaya
+struct CulturalAppState {
+    main_window: int,
+    current_batik_theme: string,
+    current_wayang_character: string,
+    current_gamelan_mode: string,
+    is_wayang_show_active: bool,
+    is_gamelan_playing: bool,
+    cultural_animation_id: int,
+    ornament_opacity: float,
+    last_cultural_interaction: time_t,
+    cultural_score: int,
+    user_cultural_preference: string
+}
+
+// Global state
+var cultural_app: CulturalAppState
+
+// Inisialisasi aplikasi budaya
+fungsi cultural_app_init() -> int {
+    khat_log("[CULTURAL] Menginisialisasi Aplikasi Budaya Nusantara v" + APP_VERSION)
+    
+    // Setup state budaya
+    cultural_app.current_batik_theme = "parang"
+    cultural_app.current_wayang_character = "arjuna"
+    cultural_app.current_gamelan_mode = "pelog"
+    cultural_app.is_wayang_show_active = false
+    cultural_app.is_gamelan_playing = false
+    cultural_app.cultural_animation_id = -1
+    cultural_app.ornament_opacity = 0.8
+    cultural_app.last_cultural_interaction = 0
+    cultural_app.cultural_score = 0
+    cultural_app.user_cultural_preference = "jawa"
+    
+    // Buat window utama dengan tema budaya
+    if (create_cultural_main_window() != 0) {
+        khat_log("[ERROR] Gagal membuat window budaya utama")
+        return -1
+    }
+    
+    // Setup event handlers budaya
+    setup_cultural_event_handlers()
+    
+    // Load semua aset budaya
+    load_all_cultural_assets()
+    
+    // Mulai ambient gamelan
+    start_ambient_gamelan()
+    
+    khat_log("[CULTURAL] Aplikasi budaya berhasil diinisialisasi!")
+    return 0
+}
+
+// Buat window utama dengan tema budaya
+fungsi create_cultural_main_window() -> int {
+    khat_log("[CULTURAL] Membuat window budaya utama...")
+    
+    cultural_app.main_window = khatui_create_window(
+        WINDOW_TITLE,
+        (khat_screen_width() - WINDOW_WIDTH) / 2,
+        (khat_screen_height() - WINDOW_HEIGHT) / 2,
+        WINDOW_WIDTH, WINDOW_HEIGHT,
+        khat_get_current_app_id()
+    )
+    
+    if (cultural_app.main_window < 0) {
+        return -1
+    }
+    
+    // Set window properties dengan budaya
+    khatui_set_window_cultural_theme(cultural_app.main_window, cultural_app.current_batik_theme)
+    khatui_set_window_resizable(cultural_app.main_window, true)
+    khatui_set_window_min_size(cultural_app.main_window, 600, 450)
+    khatui_enable_cultural_mode(cultural_app.main_window, true)
+    
+    // Render window dengan ornamen lengkap
+    render_cultural_main_window()
+    
+    return 0
+}
+
+// Render window utama dengan elemen budaya lengkap
+fungsi render_cultural_main_window() -> void {
+    // Clear window
+    khatui_clear_window(cultural_app.main_window)
+    
+    // Background dengan batik pattern dinamis
+    draw_dynamic_batik_background()
+    
+    // Header dengan ornamen Garuda
+    draw_garuda_header()
+    
+    // Sidebar wayang characters
+    draw_wayang_sidebar()
+    
+    // Main content area dengan showcase budaya
+    draw_cultural_showcase_area()
+    
+    // Gamelan control panel
+    draw_gamelan_control_panel()
+    
+    // Footer dengan informasi budaya
+    draw_cultural_footer()
+    
+    // Floating ornaments
+    draw_floating_ornaments()
+}
+
+// Gambar background batik dinamis
+fungsi draw_dynamic_batik_background() -> void {
+    var primary_color = get_batik_primary_color(cultural_app.current_batik_theme)
+    var secondary_color = get_batik_secondary_color(cultural_app.current_batik_theme)
+    var pattern_opacity = 0.15
+    
+    // Background gradien dengan warna batik
+    khatui_draw_cultural_gradient(cultural_app.main_window, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
+                                  primary_color, secondary_color, "radial")
+    
+    // Layer batik pattern dengan animasi
+    khatui_draw_animated_batik_pattern(cultural_app.main_window,
+                                       0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
+                                       cultural_app.current_batik_theme,
+                                       secondary_color, pattern_opacity)
+    
+    // Border ornamen dengan motif tradisional
+    khatui_draw_ornamental_border(cultural_app.main_window,
+                                  0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
+                                  "ornamen_" + cultural_app.current_batik_theme, 4)
+}
+
+// Gambar header dengan ornamen Garuda
+fungsi draw_garuda_header() -> void {
+    var header_height = 80
+    var header_bg = get_cultural_color("garuda_header_bg")
+    
+    // Background header dengan gradien emas
+    khatui_draw_cultural_gradient(cultural_app.main_window, 0, 0, WINDOW_WIDTH, header_height,
+                                  header_bg, get_cultural_color("garuda_header_gradient"), "horizontal")
+    
+    // Garuda centerpiece dengan animasi
+    var garuda_size = 60
+    var garuda_x = (WINDOW_WIDTH - garuda_size) / 2
+    var garuda_y = (header_height - garuda_size) / 2
+    
+    khatui_draw_animated_cultural_icon(cultural_app.main_window, garuda_x, garuda_y, 
+                                       garuda_size, garuda_size, "garuda_agung",
+                                       get_cultural_color("garuda_gold"), "breathing")
+    
+    // Ornamen sayap kiri dan kanan
+    khatui_draw_cultural_icon(cultural_app.main_window, garuda_x - 80, garuda_y + 10,
+                              40, 40, "sayap_garuda_kiri", get_cultural_color("garuda_wing"))
+    
+    khatui_draw_cultural_icon(cultural_app.main_window, garuda_x + garuda_size + 40, garuda_y + 10,
+                              40, 40, "sayap_garuda_kanan", get_cultural_color("garuda_wing"))
+    
+    // Judul dengan font tradisional
+    khatui_draw_text_cultural(cultural_app.main_window, 20, 20,
+                              WINDOW_TITLE, get_cultural_color("garuda_title"),
+                              "garuda_title_font")
+    
+    // Subtitle dengan aksara Jawa
+    khatui_draw_text_cultural(cultural_app.main_window, 20, 45,
+                              "ꦄꦥ꧀ꦭꦶꦏꦱꦶ ꦧꦸꦢꦪ ꦤꦸꦱꦤ꧀ꦠꦫ", get_cultural_color("aksara_jawa"),
+                              "aksara_jawa_font")
+}
+
+// Gambar sidebar wayang characters
+fungsi draw_wayang_sidebar() -> void {
+    var sidebar_width = 150
+    var sidebar_bg = get_cultural_color("wayang_sidebar_bg")
+    
+    // Background sidebar dengan motif wayang
+    khatui_draw_rounded_rect(cultural_app.main_window, 10, 90, sidebar_width, WINDOW_HEIGHT - 140, 
+                             15, sidebar_bg)
+    
+    // Title sidebar
+    khatui_draw_text_cultural(cultural_app.main_window, 25, 105,
+                              "Tokoh Wayang", get_cultural_color("wayang_sidebar_title"),
+                              "wayang_sidebar_title")
+    
+    // Wayang character buttons
+    var button_height = 60
+    var button_margin = 10
+    var start_y = 130
+    
+    for (var i = 0; i < min(wayang_characters.length, 6); i++) {
+        var character = wayang_characters[i]
+        var button_y = start_y + i * (button_height + button_margin)
+        var is_selected = (character == cultural_app.current_wayang_character)
+        
+        draw_wayang_character_button(25, button_y, sidebar_width - 30, button_height,
+                                     character, is_selected)
+    }
+}
+
+// Gambar tombol karakter wayang
+fungsi draw_wayang_character_button(x: int, y: int, width: int, height: int,
+                                   character: string, is_selected: bool) -> void {
+    var button_bg = is_selected ?
+                    get_cultural_color("wayang_selected_bg") :
+                    get_cultural_color("wayang_button_bg")
+    
+    // Background button dengan ornamen
+    khatui_draw_rounded_rect(cultural_app.main_window, x, y, width, height, 8, button_bg)
+    
+    if (is_selected) {
+        // Border emas untuk yang terpilih
+        khatui_draw_rounded_rect_border(cultural_app.main_window, x, y, width, height, 8, 3,
+                                        get_cultural_color("wayang_selected_border"))
+    }
+    
+    // Icon wayang character
+    khatui_draw_cultural_icon(cultural_app.main_window, x + 10, y + 10, 40, 40,
+                              "wayang_" + character, get_cultural_color("wayang_icon"))
+    
+    // Nama character
+    var character_name = get_wayang_character_name(character)
+    khatui_draw_text_cultural(cultural_app.main_window, x + 55, y + 20,
+                              character_name, get_cultural_color("wayang_name"),
+                              "wayang_name_font")
+    
+    // Click handler
+    khatui_add_click_handler(cultural_app.main_window, x, y, width, height,
+                            "wayang_character_click", character)
+}
+
+// Gambar area showcase budaya utama
+fungsi draw_cultural_showcase_area() -> void {
+    var showcase_x = 170
+    var showcase_y = 90
+    var showcase_width = WINDOW_WIDTH - showcase_x - 20
+    var showcase_height = 350
+    var showcase_bg = get_cultural_color("showcase_bg")
+    
+    // Background showcase dengan transparansi
+    khatui_draw_rounded_rect_with_alpha(cultural_app.main_window, showcase_x, showcase_y,
+                                        showcase_width, showcase_height, 15, showcase_bg, 0.9)
+    
+    // Current wayang character showcase
+    draw_wayang_character_showcase(showcase_x + 20, showcase_y + 20, 
+                                   showcase_width - 40, showcase_height - 40)
+}
+
+// Gambar showcase karakter wayang
+fungsi draw_wayang_character_showcase(x: int, y: int, width: int, height: int) -> void {
+    var character = cultural_app.current_wayang_character
+    var character_info = get_wayang_character_info(character)
+    
+    // Large wayang character illustration
+    var char_size = 200
+    var char_x = x + (width - char_size) / 2
+    var char_y = y + 20
+    
+    if (cultural_app.is_wayang_show_active) {
+        // Animated wayang performance
+        khatui_draw_animated_cultural_icon(cultural_app.main_window, char_x, char_y,
+                                           char_size, char_size, "wayang_" + character + "_animated",
+                                           get_cultural_color("wayang_showcase"), "wayang_dance")
+    } else {
+        // Static wayang character
+        khatui_draw_cultural_icon(cultural_app.main_window, char_x, char_y,
+                                  char_size, char_size, "wayang_" + character + "_large",
+                                  get_cultural_color("wayang_showcase"))
+    }
+    
+    // Character information
+    khatui_draw_text_cultural(cultural_app.main_window, x + 20, char_y + char_size + 20,
+                              character_info.name, get_cultural_color("character_name"),
+                              "character_name_font")
+    
+    khatui_draw_text_cultural(cultural_app.main_window, x + 20, char_y + char_size + 45,
+                              character_info.description, get_cultural_color("character_desc"),
+                              "character_desc_font")
+    
+    // Action buttons
+    draw_wayang_action_buttons(x + 20, char_y + char_size + 80, width - 40, 40)
+}
+
+// Gambar tombol aksi wayang
+fungsi draw_wayang_action_buttons(x: int, y: int, width: int, height: int) -> void {
+    var button_width = (width - 20) / 3
+    
+    // Tombol pertunjukan wayang
+    var show_text = cultural_app.is_wayang_show_active ? "Stop Pertunjukan" : "Mulai Pertunjukan"
+    draw_cultural_action_button(x, y, button_width, height, show_text, "wayang_show_toggle")
+    
+    // Tombol cerita wayang
+    draw_cultural_action_button(x + button_width + 10, y, button_width, height, 
+                                "Cerita Wayang", "wayang_story")
+    
+    // Tombol ganti karakter
+    draw_cultural_action_button(x + 2 * (button_width + 10), y, button_width, height,
+                                "Ganti Karakter", "wayang_change")
+}
+
+// Gambar panel kontrol gamelan
+fungsi draw_gamelan_control_panel() -> void {
+    var panel_x = 170
+    var panel_y = 450
+    var panel_width = WINDOW_WIDTH - panel_x - 20
+    var panel_height = 80
+    var panel_bg = get_cultural_color("gamelan_panel_bg")
+    
+    // Background panel gamelan
+    khatui_draw_rounded_rect(cultural_app.main_window, panel_x, panel_y,
+                             panel_width, panel_height, 10, panel_bg)
+    
+    // Title panel
+    khatui_draw_text_cultural(cultural_app.main_window, panel_x + 20, panel_y + 15,
+                              "Kontrol Gamelan", get_cultural_color("gamelan_title"),
+                              "gamelan_title_font")
+    
+    // Gamelan instrument controls
+    draw_gamelan_instrument_controls(panel_x + 20, panel_y + 35, panel_width - 40, 30)
+}
+
+// Gambar kontrol instrumen gamelan
+fungsi draw_gamelan_instrument_controls(x: int, y: int, width: int, height: int) -> void {
+    var instrument_width = width / gamelan_instruments.length
+    
+    for (var i = 0; i < gamelan_instruments.length; i++) {
+        var instrument = gamelan_instruments[i]
+        var inst_x = x + i * instrument_width
+        var is_playing = is_gamelan_instrument_playing(instrument)
+        
+        draw_gamelan_instrument_button(inst_x, y, instrument_width - 5, height,
+                                       instrument, is_playing)
+    }
+}
+
+// Handle wayang character click
+fungsi handle_wayang_character_click(character: string) -> void {
+    cultural_app.current_wayang_character = character
+    cultural_app.last_cultural_interaction = khat_get_current_time()
+    cultural_app.cultural_score += 10
+    
+    khat_log("[CULTURAL] Wayang character selected: " + character)
+    
+    // Play character introduction sound
+    play_wayang_character_sound(character)
+    
+    // Update showcase
+    render_cultural_main_window()
+}
+
+// Handle wayang show toggle
+fungsi handle_wayang_show_toggle() -> void {
+    cultural_app.is_wayang_show_active = !cultural_app.is_wayang_show_active
+    cultural_app.last_cultural_interaction = khat_get_current_time()
+    
+    if (cultural_app.is_wayang_show_active) {
+        khat_log("[CULTURAL] Starting wayang performance")
+        start_wayang_performance()
+        cultural_app.cultural_score += 25
+    } else {
+        khat_log("[CULTURAL] Stopping wayang performance")
+        stop_wayang_performance()
+    }
+    
+    render_cultural_main_window()
+}
+
+// Start wayang performance
+fungsi start_wayang_performance() -> void {
+    // Start wayang animation
+    cultural_app.cultural_animation_id = khatui_start_cultural_animation(
+        cultural_app.main_window, "wayang_performance", 0  // Infinite duration
+    )
+    
+    // Start gamelan accompaniment
+    start_gamelan_accompaniment("wayang_performance")
+    
+    // Play dalang narration
+    play_dalang_narration(cultural_app.current_wayang_character)
+}
+
+// Entry point aplikasi budaya
+fungsi main() -> int {
+    if (cultural_app_init() != 0) {
+        return -1
+    }
+    
+    // Main event loop dengan update budaya
+    while (true) {
+        var event = khatui_get_next_event()
+        if (event.type == "quit") {
+            break
+        }
+        
+        handle_cultural_event(event.type, event.data)
+        
+        // Update cultural animations
+        update_cultural_animations()
+        
+        // Update gamelan
+        update_gamelan_state()
+        
+        khat_sleep(16)
+    }
+    
+    // Cleanup budaya
+    cultural_cleanup()
+    
+    return 0
+}

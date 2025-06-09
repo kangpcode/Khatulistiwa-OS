@@ -1,0 +1,324 @@
+# ============================================================================
+# theme.txt - Khatulistiwa OS GRUB Theme
+# Copyright (c) 2025 Dhafa Nazula Permadi & Team BIGCode By Cv Bintang Gumilang Group
+# ============================================================================
+# 
+# GRUB theme dengan elemen budaya Indonesia:
+# 1. Warna bendera Indonesia (merah-putih)
+# 2. Ornamen batik tradisional
+# 3. Font dengan karakter Indonesia
+# 4. Layout yang mencerminkan nilai gotong royong
+# 5. Animasi Garuda Pancasila
+
+# Theme metadata
+title-text: "Khatulistiwa OS - Sistem Operasi Indonesia"
+title-font: "Unifont Bold 16"
+title-color: "#FFD700"
+
+# Desktop settings
+desktop-image: "background.png"
+desktop-color: "#8B0000"
+
+# Terminal settings
+terminal-font: "Unifont Regular 12"
+terminal-box: "terminal_box_*.png"
+terminal-left: "0"
+terminal-top: "0"
+terminal-width: "100%"
+terminal-height: "100%"
+terminal-border: "0"
+
+# Boot menu settings
++ boot_menu {
+    left = 20%
+    top = 25%
+    width = 60%
+    height = 50%
+    
+    item_font = "Unifont Bold 14"
+    item_color = "#FFFFFF"
+    item_height = 32
+    item_padding = 8
+    item_spacing = 4
+    
+    selected_item_font = "Unifont Bold 14"
+    selected_item_color = "#FFD700"
+    selected_item_pixmap_style = "selected_item_*.png"
+    
+    menu_pixmap_style = "menu_*.png"
+    
+    scrollbar = true
+    scrollbar_frame = "scrollbar_frame_*.png"
+    scrollbar_thumb = "scrollbar_thumb_*.png"
+    scrollbar_width = 16
+}
+
+# Progress bar (for loading)
++ progress_bar {
+    id = "__timeout__"
+    left = 20%
+    top = 80%
+    width = 60%
+    height = 24
+    
+    font = "Unifont Regular 12"
+    text_color = "#FFFFFF"
+    fg_color = "#FFD700"
+    bg_color = "#8B4513"
+    border_color = "#FFFFFF"
+    
+    text = "Memuat dalam %d detik... Loading in %d seconds..."
+    
+    bar_style = "progress_bar_*.png"
+    highlight_style = "progress_highlight_*.png"
+}
+
+# Title label
++ label {
+    id = "title"
+    left = 0
+    top = 10%
+    width = 100%
+    height = 40
+    
+    font = "Unifont Bold 20"
+    color = "#FFD700"
+    align = "center"
+    text = "KHATULISTIWA OS"
+}
+
+# Subtitle label
++ label {
+    id = "subtitle"
+    left = 0
+    top = 15%
+    width = 100%
+    height = 30
+    
+    font = "Unifont Regular 14"
+    color = "#FFFFFF"
+    align = "center"
+    text = "Sistem Operasi Indonesia - Indonesian Operating System"
+}
+
+# Cultural quote label
++ label {
+    id = "cultural_quote"
+    left = 0
+    top = 18%
+    width = 100%
+    height = 25
+    
+    font = "Unifont Italic 12"
+    color = "#FFD700"
+    align = "center"
+    text = "\"Bhinneka Tunggal Ika - Unity in Diversity\""
+}
+
+# Garuda image (if available)
++ image {
+    id = "garuda_logo"
+    left = 45%
+    top = 5%
+    width = 10%
+    height = 10%
+    file = "garuda.png"
+}
+
+# Indonesian flag elements
++ image {
+    id = "flag_red"
+    left = 5%
+    top = 5%
+    width = 8%
+    height = 4%
+    file = "flag_red.png"
+}
+
++ image {
+    id = "flag_white"
+    left = 5%
+    top = 9%
+    width = 8%
+    height = 4%
+    file = "flag_white.png"
+}
+
+# Batik ornament corners
++ image {
+    id = "batik_top_left"
+    left = 0
+    top = 0
+    width = 15%
+    height = 15%
+    file = "batik_corner_tl.png"
+}
+
++ image {
+    id = "batik_top_right"
+    left = 85%
+    top = 0
+    width = 15%
+    height = 15%
+    file = "batik_corner_tr.png"
+}
+
++ image {
+    id = "batik_bottom_left"
+    left = 0
+    top = 85%
+    width = 15%
+    height = 15%
+    file = "batik_corner_bl.png"
+}
+
++ image {
+    id = "batik_bottom_right"
+    left = 85%
+    top = 85%
+    width = 15%
+    height = 15%
+    file = "batik_corner_br.png"
+}
+
+# Help text
++ label {
+    id = "help_text"
+    left = 0
+    top = 90%
+    width = 100%
+    height = 20
+    
+    font = "Unifont Regular 10"
+    color = "#CCCCCC"
+    align = "center"
+    text = "Gunakan ↑↓ untuk navigasi, Enter untuk memilih - Use ↑↓ to navigate, Enter to select"
+}
+
+# Version info
++ label {
+    id = "version_info"
+    left = 0
+    top = 95%
+    width = 100%
+    height = 15
+    
+    font = "Unifont Regular 9"
+    color = "#999999"
+    align = "center"
+    text = "Khatulistiwa OS v1.0.0 - Teknologi Modern, Jiwa Indonesia"
+}
+
+# Cultural elements styling
++ hbox {
+    id = "cultural_elements"
+    left = 20%
+    top = 75%
+    width = 60%
+    height = 30
+    
+    + image {
+        file = "wayang_silhouette.png"
+        width = 40
+        height = 30
+    }
+    
+    + label {
+        font = "Unifont Regular 10"
+        color = "#FFD700"
+        text = " Wayang "
+    }
+    
+    + image {
+        file = "gamelan_icon.png"
+        width = 40
+        height = 30
+    }
+    
+    + label {
+        font = "Unifont Regular 10"
+        color = "#FFD700"
+        text = " Gamelan "
+    }
+    
+    + image {
+        file = "batik_icon.png"
+        width = 40
+        height = 30
+    }
+    
+    + label {
+        font = "Unifont Regular 10"
+        color = "#FFD700"
+        text = " Batik "
+    }
+}
+
+# Time display
++ label {
+    id = "time_display"
+    left = 85%
+    top = 5%
+    width = 14%
+    height = 20
+    
+    font = "Unifont Regular 10"
+    color = "#FFFFFF"
+    align = "right"
+    text = "@TIMEOUT_NOTIFICATION@"
+}
+
+# Boot options info
++ vbox {
+    id = "boot_info"
+    left = 75%
+    top = 25%
+    width = 23%
+    height = 50%
+    
+    + label {
+        font = "Unifont Bold 12"
+        color = "#FFD700"
+        text = "Opsi Boot:"
+    }
+    
+    + label {
+        font = "Unifont Regular 10"
+        color = "#FFFFFF"
+        text = "• Normal Boot"
+    }
+    
+    + label {
+        font = "Unifont Regular 10"
+        color = "#FFFFFF"
+        text = "• Mode Budaya Penuh"
+    }
+    
+    + label {
+        font = "Unifont Regular 10"
+        color = "#FFFFFF"
+        text = "• Mode Aman"
+    }
+    
+    + label {
+        font = "Unifont Regular 10"
+        color = "#FFFFFF"
+        text = "• Mode Pemulihan"
+    }
+    
+    + label {
+        font = "Unifont Regular 10"
+        color = "#FFFFFF"
+        text = "• Opsi Lanjutan"
+    }
+}
+
+# Cultural pattern overlay
++ image {
+    id = "cultural_overlay"
+    left = 0
+    top = 0
+    width = 100%
+    height = 100%
+    file = "cultural_pattern_overlay.png"
+}

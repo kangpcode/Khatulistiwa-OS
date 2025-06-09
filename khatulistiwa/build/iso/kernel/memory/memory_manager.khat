@@ -1,0 +1,453 @@
+/*
+ * ============================================================================
+ * memory_manager.khat - Memory Manager dengan Konsep Lumbung Tradisional
+ * Copyright (c) 2025 Dhafa Nazula Permadi & Team BIGCode By Cv Bintang Gumilang Group
+ * ============================================================================
+ * 
+ * Memory manager dengan fitur:
+ * 1. Virtual memory dengan konsep lumbung padi
+ * 2. Page allocation dengan sistem bagi hasil
+ * 3. Memory protection dengan penjaga lumbung
+ * 4. Garbage collection dengan pembersihan tradisional
+ * 5. Cultural memory metaphors
+ */
+
+// Konstanta memory
+konstan PAGE_SIZE = 4096
+konstan PAGE_SHIFT = 12
+konstan MAX_PAGES = 1048576  // 4GB
+konstan KERNEL_HEAP_SIZE = 16777216  // 16MB
+konstan USER_SPACE_START = 0x40000000
+konstan KERNEL_SPACE_START = 0xC0000000
+
+// Page flags
+enum PageFlags {
+    PAGE_PRESENT = 0x001,
+    PAGE_WRITABLE = 0x002,
+    PAGE_USER = 0x004,
+    PAGE_ACCESSED = 0x020,
+    PAGE_DIRTY = 0x040,
+    PAGE_CULTURAL = 0x800  // Cultural memory marker
+}
+
+// Memory zone types
+enum MemoryZone {
+    ZONE_DMA = 0,      // DMA memory
+    ZONE_NORMAL = 1,   // Normal memory
+    ZONE_HIGH = 2,     // High memory
+    ZONE_CULTURAL = 3  // Cultural assets memory
+}
+
+// Struktur page descriptor
+struct PageDescriptor {
+    physical_addr: uintptr_t,
+    virtual_addr: uintptr_t,
+    flags: int,
+    ref_count: int,
+    zone: MemoryZone,
+    owner_pid: int,
+    cultural_type: string,
+    allocation_time: time_t,
+    last_access: time_t
+}
+
+// Struktur memory region
+struct MemoryRegion {
+    start_addr: uintptr_t,
+    end_addr: uintptr_t,
+    size: size_t,
+    flags: int,
+    name: string,
+    cultural_name: string,
+    owner_pid: int,
+    protection: int
+}
+
+// Memory statistics
+struct MemoryStats {
+    total_memory: size_t,
+    used_memory: size_t,
+    free_memory: size_t,
+    cached_memory: size_t,
+    cultural_memory: size_t,
+    page_faults: int,
+    allocations: int,
+    deallocations: int,
+    gc_runs: int
+}
+
+// Global memory state
+var page_table: PageDescriptor[MAX_PAGES]
+var free_pages: int[MAX_PAGES]
+var free_page_count: int
+var memory_regions: MemoryRegion[1024]
+var region_count: int
+var memory_stats: MemoryStats
+var memory_lock: int
+
+// Inisialisasi memory manager
+fungsi memory_manager_init() -> int {
+    khat_log("[MEMORY] Menginisialisasi Memory Manager Lumbung Tradisional")
+    
+    // Initialize page table
+    for (var i = 0; i < MAX_PAGES; i++) {
+        page_table[i].physical_addr = i * PAGE_SIZE
+        page_table[i].virtual_addr = 0
+        page_table[i].flags = 0
+        page_table[i].ref_count = 0
+        page_table[i].zone = ZONE_NORMAL
+        page_table[i].owner_pid = -1
+        page_table[i].cultural_type = ""
+        page_table[i].allocation_time = 0
+        page_table[i].last_access = 0
+        
+        free_pages[i] = i
+    }
+    
+    free_page_count = MAX_PAGES
+    region_count = 0
+    memory_lock = 0
+    
+    // Initialize memory statistics
+    memory_stats.total_memory = MAX_PAGES * PAGE_SIZE
+    memory_stats.used_memory = 0
+    memory_stats.free_memory = memory_stats.total_memory
+    memory_stats.cached_memory = 0
+    memory_stats.cultural_memory = 0
+    memory_stats.page_faults = 0
+    memory_stats.allocations = 0
+    memory_stats.deallocations = 0
+    memory_stats.gc_runs = 0
+    
+    // Setup kernel memory regions
+    setup_kernel_memory_regions()
+    
+    // Setup cultural memory zone
+    setup_cultural_memory_zone()
+    
+    khat_log("[MEMORY] Lumbung memori berhasil diinisialisasi!")
+    return 0
+}
+
+// Allocate physical page
+fungsi allocate_physical_page(zone: MemoryZone) -> int {
+    acquire_lock(&memory_lock)
+    
+    if (free_page_count == 0) {
+        release_lock(&memory_lock)
+        return -1  // Out of memory
+    }
+    
+    // Find suitable page in zone
+    var page_index = -1
+    for (var i = 0; i < free_page_count; i++) {
+        var page = free_pages[i]
+        if (is_page_in_zone(page, zone)) {
+            page_index = page
+            
+            // Remove from free list
+            for (var j = i; j < free_page_count - 1; j++) {
+                free_pages[j] = free_pages[j + 1]
+            }
+            free_page_count--
+            break
+        }
+    }
+    
+    if (page_index >= 0) {
+        // Mark page as allocated
+        page_table[page_index].flags |= PAGE_PRESENT
+        page_table[page_index].zone = zone
+        page_table[page_index].ref_count = 1
+        page_table[page_index].allocation_time = get_current_time()
+        
+        // Update statistics
+        memory_stats.used_memory += PAGE_SIZE
+        memory_stats.free_memory -= PAGE_SIZE
+        memory_stats.allocations++
+        
+        if (zone == ZONE_CULTURAL) {
+            memory_stats.cultural_memory += PAGE_SIZE
+        }
+    }
+    
+    release_lock(&memory_lock)
+    return page_index
+}
+
+// Free physical page
+fungsi free_physical_page(page_index: int) -> int {
+    if (page_index < 0 || page_index >= MAX_PAGES) {
+        return -1
+    }
+    
+    acquire_lock(&memory_lock)
+    
+    var page = &page_table[page_index]
+    
+    if (!(page->flags & PAGE_PRESENT) || page->ref_count <= 0) {
+        release_lock(&memory_lock)
+        return -1  // Page not allocated
+    }
+    
+    page->ref_count--
+    
+    if (page->ref_count == 0) {
+        // Clear page
+        page->flags = 0
+        page->virtual_addr = 0
+        page->owner_pid = -1
+        page->cultural_type = ""
+        
+        // Add to free list
+        free_pages[free_page_count] = page_index
+        free_page_count++
+        
+        // Update statistics
+        memory_stats.used_memory -= PAGE_SIZE
+        memory_stats.free_memory += PAGE_SIZE
+        memory_stats.deallocations++
+        
+        if (page->zone == ZONE_CULTURAL) {
+            memory_stats.cultural_memory -= PAGE_SIZE
+        }
+    }
+    
+    release_lock(&memory_lock)
+    return 0
+}
+
+// Allocate virtual memory region
+fungsi allocate_virtual_region(size: size_t, flags: int, cultural_name: string) -> uintptr_t {
+    if (size == 0) {
+        return 0
+    }
+    
+    // Align size to page boundary
+    var aligned_size = align_to_page(size)
+    var page_count = aligned_size / PAGE_SIZE
+    
+    // Find free virtual address space
+    var virtual_addr = find_free_virtual_space(aligned_size)
+    if (virtual_addr == 0) {
+        return 0  // No free virtual space
+    }
+    
+    // Allocate physical pages
+    var physical_pages = allocate_physical_pages(page_count, ZONE_NORMAL)
+    if (physical_pages == null) {
+        return 0  // Out of physical memory
+    }
+    
+    // Map virtual to physical
+    if (map_virtual_to_physical(virtual_addr, physical_pages, page_count, flags) != 0) {
+        free_physical_pages(physical_pages, page_count)
+        return 0
+    }
+    
+    // Create memory region
+    if (create_memory_region(virtual_addr, aligned_size, flags, cultural_name) != 0) {
+        unmap_virtual_pages(virtual_addr, page_count)
+        free_physical_pages(physical_pages, page_count)
+        return 0
+    }
+    
+    khat_log("[MEMORY] Allocated virtual region: " + cultural_name + 
+             " (" + khat_size_to_string(aligned_size) + " bytes)")
+    
+    return virtual_addr
+}
+
+// Free virtual memory region
+fungsi free_virtual_region(virtual_addr: uintptr_t) -> int {
+    var region = find_memory_region(virtual_addr)
+    if (region == null) {
+        return -1
+    }
+    
+    var page_count = region->size / PAGE_SIZE
+    
+    // Unmap virtual pages
+    unmap_virtual_pages(virtual_addr, page_count)
+    
+    // Free physical pages
+    free_virtual_pages(virtual_addr, page_count)
+    
+    // Remove memory region
+    remove_memory_region(virtual_addr)
+    
+    khat_log("[MEMORY] Freed virtual region: " + region->cultural_name)
+    
+    return 0
+}
+
+// Handle page fault
+fungsi handle_page_fault(virtual_addr: uintptr_t, error_code: int) -> int {
+    memory_stats.page_faults++
+    
+    khat_log("[MEMORY] Page fault at address: " + khat_ptr_to_string(virtual_addr))
+    
+    // Check if address is in valid region
+    var region = find_memory_region(virtual_addr)
+    if (region == null) {
+        khat_log("[MEMORY] Invalid memory access - segmentation fault")
+        return -1  // Segmentation fault
+    }
+    
+    // Check permissions
+    if (!check_memory_permissions(region, error_code)) {
+        khat_log("[MEMORY] Permission denied - protection fault")
+        return -1  // Protection fault
+    }
+    
+    // Allocate page if needed
+    if (!(error_code & PAGE_PRESENT)) {
+        var page_index = allocate_physical_page(ZONE_NORMAL)
+        if (page_index < 0) {
+            khat_log("[MEMORY] Out of memory")
+            return -1
+        }
+        
+        // Map page
+        var page_virtual = align_to_page(virtual_addr)
+        if (map_single_page(page_virtual, page_index, region->flags) != 0) {
+            free_physical_page(page_index)
+            return -1
+        }
+        
+        // Clear page if needed
+        if (region->flags & PAGE_USER) {
+            clear_page(page_virtual)
+        }
+    }
+    
+    return 0
+}
+
+// Cultural memory allocation
+fungsi allocate_cultural_memory(size: size_t, cultural_type: string) -> void* {
+    var virtual_addr = allocate_virtual_region(size, PAGE_USER | PAGE_WRITABLE | PAGE_CULTURAL, 
+                                               "Memori Budaya: " + cultural_type)
+    if (virtual_addr == 0) {
+        return null
+    }
+    
+    // Mark pages as cultural
+    mark_pages_as_cultural(virtual_addr, size, cultural_type)
+    
+    return (void*)virtual_addr
+}
+
+// Free cultural memory
+fungsi free_cultural_memory(ptr: void*) -> void {
+    if (ptr == null) {
+        return
+    }
+    
+    var virtual_addr = (uintptr_t)ptr
+    var region = find_memory_region(virtual_addr)
+    
+    if (region != null && (region->flags & PAGE_CULTURAL)) {
+        khat_log("[MEMORY] Freeing cultural memory: " + region->cultural_name)
+        free_virtual_region(virtual_addr)
+    }
+}
+
+// Garbage collection
+fungsi run_garbage_collection() -> int {
+    khat_log("[MEMORY] Menjalankan pembersihan memori tradisional...")
+    
+    memory_stats.gc_runs++
+    var freed_pages = 0
+    
+    acquire_lock(&memory_lock)
+    
+    // Scan for unreferenced pages
+    for (var i = 0; i < MAX_PAGES; i++) {
+        var page = &page_table[i]
+        
+        if ((page->flags & PAGE_PRESENT) && page->ref_count == 0) {
+            // Free unreferenced page
+            free_physical_page(i)
+            freed_pages++
+        }
+    }
+    
+    // Compact free page list
+    compact_free_page_list()
+    
+    // Clean up cultural memory
+    cleanup_unused_cultural_memory()
+    
+    release_lock(&memory_lock)
+    
+    khat_log("[MEMORY] Pembersihan selesai, " + khat_int_to_string(freed_pages) + " halaman dibersihkan")
+    
+    return freed_pages
+}
+
+// Memory protection
+fungsi set_memory_protection(virtual_addr: uintptr_t, size: size_t, protection: int) -> int {
+    var region = find_memory_region(virtual_addr)
+    if (region == null) {
+        return -1
+    }
+    
+    // Update region protection
+    region->protection = protection
+    
+    // Update page table entries
+    var page_count = align_to_page(size) / PAGE_SIZE
+    var current_addr = align_to_page(virtual_addr)
+    
+    for (var i = 0; i < page_count; i++) {
+        update_page_protection(current_addr, protection)
+        current_addr += PAGE_SIZE
+    }
+    
+    // Flush TLB
+    flush_tlb_range(virtual_addr, size)
+    
+    return 0
+}
+
+// Get memory statistics
+fungsi get_memory_statistics() -> MemoryStats* {
+    // Update dynamic statistics
+    update_memory_statistics()
+    
+    return &memory_stats
+}
+
+// Memory debugging
+fungsi dump_memory_info() -> void {
+    khat_log("[MEMORY] === Informasi Lumbung Memori ===")
+    khat_log("[MEMORY] Total: " + khat_size_to_string(memory_stats.total_memory))
+    khat_log("[MEMORY] Digunakan: " + khat_size_to_string(memory_stats.used_memory))
+    khat_log("[MEMORY] Bebas: " + khat_size_to_string(memory_stats.free_memory))
+    khat_log("[MEMORY] Cache: " + khat_size_to_string(memory_stats.cached_memory))
+    khat_log("[MEMORY] Budaya: " + khat_size_to_string(memory_stats.cultural_memory))
+    khat_log("[MEMORY] Page faults: " + khat_int_to_string(memory_stats.page_faults))
+    khat_log("[MEMORY] Alokasi: " + khat_int_to_string(memory_stats.allocations))
+    khat_log("[MEMORY] Dealokasi: " + khat_int_to_string(memory_stats.deallocations))
+    khat_log("[MEMORY] GC runs: " + khat_int_to_string(memory_stats.gc_runs))
+    
+    // Dump memory regions
+    dump_memory_regions()
+}
+
+// Shutdown memory manager
+fungsi memory_manager_shutdown() -> void {
+    khat_log("[MEMORY] Mematikan memory manager...")
+    
+    // Free all user memory
+    free_all_user_memory()
+    
+    // Run final garbage collection
+    run_garbage_collection()
+    
+    // Clear cultural memory
+    clear_all_cultural_memory()
+    
+    khat_log("[MEMORY] Memory manager telah dimatikan")
+}

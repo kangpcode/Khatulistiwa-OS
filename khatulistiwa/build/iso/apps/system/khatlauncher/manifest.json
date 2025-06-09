@@ -1,0 +1,57 @@
+{
+    "name": "KhatLauncher",
+    "version": "1.0.0",
+    "description": "Launcher utama Khatulistiwa OS dengan tema budaya Indonesia",
+    "author": "Tim Khatulistiwa OS",
+    "category": "system",
+    "type": "launcher",
+    "cultural": {
+        "indonesian_elements": true,
+        "batik_theme": "parang",
+        "garuda_animations": true,
+        "traditional_sounds": true,
+        "cultural_colors": {
+            "primary": "#8B4513",
+            "secondary": "#CD853F", 
+            "accent": "#FFD700",
+            "background": "#F5F5DC"
+        }
+    },
+    "permissions": [
+        "system_ui_access",
+        "app_management",
+        "window_management",
+        "notification_access",
+        "file_system_read",
+        "cultural_assets_access"
+    ],
+    "dependencies": [
+        "khatui_runtime.khat",
+        "khatcore_runtime.khat"
+    ],
+    "min_os_version": "1.0.0",
+    "ui_framework": "KhatUI",
+    "startup": {
+        "auto_start": true,
+        "priority": "high",
+        "position": "bottom"
+    },
+    "features": {
+        "taskbar": true,
+        "app_grid": true,
+        "search": true,
+        "quick_settings": true,
+        "cultural_widgets": true,
+        "indonesian_calendar": true
+    },
+    "localization": {
+        "default_language": "id_ID",
+        "supported_languages": ["id_ID", "en_US", "jv_ID", "su_ID"]
+    },
+    "resources": {
+        "icons": "resources/icons/",
+        "sounds": "resources/sounds/",
+        "cultural_assets": "cultural/",
+        "themes": "resources/themes/"
+    }
+}

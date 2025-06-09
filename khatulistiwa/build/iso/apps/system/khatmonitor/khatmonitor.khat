@@ -1,0 +1,516 @@
+/*
+ * ============================================================================
+ * khatmonitor.khat - Task Manager Khatulistiwa OS dengan Visualisasi Budaya
+ * Copyright (c) 2025 Dhafa Nazula Permadi & Team BIGCode By Cv Bintang Gumilang Group
+ * ============================================================================
+ * 
+ * Task Manager lengkap dengan fitur:
+ * 1. Monitor proses dengan icon wayang
+ * 2. Chart kinerja dengan motif batik
+ * 3. Alert dengan suara gamelan
+ * 4. Visualisasi tradisional Indonesia
+ * 5. Terminologi bahasa Indonesia
+ */
+
+import "khatui/runtime.khat"
+import "khatcore/system.khat"
+import "khatcore/process.khat"
+import "khatcore/performance.khat"
+import "khatui/cultural.khat"
+import "khatui/charts.khat"
+
+// Konstanta aplikasi
+konstan MONITOR_VERSION = "1.0.0"
+konstan WINDOW_WIDTH = 1100
+konstan WINDOW_HEIGHT = 750
+konstan SIDEBAR_WIDTH = 200
+konstan HEADER_HEIGHT = 60
+konstan REFRESH_INTERVAL = 1000
+
+// Tab monitoring
+enum MonitorTab {
+    PROSES = 0,
+    KINERJA = 1,
+    JARINGAN = 2,
+    PENYIMPANAN = 3,
+    APLIKASI = 4
+}
+
+// Status proses
+enum ProcessStatus {
+    RUNNING = 0,
+    SLEEPING = 1,
+    WAITING = 2,
+    ZOMBIE = 3,
+    STOPPED = 4
+}
+
+// Struktur proses
+struct ProcessInfo {
+    pid: int,
+    nama: string,
+    status: ProcessStatus,
+    cpu_usage: float,
+    memory_usage: size_t,
+    priority: int,
+    threads: int,
+    start_time: time_t,
+    cultural_icon: string,
+    is_khapp: bool
+}
+
+// Struktur kinerja sistem
+struct SystemPerformance {
+    cpu_usage: float,
+    memory_total: size_t,
+    memory_used: size_t,
+    memory_free: size_t,
+    disk_total: size_t,
+    disk_used: size_t,
+    network_in: float,
+    network_out: float,
+    temperature: float,
+    uptime: time_t
+}
+
+// State aplikasi
+struct MonitorState {
+    current_tab: MonitorTab,
+    selected_process: int,
+    processes: ProcessInfo[],
+    process_count: int,
+    performance: SystemPerformance,
+    show_system_processes: bool,
+    sort_by: string,
+    sort_ascending: bool,
+    cultural_mode: bool,
+    batik_theme: string,
+    main_window: int,
+    refresh_timer: int,
+    chart_history: float[100][5] // 100 data points, 5 metrics
+}
+
+// Global state
+var monitor: MonitorState
+var performance_history: float[100][5]
+var history_index: int = 0
+
+// Inisialisasi aplikasi
+fungsi monitor_init() -> int {
+    khat_log("[MONITOR] Menginisialisasi KhatMonitor v" + MONITOR_VERSION)
+    
+    // Setup state awal
+    monitor.current_tab = PROSES
+    monitor.selected_process = -1
+    monitor.process_count = 0
+    monitor.show_system_processes = true
+    monitor.sort_by = "cpu_usage"
+    monitor.sort_ascending = false
+    monitor.cultural_mode = true
+    monitor.batik_theme = "nitik"
+    
+    // Buat window utama
+    if (create_main_window() != 0) {
+        khat_log("[ERROR] Gagal membuat window utama")
+        return -1
+    }
+    
+    // Setup timer refresh
+    monitor.refresh_timer = khat_timer_create(REFRESH_INTERVAL, refresh_callback)
+    if (monitor.refresh_timer < 0) {
+        khat_log("[ERROR] Gagal membuat timer refresh")
+        return -1
+    }
+    
+    // Load data awal
+    if (refresh_system_data() != 0) {
+        khat_log("[ERROR] Gagal memuat data sistem")
+        return -1
+    }
+    
+    // Setup event handlers
+    setup_monitor_events()
+    
+    khat_log("[MONITOR] KhatMonitor berhasil diinisialisasi!")
+    return 0
+}
+
+// Buat window utama
+fungsi create_main_window() -> int {
+    khat_log("[MONITOR] Membuat window utama...")
+    
+    monitor.main_window = khatui_create_window(
+        "KhatMonitor - Pemantau Sistem Nusantara",
+        (khat_screen_width() - WINDOW_WIDTH) / 2,
+        (khat_screen_height() - WINDOW_HEIGHT) / 2,
+        WINDOW_WIDTH, WINDOW_HEIGHT,
+        khat_get_current_app_id()
+    )
+    
+    if (monitor.main_window < 0) {
+        return -1
+    }
+    
+    // Set window properties
+    khatui_set_window_cultural_theme(monitor.main_window, monitor.batik_theme)
+    khatui_set_window_resizable(monitor.main_window, true)
+    khatui_set_window_min_size(monitor.main_window, 900, 600)
+    
+    // Render window
+    render_monitor_window()
+    
+    return 0
+}
+
+// Render window monitor
+fungsi render_monitor_window() -> void {
+    // Clear window
+    khatui_clear_window(monitor.main_window)
+    
+    // Background dengan motif batik
+    draw_cultural_background()
+    
+    // Header dengan info sistem
+    draw_monitor_header()
+    
+    // Sidebar dengan tab navigasi
+    draw_monitor_sidebar()
+    
+    // Content area berdasarkan tab aktif
+    draw_monitor_content()
+    
+    // Status bar dengan info real-time
+    draw_monitor_statusbar()
+}
+
+// Gambar background dengan motif budaya
+fungsi draw_cultural_background() -> void {
+    var bg_color = get_cultural_color("monitor_bg")
+    var pattern_color = get_cultural_color("batik_subtle")
+    
+    // Background dasar
+    khatui_fill_rect(monitor.main_window, 0, 0, 
+                     WINDOW_WIDTH, WINDOW_HEIGHT, bg_color)
+    
+    // Overlay motif batik halus
+    khatui_draw_batik_pattern(monitor.main_window,
+                              0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
+                              monitor.batik_theme, pattern_color, 0.03)
+    
+    // Border ornamen
+    khatui_draw_cultural_border(monitor.main_window,
+                                0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
+                                "ornamen_monitor")
+}
+
+// Gambar header dengan info sistem
+fungsi draw_monitor_header() -> void {
+    var header_color = get_cultural_color("monitor_header_bg")
+    
+    // Background header
+    khatui_fill_rect(monitor.main_window, 0, 0, 
+                     WINDOW_WIDTH, HEADER_HEIGHT, header_color)
+    
+    // Logo dan judul
+    khatui_draw_cultural_icon(monitor.main_window, 15, 15, 30, 30,
+                              "monitor_wayang", get_cultural_color("header_icon"))
+    
+    khatui_draw_text_cultural(monitor.main_window, 55, 20,
+                              "KhatMonitor", get_cultural_color("header_title"),
+                              "header_title")
+    
+    // Info sistem real-time
+    draw_system_info_header(300, 10, 500, 40)
+    
+    // Tombol kontrol
+    draw_header_controls(WINDOW_WIDTH - 150, 15, 130, 30)
+}
+
+// Gambar info sistem di header
+fungsi draw_system_info_header(x: int, y: int, width: int, height: int) -> void {
+    var info_color = get_cultural_color("header_info")
+    
+    // CPU usage dengan icon gamelan
+    khatui_draw_cultural_icon(monitor.main_window, x, y, 20, 20,
+                              "gamelan_cpu", info_color)
+    
+    var cpu_text = "CPU: " + format_percentage(monitor.performance.cpu_usage)
+    khatui_draw_text_cultural(monitor.main_window, x + 25, y + 5,
+                              cpu_text, info_color, "header_info")
+    
+    // Memory usage dengan icon lumbung
+    khatui_draw_cultural_icon(monitor.main_window, x + 120, y, 20, 20,
+                              "lumbung_memory", info_color)
+    
+    var memory_percent = (monitor.performance.memory_used * 100.0) / monitor.performance.memory_total
+    var memory_text = "RAM: " + format_percentage(memory_percent)
+    khatui_draw_text_cultural(monitor.main_window, x + 145, y + 5,
+                              memory_text, info_color, "header_info")
+    
+    // Network dengan icon jaring
+    khatui_draw_cultural_icon(monitor.main_window, x + 240, y, 20, 20,
+                              "jaring_network", info_color)
+    
+    var network_text = "Net: " + format_speed(monitor.performance.network_in + monitor.performance.network_out)
+    khatui_draw_text_cultural(monitor.main_window, x + 265, y + 5,
+                              network_text, info_color, "header_info")
+    
+    // Temperature dengan icon api
+    khatui_draw_cultural_icon(monitor.main_window, x + 360, y, 20, 20,
+                              "api_suhu", info_color)
+    
+    var temp_text = "Suhu: " + format_temperature(monitor.performance.temperature)
+    khatui_draw_text_cultural(monitor.main_window, x + 385, y + 5,
+                              temp_text, info_color, "header_info")
+}
+
+// Gambar sidebar navigasi
+fungsi draw_monitor_sidebar() -> void {
+    var sidebar_x = 0
+    var sidebar_y = HEADER_HEIGHT
+    var sidebar_height = WINDOW_HEIGHT - HEADER_HEIGHT - 30
+    var sidebar_bg = get_cultural_color("sidebar_bg")
+    
+    // Background sidebar
+    khatui_fill_rect(monitor.main_window, sidebar_x, sidebar_y,
+                     SIDEBAR_WIDTH, sidebar_height, sidebar_bg)
+    
+    // Tab navigasi dengan icon budaya
+    draw_monitor_tabs(sidebar_x, sidebar_y + 10, SIDEBAR_WIDTH, sidebar_height - 20)
+}
+
+// Gambar tab navigasi
+fungsi draw_monitor_tabs(x: int, y: int, width: int, height: int) -> void {
+    var tabs = [
+        {PROSES, "Proses Aktif", "wayang_proses"},
+        {KINERJA, "Kinerja Sistem", "gamelan_kinerja"},
+        {JARINGAN, "Jaringan", "jaring_nelayan"},
+        {PENYIMPANAN, "Penyimpanan", "lumbung_data"},
+        {APLIKASI, "Aplikasi", "khapp_monitor"}
+    ]
+    
+    var tab_height = 50
+    var current_y = y
+    
+    for (var i = 0; i < tabs.length; i++) {
+        var tab = tabs[i]
+        var is_selected = (tab.id == monitor.current_tab)
+        
+        // Background tab
+        if (is_selected) {
+            var selected_bg = get_cultural_color("tab_selected")
+            khatui_fill_rect(monitor.main_window, x + 5, current_y,
+                             width - 10, tab_height, selected_bg)
+        }
+        
+        // Icon budaya
+        khatui_draw_cultural_icon(monitor.main_window, x + 15, current_y + 10,
+                                  30, 30, tab.cultural_icon,
+                                  get_cultural_color("tab_icon"))
+        
+        // Nama tab
+        var text_color = is_selected ?
+                         get_cultural_color("tab_selected_text") :
+                         get_cultural_color("tab_text")
+        
+        khatui_draw_text_cultural(monitor.main_window, x + 55, current_y + 20,
+                                  tab.name, text_color, "tab_item")
+        
+        // Click handler
+        khatui_add_click_handler(monitor.main_window, x + 5, current_y,
+                                width - 10, tab_height, "tab_click", i)
+        
+        current_y += tab_height + 5
+    }
+}
+
+// Gambar content berdasarkan tab aktif
+fungsi draw_monitor_content() -> void {
+    var content_x = SIDEBAR_WIDTH + 10
+    var content_y = HEADER_HEIGHT + 10
+    var content_width = WINDOW_WIDTH - SIDEBAR_WIDTH - 20
+    var content_height = WINDOW_HEIGHT - HEADER_HEIGHT - 50
+    
+    switch (monitor.current_tab) {
+        case PROSES:
+            draw_process_tab(content_x, content_y, content_width, content_height)
+            break
+        case KINERJA:
+            draw_performance_tab(content_x, content_y, content_width, content_height)
+            break
+        case JARINGAN:
+            draw_network_tab(content_x, content_y, content_width, content_height)
+            break
+        case PENYIMPANAN:
+            draw_storage_tab(content_x, content_y, content_width, content_height)
+            break
+        case APLIKASI:
+            draw_application_tab(content_x, content_y, content_width, content_height)
+            break
+    }
+}
+
+// Gambar tab proses
+fungsi draw_process_tab(x: int, y: int, width: int, height: int) -> void {
+    // Header dengan kontrol
+    draw_process_controls(x, y, width, 40)
+    
+    // Tabel proses dengan scroll
+    draw_process_table(x, y + 50, width, height - 100)
+    
+    // Detail proses terpilih
+    if (monitor.selected_process >= 0) {
+        draw_process_details(x, y + height - 40, width, 40)
+    }
+}
+
+// Gambar tabel proses
+fungsi draw_process_table(x: int, y: int, width: int, height: int) -> void {
+    var table_bg = get_cultural_color("table_bg")
+    var header_bg = get_cultural_color("table_header_bg")
+    
+    // Background tabel
+    khatui_fill_rect(monitor.main_window, x, y, width, height, table_bg)
+    
+    // Header tabel
+    khatui_fill_rect(monitor.main_window, x, y, width, 30, header_bg)
+    
+    // Kolom header
+    var columns = [
+        {"Icon", 50},
+        {"Nama Proses", 200},
+        {"PID", 60},
+        {"Status", 80},
+        {"CPU %", 80},
+        {"Memori", 100},
+        {"Prioritas", 80}
+    ]
+    
+    var col_x = x + 5
+    for (var i = 0; i < columns.length; i++) {
+        var col = columns[i]
+        khatui_draw_text_cultural(monitor.main_window, col_x, y + 8,
+                                  col.name, get_cultural_color("table_header_text"),
+                                  "table_header")
+        col_x += col.width
+    }
+    
+    // Data proses
+    var row_height = 25
+    var current_y = y + 35
+    
+    for (var i = 0; i < monitor.process_count && current_y + row_height <= y + height; i++) {
+        var process = &monitor.processes[i]
+        var is_selected = (i == monitor.selected_process)
+        
+        // Background row
+        if (is_selected) {
+            var selected_bg = get_cultural_color("table_row_selected")
+            khatui_fill_rect(monitor.main_window, x, current_y,
+                             width, row_height, selected_bg)
+        }
+        
+        // Icon proses dengan tema wayang
+        khatui_draw_cultural_icon(monitor.main_window, x + 15, current_y + 2,
+                                  20, 20, process->cultural_icon,
+                                  get_cultural_color("process_icon"))
+        
+        // Data proses
+        col_x = x + 55
+        khatui_draw_text_cultural(monitor.main_window, col_x, current_y + 5,
+                                  process->nama, get_cultural_color("table_text"),
+                                  "table_data")
+        
+        col_x += 200
+        var pid_text = khat_int_to_string(process->pid)
+        khatui_draw_text_cultural(monitor.main_window, col_x, current_y + 5,
+                                  pid_text, get_cultural_color("table_text"),
+                                  "table_data")
+        
+        col_x += 60
+        var status_text = get_process_status_text(process->status)
+        khatui_draw_text_cultural(monitor.main_window, col_x, current_y + 5,
+                                  status_text, get_process_status_color(process->status),
+                                  "table_data")
+        
+        col_x += 80
+        var cpu_text = format_percentage(process->cpu_usage)
+        khatui_draw_text_cultural(monitor.main_window, col_x, current_y + 5,
+                                  cpu_text, get_cultural_color("table_text"),
+                                  "table_data")
+        
+        col_x += 80
+        var memory_text = format_memory_size(process->memory_usage)
+        khatui_draw_text_cultural(monitor.main_window, col_x, current_y + 5,
+                                  memory_text, get_cultural_color("table_text"),
+                                  "table_data")
+        
+        col_x += 100
+        var priority_text = khat_int_to_string(process->priority)
+        khatui_draw_text_cultural(monitor.main_window, col_x, current_y + 5,
+                                  priority_text, get_cultural_color("table_text"),
+                                  "table_data")
+        
+        // Click handler
+        khatui_add_click_handler(monitor.main_window, x, current_y,
+                                width, row_height, "process_click", i)
+        
+        current_y += row_height
+    }
+}
+
+// Refresh data sistem
+fungsi refresh_system_data() -> int {
+    // Update performance data
+    if (khat_system_get_performance(&monitor.performance) != 0) {
+        khat_log("[ERROR] Gagal mendapatkan data kinerja sistem")
+        return -1
+    }
+    
+    // Update process list
+    monitor.process_count = khat_system_get_processes(monitor.processes, 
+                                                     sizeof(monitor.processes) / sizeof(ProcessInfo))
+    
+    // Sort processes
+    sort_processes()
+    
+    // Update history untuk chart
+    update_performance_history()
+    
+    // Render ulang window
+    render_monitor_window()
+    
+    return 0
+}
+
+// Callback timer refresh
+fungsi refresh_callback(timer_id: int) -> void {
+    refresh_system_data()
+    
+    // Check untuk alert
+    check_performance_alerts()
+}
+
+// Entry point aplikasi
+fungsi main() -> int {
+    if (monitor_init() != 0) {
+        return -1
+    }
+    
+    // Main event loop
+    while (true) {
+        var event = khatui_get_next_event()
+        if (event.type == "quit") {
+            break
+        }
+        
+        handle_monitor_event(event.type, event.data)
+        
+        khat_sleep(16)
+    }
+    
+    // Cleanup
+    monitor_cleanup()
+    
+    return 0
+}

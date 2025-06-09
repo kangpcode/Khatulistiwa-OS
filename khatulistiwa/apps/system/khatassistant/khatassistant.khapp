@@ -1,0 +1,358 @@
+{
+  "khapp_format_version": "2.0",
+  "app_info": {
+    "id": "com.khatulistiwa.assistant",
+    "name": "KhatAssistant",
+    "name_indonesia": "Asisten Khatulistiwa",
+    "version": "2.0.0",
+    "build": "20241210",
+    "developer": "Tim AI Budaya Khatulistiwa",
+    "developer_indonesia": "Tim AI Budaya Khatulistiwa",
+    "category": "system",
+    "subcategory": "ai_assistant",
+    "description": "Intelligent cultural assistant with Indonesian wisdom and spiritual guidance",
+    "description_indonesia": "Asisten cerdas berbudaya dengan kebijaksanaan Indonesia dan bimbingan spiritual",
+    "icon": "assets/icons/khatassistant_icon.png",
+    "screenshots": [
+      "assets/screenshots/cultural_chat.png",
+      "assets/screenshots/spiritual_guidance.png",
+      "assets/screenshots/traditional_knowledge.png",
+      "assets/screenshots/gotong_royong_helper.png"
+    ]
+  },
+  "cultural_info": {
+    "cultural_level": 5,
+    "spiritual_approved": true,
+    "gotong_royong_compatible": true,
+    "cultural_features": [
+      "indonesian_wisdom_database",
+      "spiritual_guidance_system",
+      "traditional_knowledge_base",
+      "cultural_etiquette_advisor",
+      "islamic_guidance_integration",
+      "gotong_royong_facilitator"
+    ],
+    "traditional_elements": [
+      "Traditional Indonesian proverbs and wisdom",
+      "Cultural etiquette and customs guidance",
+      "Islamic spiritual guidance",
+      "Traditional problem-solving approaches",
+      "Community harmony facilitation",
+      "Cultural preservation assistance"
+    ]
+  },
+  "technical_specs": {
+    "min_ram": "1GB",
+    "min_storage": "500MB",
+    "recommended_ram": "2GB",
+    "recommended_storage": "1GB",
+    "supported_platforms": ["x86_64", "arm64"],
+    "ai_capabilities": {
+      "natural_language_processing": "Indonesian, Javanese, Sundanese, Arabic",
+      "cultural_context_understanding": true,
+      "spiritual_guidance_engine": true,
+      "traditional_knowledge_retrieval": true,
+      "community_interaction_facilitation": true
+    },
+    "dependencies": [
+      "khatcore_runtime >= 2.0.0",
+      "khatui_runtime >= 2.0.0",
+      "cultural_ai_engine >= 1.0.0",
+      "spiritual_guidance_lib >= 1.0.0"
+    ]
+  },
+  "assistant_capabilities": {
+    "cultural_guidance": [
+      "Traditional Indonesian customs explanation",
+      "Cultural etiquette advice",
+      "Regional tradition information",
+      "Cultural event planning assistance",
+      "Traditional ceremony guidance",
+      "Cultural conflict resolution"
+    ],
+    "spiritual_assistance": [
+      "Islamic guidance and reminders",
+      "Prayer time notifications",
+      "Spiritual reflection prompts",
+      "Moral decision support",
+      "Religious knowledge sharing",
+      "Spiritual wellness tracking"
+    ],
+    "practical_help": [
+      "Daily task organization",
+      "Cultural calendar management",
+      "Community event coordination",
+      "Traditional recipe suggestions",
+      "Cultural learning recommendations",
+      "Gotong royong project facilitation"
+    ],
+    "knowledge_sharing": [
+      "Indonesian history education",
+      "Traditional arts and crafts guidance",
+      "Cultural storytelling",
+      "Language learning support",
+      "Traditional medicine information",
+      "Cultural preservation tips"
+    ]
+  },
+  "personality_traits": {
+    "cultural_characteristics": [
+      "Respectful and humble (sopan santun)",
+      "Wise and patient (bijaksana)",
+      "Community-oriented (gotong royong)",
+      "Spiritually aware (beriman)",
+      "Culturally knowledgeable (berbudaya)",
+      "Family-focused (kekeluargaan)"
+    ],
+    "communication_style": [
+      "Polite Indonesian language use",
+      "Traditional greeting customs",
+      "Respectful address forms",
+      "Cultural context awareness",
+      "Spiritual sensitivity",
+      "Community harmony focus"
+    ]
+  },
+  "knowledge_domains": {
+    "cultural_knowledge": [
+      "Indonesian traditional customs",
+      "Regional cultural variations",
+      "Traditional arts and crafts",
+      "Cultural festivals and ceremonies",
+      "Traditional food and recipes",
+      "Cultural symbols and meanings"
+    ],
+    "spiritual_knowledge": [
+      "Islamic teachings and practices",
+      "Traditional spiritual wisdom",
+      "Moral and ethical guidance",
+      "Spiritual wellness practices",
+      "Religious calendar and events",
+      "Interfaith harmony principles"
+    ],
+    "practical_knowledge": [
+      "Indonesian language and dialects",
+      "Traditional problem-solving methods",
+      "Community organization principles",
+      "Traditional education approaches",
+      "Cultural business practices",
+      "Environmental wisdom"
+    ]
+  },
+  "interaction_modes": {
+    "chat_mode": {
+      "description": "Natural conversation with cultural context",
+      "features": [
+        "Indonesian language conversation",
+        "Cultural context understanding",
+        "Spiritual guidance integration",
+        "Traditional wisdom sharing"
+      ]
+    },
+    "guidance_mode": {
+      "description": "Structured guidance for specific cultural situations",
+      "features": [
+        "Step-by-step cultural guidance",
+        "Traditional ceremony instructions",
+        "Cultural etiquette coaching",
+        "Spiritual practice guidance"
+      ]
+    },
+    "learning_mode": {
+      "description": "Interactive cultural and spiritual education",
+      "features": [
+        "Cultural knowledge quizzes",
+        "Traditional story narration",
+        "Spiritual reflection exercises",
+        "Language learning assistance"
+      ]
+    },
+    "community_mode": {
+      "description": "Facilitate community interactions and gotong royong",
+      "features": [
+        "Community event planning",
+        "Conflict resolution assistance",
+        "Collaborative project coordination",
+        "Cultural celebration organization"
+      ]
+    }
+  },
+  "features": {
+    "ai_capabilities": [
+      "Natural language understanding",
+      "Cultural context awareness",
+      "Spiritual guidance provision",
+      "Traditional knowledge retrieval",
+      "Community interaction facilitation",
+      "Personalized cultural learning"
+    ],
+    "integration_features": [
+      "Calendar integration for cultural events",
+      "Prayer time synchronization",
+      "Cultural reminder system",
+      "Community notification system",
+      "Traditional knowledge database access",
+      "Spiritual wellness tracking"
+    ],
+    "customization_options": [
+      "Regional cultural preferences",
+      "Spiritual practice customization",
+      "Language preference settings",
+      "Cultural learning pace adjustment",
+      "Community involvement level",
+      "Traditional knowledge focus areas"
+    ]
+  },
+  "cultural_responses": {
+    "traditional_greetings": [
+      "Assalamu'alaikum warahmatullahi wabarakatuh",
+      "Selamat pagi/siang/sore/malam",
+      "Sugeng enjing/siyang/sonten/dalu (Javanese)",
+      "Wilujeng enjing/siyang/sonten/wengi (Sundanese)"
+    ],
+    "wisdom_sharing": [
+      "Traditional Indonesian proverbs",
+      "Cultural life lessons",
+      "Spiritual reflections",
+      "Community wisdom",
+      "Traditional problem-solving approaches",
+      "Moral guidance stories"
+    ],
+    "cultural_explanations": [
+      "Traditional ceremony meanings",
+      "Cultural symbol interpretations",
+      "Regional custom variations",
+      "Historical cultural context",
+      "Traditional art significance",
+      "Cultural value explanations"
+    ]
+  },
+  "privacy_and_ethics": {
+    "cultural_sensitivity": [
+      "Respect for all Indonesian cultures",
+      "Interfaith harmony promotion",
+      "Traditional value preservation",
+      "Cultural diversity celebration",
+      "Regional custom respect",
+      "Generational wisdom honoring"
+    ],
+    "spiritual_guidelines": [
+      "Islamic principle adherence",
+      "Spiritual privacy protection",
+      "Religious tolerance promotion",
+      "Moral guidance provision",
+      "Spiritual wellness support",
+      "Faith-based decision assistance"
+    ],
+    "data_protection": [
+      "Cultural information privacy",
+      "Spiritual conversation confidentiality",
+      "Community interaction security",
+      "Personal preference protection",
+      "Traditional knowledge respect",
+      "Cultural learning privacy"
+    ]
+  },
+  "permissions": {
+    "required": [
+      "cultural_database_access",
+      "spiritual_guidance_access",
+      "traditional_knowledge_access",
+      "community_interaction_access"
+    ],
+    "optional": [
+      "calendar_access",
+      "notification_access",
+      "location_access",
+      "microphone_access",
+      "camera_access",
+      "network_access"
+    ]
+  },
+  "cultural_compliance": {
+    "halal_certified": true,
+    "family_friendly": true,
+    "educational_value": true,
+    "cultural_preservation": true,
+    "spiritual_guidelines": true,
+    "community_values": true,
+    "ai_ethics": {
+      "cultural_bias_prevention": true,
+      "spiritual_respect_maintenance": true,
+      "traditional_wisdom_preservation": true,
+      "community_harmony_promotion": true
+    }
+  },
+  "installation": {
+    "install_size": "500MB",
+    "data_directory": "~/.khatassistant",
+    "config_files": [
+      "config/assistant_settings.conf",
+      "config/cultural_preferences.conf",
+      "config/spiritual_settings.conf",
+      "config/knowledge_base.conf"
+    ],
+    "desktop_integration": {
+      "create_desktop_entry": true,
+      "add_to_applications_menu": true,
+      "system_tray_integration": true,
+      "voice_activation_support": true
+    }
+  },
+  "localization": {
+    "supported_languages": [
+      "id_ID", "en_US", "ar_SA", "jv_ID", "su_ID", "ms_MY"
+    ],
+    "default_language": "id_ID",
+    "cultural_calendar_support": true,
+    "traditional_number_formats": true,
+    "islamic_calendar_integration": true,
+    "regional_dialect_support": true
+  },
+  "content": {
+    "executable": "bin/khatassistant",
+    "libraries": [
+      "lib/libkhatassistant.so",
+      "lib/libcultural_ai.so",
+      "lib/libspiritual_guidance.so",
+      "lib/libtraditional_knowledge.so"
+    ],
+    "assets": [
+      "assets/knowledge_base/",
+      "assets/cultural_data/",
+      "assets/spiritual_content/",
+      "assets/traditional_wisdom/",
+      "assets/voices/",
+      "assets/animations/"
+    ],
+    "documentation": [
+      "docs/user_guide_id.pdf",
+      "docs/cultural_features.pdf",
+      "docs/spiritual_guidance.pdf",
+      "docs/traditional_knowledge.pdf"
+    ]
+  },
+  "updates": {
+    "auto_update": true,
+    "update_channel": "stable",
+    "cultural_knowledge_updates": true,
+    "spiritual_content_updates": true,
+    "traditional_wisdom_updates": true,
+    "community_contributions": true
+  },
+  "community": {
+    "support_forum": "https://community.khatulistiwa-os.my.id/khatassistant",
+    "cultural_knowledge_sharing": "https://knowledge.khatulistiwa-os.my.id/cultural",
+    "spiritual_guidance_resources": "https://spiritual.khatulistiwa-os.my.id/guidance",
+    "traditional_wisdom_archive": "https://wisdom.khatulistiwa-os.my.id/traditional"
+  },
+  "metadata": {
+    "package_date": "2024-12-10T10:00:00Z",
+    "package_size": "524288000",
+    "checksum_sha256": "89012345678901234567890abcdef1234567890abcdef123456789abcdef123",
+    "digital_signature": "khatulistiwa_ai_team_2024",
+    "cultural_validator": "Dewan AI Budaya Khatulistiwa",
+    "spiritual_validator": "Majelis Ulama Khatulistiwa",
+    "knowledge_validator": "Dewan Kebijaksanaan Tradisional Khatulistiwa"
+  }
+}

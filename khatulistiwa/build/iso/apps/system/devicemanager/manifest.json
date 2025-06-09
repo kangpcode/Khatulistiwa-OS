@@ -1,0 +1,296 @@
+{
+    "name": "DeviceManager",
+    "version": "1.0.0",
+    "description": "Manajemen perangkat keras dengan deteksi otomatis dan tema alat tradisional Indonesia",
+    "author": "Tim Khatulistiwa OS",
+    "category": "system",
+    "type": "device_management",
+    "cultural": {
+        "indonesian_elements": true,
+        "batik_theme": "mega_mendung",
+        "garuda_animations": true,
+        "traditional_sounds": true,
+        "cultural_colors": {
+            "primary": "#7C3AED",
+            "secondary": "#8B5CF6",
+            "accent": "#A78BFA",
+            "background": "#F5F3FF"
+        }
+    },
+    "permissions": [
+        "hardware_access",
+        "device_enumeration",
+        "driver_management",
+        "usb_control",
+        "pci_access",
+        "system_information",
+        "cultural_assets_access",
+        "device_configuration",
+        "power_management",
+        "hotplug_detection"
+    ],
+    "dependencies": [
+        "khatui_runtime.khat",
+        "khatcore_runtime.khat",
+        "khatdriver.khat",
+        "khathardware.khat"
+    ],
+    "min_os_version": "1.0.0",
+    "ui_framework": "KhatUI",
+    "features": {
+        "automatic_detection": true,
+        "hotplug_support": true,
+        "driver_installation": true,
+        "device_configuration": true,
+        "power_management": true,
+        "cultural_device_icons": true,
+        "traditional_categorization": true,
+        "indonesian_terminology": true,
+        "device_diagnostics": true,
+        "hardware_monitoring": true,
+        "device_tree_view": true,
+        "cultural_status_indicators": true
+    },
+    "device_categories": [
+        {
+            "id": "display",
+            "name": "Tampilan",
+            "cultural_name": "Alat Penampil",
+            "icon": "display_device",
+            "cultural_icon": "cermin_ajaib",
+            "description": "Monitor, proyektor, dan perangkat tampilan"
+        },
+        {
+            "id": "audio",
+            "name": "Audio",
+            "cultural_name": "Alat Bunyi",
+            "icon": "audio_device",
+            "cultural_icon": "gamelan_modern",
+            "description": "Speaker, headphone, dan perangkat audio"
+        },
+        {
+            "id": "input",
+            "name": "Input",
+            "cultural_name": "Alat Masukan",
+            "icon": "input_device",
+            "cultural_icon": "alat_tulis",
+            "description": "Keyboard, mouse, dan perangkat input"
+        },
+        {
+            "id": "storage",
+            "name": "Penyimpanan",
+            "cultural_name": "Lumbung Data",
+            "icon": "storage_device",
+            "cultural_icon": "lumbung_digital",
+            "description": "Hard disk, SSD, dan media penyimpanan"
+        },
+        {
+            "id": "network",
+            "name": "Jaringan",
+            "cultural_name": "Alat Sambung",
+            "icon": "network_device",
+            "cultural_icon": "jaring_koneksi",
+            "description": "WiFi, Ethernet, dan perangkat jaringan"
+        },
+        {
+            "id": "usb",
+            "name": "USB",
+            "cultural_name": "Colokan Universal",
+            "icon": "usb_device",
+            "cultural_icon": "colokan_ajaib",
+            "description": "Flash drive, printer, dan perangkat USB"
+        },
+        {
+            "id": "printer",
+            "name": "Printer",
+            "cultural_name": "Mesin Cetak",
+            "icon": "printer_device",
+            "cultural_icon": "mesin_lontar",
+            "description": "Printer, scanner, dan perangkat cetak"
+        },
+        {
+            "id": "camera",
+            "name": "Kamera",
+            "cultural_name": "Mata Digital",
+            "icon": "camera_device",
+            "cultural_icon": "mata_garuda",
+            "description": "Webcam, kamera, dan perangkat imaging"
+        }
+    ],
+    "device_status": [
+        {
+            "id": "working",
+            "name": "Berfungsi",
+            "cultural_name": "Bekerja Baik",
+            "color": "#10B981",
+            "icon": "working_status",
+            "cultural_icon": "alat_sehat"
+        },
+        {
+            "id": "warning",
+            "name": "Peringatan",
+            "cultural_name": "Perlu Perhatian",
+            "color": "#F59E0B",
+            "icon": "warning_status",
+            "cultural_icon": "alat_sakit"
+        },
+        {
+            "id": "error",
+            "name": "Error",
+            "cultural_name": "Rusak",
+            "color": "#EF4444",
+            "icon": "error_status",
+            "cultural_icon": "alat_rusak"
+        },
+        {
+            "id": "disabled",
+            "name": "Dinonaktifkan",
+            "cultural_name": "Tidak Aktif",
+            "color": "#6B7280",
+            "icon": "disabled_status",
+            "cultural_icon": "alat_tidur"
+        },
+        {
+            "id": "unknown",
+            "name": "Tidak Dikenal",
+            "cultural_name": "Alat Asing",
+            "color": "#8B5CF6",
+            "icon": "unknown_status",
+            "cultural_icon": "alat_misterius"
+        }
+    ],
+    "connection_types": [
+        {
+            "id": "usb",
+            "name": "USB",
+            "cultural_name": "Colokan Universal",
+            "icon": "usb_connection",
+            "cultural_icon": "sambungan_ajaib"
+        },
+        {
+            "id": "pci",
+            "name": "PCI",
+            "cultural_name": "Slot Dalam",
+            "icon": "pci_connection",
+            "cultural_icon": "sambungan_dalam"
+        },
+        {
+            "id": "bluetooth",
+            "name": "Bluetooth",
+            "cultural_name": "Sambungan Nirkabel",
+            "icon": "bluetooth_connection",
+            "cultural_icon": "sambungan_udara"
+        },
+        {
+            "id": "wifi",
+            "name": "WiFi",
+            "cultural_name": "Jaringan Udara",
+            "icon": "wifi_connection",
+            "cultural_icon": "jaring_udara"
+        },
+        {
+            "id": "ethernet",
+            "name": "Ethernet",
+            "cultural_name": "Kabel Jaringan",
+            "icon": "ethernet_connection",
+            "cultural_icon": "tali_data"
+        }
+    ],
+    "cultural_features": {
+        "traditional_device_metaphors": true,
+        "indonesian_device_names": true,
+        "cultural_status_animations": true,
+        "traditional_connection_visualization": true,
+        "batik_device_backgrounds": true,
+        "ornamental_device_borders": true,
+        "cultural_diagnostic_tools": true,
+        "traditional_device_grouping": true
+    },
+    "diagnostic_tools": [
+        {
+            "id": "hardware_test",
+            "name": "Tes Perangkat",
+            "cultural_name": "Uji Alat",
+            "description": "Menguji fungsi perangkat keras",
+            "icon": "hardware_test",
+            "cultural_icon": "tukang_uji"
+        },
+        {
+            "id": "driver_check",
+            "name": "Cek Driver",
+            "cultural_name": "Periksa Pengendali",
+            "description": "Memeriksa status driver perangkat",
+            "icon": "driver_check",
+            "cultural_icon": "dalang_pengendali"
+        },
+        {
+            "id": "performance_monitor",
+            "name": "Monitor Kinerja",
+            "cultural_name": "Pantau Kerja",
+            "description": "Memantau kinerja perangkat",
+            "icon": "performance_monitor",
+            "cultural_icon": "pengawas_kerja"
+        },
+        {
+            "id": "power_analysis",
+            "name": "Analisis Daya",
+            "cultural_name": "Ukur Tenaga",
+            "description": "Menganalisis konsumsi daya",
+            "icon": "power_analysis",
+            "cultural_icon": "pengukur_tenaga"
+        }
+    ],
+    "device_actions": [
+        {
+            "id": "enable",
+            "name": "Aktifkan",
+            "cultural_name": "Hidupkan",
+            "description": "Mengaktifkan perangkat",
+            "icon": "enable_device",
+            "cultural_icon": "bangunkan_alat"
+        },
+        {
+            "id": "disable",
+            "name": "Nonaktifkan",
+            "cultural_name": "Matikan",
+            "description": "Menonaktifkan perangkat",
+            "icon": "disable_device",
+            "cultural_icon": "tidurkan_alat"
+        },
+        {
+            "id": "update_driver",
+            "name": "Update Driver",
+            "cultural_name": "Perbarui Pengendali",
+            "description": "Memperbarui driver perangkat",
+            "icon": "update_driver",
+            "cultural_icon": "perbaiki_dalang"
+        },
+        {
+            "id": "uninstall",
+            "name": "Hapus",
+            "cultural_name": "Buang",
+            "description": "Menghapus perangkat dari sistem",
+            "icon": "uninstall_device",
+            "cultural_icon": "buang_alat"
+        },
+        {
+            "id": "properties",
+            "name": "Properti",
+            "cultural_name": "Sifat Alat",
+            "description": "Melihat detail perangkat",
+            "icon": "device_properties",
+            "cultural_icon": "baca_alat"
+        }
+    ],
+    "localization": {
+        "default_language": "id_ID",
+        "supported_languages": ["id_ID", "en_US", "jv_ID", "su_ID"]
+    },
+    "resources": {
+        "icons": "resources/icons/",
+        "sounds": "resources/sounds/",
+        "cultural_assets": "cultural/",
+        "themes": "resources/themes/",
+        "drivers": "resources/drivers/"
+    }
+}

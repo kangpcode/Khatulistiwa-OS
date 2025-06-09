@@ -1,0 +1,109 @@
+{
+    "name": "KhatFiles",
+    "version": "1.0.0",
+    "description": "File manager dengan tema budaya Indonesia untuk Khatulistiwa OS",
+    "author": "Tim Khatulistiwa OS",
+    "category": "system",
+    "type": "file_manager",
+    "cultural": {
+        "indonesian_elements": true,
+        "batik_theme": "mega_mendung",
+        "garuda_animations": true,
+        "traditional_sounds": true,
+        "cultural_colors": {
+            "primary": "#1E3A8A",
+            "secondary": "#3B82F6",
+            "accent": "#60A5FA",
+            "background": "#EFF6FF"
+        }
+    },
+    "permissions": [
+        "file_system_read",
+        "file_system_write",
+        "file_system_delete",
+        "external_storage_access",
+        "network_storage_access",
+        "cloud_storage_access",
+        "archive_management",
+        "media_preview",
+        "cultural_assets_access",
+        "system_integration"
+    ],
+    "dependencies": [
+        "khatui_runtime.khat",
+        "khatcore_runtime.khat",
+        "khatmedia.khat"
+    ],
+    "min_os_version": "1.0.0",
+    "ui_framework": "KhatUI",
+    "features": {
+        "file_operations": true,
+        "folder_navigation": true,
+        "search_functionality": true,
+        "file_preview": true,
+        "archive_support": true,
+        "cloud_integration": true,
+        "network_drives": true,
+        "cultural_themes": true,
+        "indonesian_file_names": true,
+        "traditional_icons": true,
+        "batik_folder_views": true,
+        "media_gallery": true
+    },
+    "supported_formats": {
+        "documents": [".pdf", ".doc", ".docx", ".txt", ".rtf", ".odt"],
+        "images": [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".svg", ".webp"],
+        "videos": [".mp4", ".avi", ".mkv", ".mov", ".wmv", ".flv", ".webm"],
+        "audio": [".mp3", ".wav", ".flac", ".ogg", ".aac", ".m4a"],
+        "archives": [".zip", ".rar", ".7z", ".tar", ".gz", ".bz2"],
+        "code": [".khat", ".c", ".cpp", ".py", ".js", ".html", ".css"],
+        "cultural": [".batik", ".wayang", ".gamelan", ".traditional"]
+    },
+    "view_modes": [
+        {
+            "id": "list",
+            "name": "Daftar",
+            "icon": "list_view",
+            "cultural_icon": "lontar_list"
+        },
+        {
+            "id": "grid",
+            "name": "Kotak",
+            "icon": "grid_view",
+            "cultural_icon": "batik_grid"
+        },
+        {
+            "id": "gallery",
+            "name": "Galeri",
+            "icon": "gallery_view",
+            "cultural_icon": "wayang_gallery"
+        },
+        {
+            "id": "tree",
+            "name": "Pohon",
+            "icon": "tree_view",
+            "cultural_icon": "beringin_tree"
+        }
+    ],
+    "cultural_features": {
+        "indonesian_file_sorting": true,
+        "traditional_folder_icons": true,
+        "batik_pattern_backgrounds": true,
+        "gamelan_sound_effects": true,
+        "wayang_file_animations": true,
+        "regional_language_support": true,
+        "cultural_calendar_integration": true,
+        "traditional_color_schemes": true
+    },
+    "localization": {
+        "default_language": "id_ID",
+        "supported_languages": ["id_ID", "en_US", "jv_ID", "su_ID", "ms_MY", "tl_PH"]
+    },
+    "resources": {
+        "icons": "resources/icons/",
+        "sounds": "resources/sounds/",
+        "cultural_assets": "cultural/",
+        "themes": "resources/themes/",
+        "templates": "resources/templates/"
+    }
+}

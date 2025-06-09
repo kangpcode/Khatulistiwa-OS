@@ -1,0 +1,330 @@
+{
+    "name": "ResetManager",
+    "version": "1.0.0",
+    "description": "Reset sistem ke pengaturan pabrik dengan tema pemulihan tradisional Indonesia",
+    "author": "Tim Khatulistiwa OS",
+    "category": "system",
+    "type": "system_reset",
+    "cultural": {
+        "indonesian_elements": true,
+        "batik_theme": "mega_mendung",
+        "garuda_animations": true,
+        "traditional_sounds": true,
+        "cultural_colors": {
+            "primary": "#DC2626",
+            "secondary": "#EF4444",
+            "accent": "#F87171",
+            "background": "#FEF2F2"
+        }
+    },
+    "permissions": [
+        "system_reset",
+        "factory_restore",
+        "data_backup",
+        "user_data_access",
+        "system_configuration",
+        "cultural_assets_access",
+        "file_system_modification",
+        "registry_reset",
+        "service_restart",
+        "critical_system_access"
+    ],
+    "dependencies": [
+        "khatui_runtime.khat",
+        "khatcore_runtime.khat",
+        "khatsystem.khat",
+        "khatbackup.khat"
+    ],
+    "min_os_version": "1.0.0",
+    "ui_framework": "KhatUI",
+    "features": {
+        "factory_reset": true,
+        "selective_reset": true,
+        "data_backup_before_reset": true,
+        "user_data_preservation": true,
+        "system_restore_points": true,
+        "cultural_reset_ceremony": true,
+        "traditional_purification_process": true,
+        "indonesian_terminology": true,
+        "reset_progress_visualization": true,
+        "recovery_mode_support": true,
+        "emergency_reset": true,
+        "cultural_confirmation_dialogs": true
+    },
+    "reset_types": [
+        {
+            "id": "factory_reset",
+            "name": "Factory Reset",
+            "cultural_name": "Kembalikan ke Asal",
+            "description": "Reset lengkap ke pengaturan pabrik",
+            "icon": "factory_reset",
+            "cultural_icon": "kembali_asal",
+            "severity": "critical",
+            "data_loss": true,
+            "backup_recommended": true
+        },
+        {
+            "id": "settings_reset",
+            "name": "Settings Reset",
+            "cultural_name": "Atur Ulang Pengaturan",
+            "description": "Reset hanya pengaturan sistem",
+            "icon": "settings_reset",
+            "cultural_icon": "atur_ulang",
+            "severity": "medium",
+            "data_loss": false,
+            "backup_recommended": false
+        },
+        {
+            "id": "app_reset",
+            "name": "App Reset",
+            "cultural_name": "Atur Ulang Aplikasi",
+            "description": "Reset data aplikasi saja",
+            "icon": "app_reset",
+            "cultural_icon": "bersihkan_aplikasi",
+            "severity": "low",
+            "data_loss": true,
+            "backup_recommended": true
+        },
+        {
+            "id": "network_reset",
+            "name": "Network Reset",
+            "cultural_name": "Atur Ulang Jaringan",
+            "description": "Reset pengaturan jaringan",
+            "icon": "network_reset",
+            "cultural_icon": "putus_sambung",
+            "severity": "low",
+            "data_loss": false,
+            "backup_recommended": false
+        },
+        {
+            "id": "user_reset",
+            "name": "User Reset",
+            "cultural_name": "Atur Ulang Pengguna",
+            "description": "Reset data pengguna",
+            "icon": "user_reset",
+            "cultural_icon": "bersihkan_pengguna",
+            "severity": "high",
+            "data_loss": true,
+            "backup_recommended": true
+        }
+    ],
+    "backup_options": [
+        {
+            "id": "full_backup",
+            "name": "Full Backup",
+            "cultural_name": "Cadangan Lengkap",
+            "description": "Backup semua data pengguna",
+            "includes": ["user_data", "settings", "applications", "documents"],
+            "size_estimate": "large",
+            "time_estimate": "long"
+        },
+        {
+            "id": "essential_backup",
+            "name": "Essential Backup",
+            "cultural_name": "Cadangan Penting",
+            "description": "Backup data penting saja",
+            "includes": ["documents", "contacts", "photos"],
+            "size_estimate": "medium",
+            "time_estimate": "medium"
+        },
+        {
+            "id": "settings_backup",
+            "name": "Settings Backup",
+            "cultural_name": "Cadangan Pengaturan",
+            "description": "Backup pengaturan sistem",
+            "includes": ["system_settings", "app_preferences"],
+            "size_estimate": "small",
+            "time_estimate": "short"
+        },
+        {
+            "id": "no_backup",
+            "name": "No Backup",
+            "cultural_name": "Tanpa Cadangan",
+            "description": "Tidak membuat backup",
+            "includes": [],
+            "size_estimate": "none",
+            "time_estimate": "none"
+        }
+    ],
+    "reset_stages": [
+        {
+            "id": "preparation",
+            "name": "Preparation",
+            "cultural_name": "Persiapan",
+            "description": "Mempersiapkan proses reset",
+            "icon": "preparation_stage",
+            "cultural_icon": "persiapan_upacara",
+            "estimated_time": 30
+        },
+        {
+            "id": "backup",
+            "name": "Backup",
+            "cultural_name": "Pencadangan",
+            "description": "Mencadangkan data penting",
+            "icon": "backup_stage",
+            "cultural_icon": "simpan_harta",
+            "estimated_time": 300
+        },
+        {
+            "id": "purification",
+            "name": "Purification",
+            "cultural_name": "Pembersihan",
+            "description": "Membersihkan sistem",
+            "icon": "purification_stage",
+            "cultural_icon": "upacara_bersih",
+            "estimated_time": 120
+        },
+        {
+            "id": "restoration",
+            "name": "Restoration",
+            "cultural_name": "Pemulihan",
+            "description": "Mengembalikan ke pengaturan asal",
+            "icon": "restoration_stage",
+            "cultural_icon": "kembali_suci",
+            "estimated_time": 180
+        },
+        {
+            "id": "completion",
+            "name": "Completion",
+            "cultural_name": "Penyelesaian",
+            "description": "Menyelesaikan proses reset",
+            "icon": "completion_stage",
+            "cultural_icon": "upacara_selesai",
+            "estimated_time": 60
+        }
+    ],
+    "cultural_features": {
+        "traditional_purification_ceremony": true,
+        "indonesian_reset_terminology": true,
+        "cultural_confirmation_rituals": true,
+        "batik_progress_visualization": true,
+        "traditional_cleansing_sounds": true,
+        "ornamental_reset_indicators": true,
+        "cultural_warning_messages": true,
+        "traditional_completion_celebration": true
+    },
+    "warning_levels": [
+        {
+            "id": "info",
+            "name": "Information",
+            "cultural_name": "Pemberitahuan",
+            "color": "#3B82F6",
+            "icon": "info_warning",
+            "cultural_icon": "berita_baik"
+        },
+        {
+            "id": "caution",
+            "name": "Caution",
+            "cultural_name": "Hati-hati",
+            "color": "#F59E0B",
+            "icon": "caution_warning",
+            "cultural_icon": "peringatan_kuning"
+        },
+        {
+            "id": "warning",
+            "name": "Warning",
+            "cultural_name": "Peringatan",
+            "color": "#EF4444",
+            "icon": "warning_alert",
+            "cultural_icon": "peringatan_merah"
+        },
+        {
+            "id": "critical",
+            "name": "Critical",
+            "cultural_name": "Bahaya",
+            "color": "#DC2626",
+            "icon": "critical_alert",
+            "cultural_icon": "bahaya_besar"
+        }
+    ],
+    "recovery_options": [
+        {
+            "id": "safe_mode",
+            "name": "Safe Mode",
+            "cultural_name": "Mode Aman",
+            "description": "Boot dalam mode aman",
+            "icon": "safe_mode",
+            "cultural_icon": "tempat_aman"
+        },
+        {
+            "id": "recovery_mode",
+            "name": "Recovery Mode",
+            "cultural_name": "Mode Pemulihan",
+            "description": "Boot dalam mode pemulihan",
+            "icon": "recovery_mode",
+            "cultural_icon": "mode_sembuh"
+        },
+        {
+            "id": "emergency_reset",
+            "name": "Emergency Reset",
+            "cultural_name": "Reset Darurat",
+            "description": "Reset darurat tanpa backup",
+            "icon": "emergency_reset",
+            "cultural_icon": "darurat_bersih"
+        }
+    ],
+    "confirmation_steps": [
+        {
+            "step": 1,
+            "title": "Understanding",
+            "cultural_title": "Pemahaman",
+            "description": "Memahami konsekuensi reset",
+            "required_action": "read_warnings"
+        },
+        {
+            "step": 2,
+            "title": "Backup Decision",
+            "cultural_title": "Keputusan Cadangan",
+            "description": "Memilih opsi backup",
+            "required_action": "select_backup"
+        },
+        {
+            "step": 3,
+            "title": "Final Confirmation",
+            "cultural_title": "Konfirmasi Akhir",
+            "description": "Konfirmasi terakhir untuk reset",
+            "required_action": "type_confirmation"
+        }
+    ],
+    "audio_feedback": [
+        {
+            "id": "warning_sound",
+            "name": "Warning Sound",
+            "cultural_name": "Suara Peringatan",
+            "sound_file": "gong_warning.ogg",
+            "volume": 0.8
+        },
+        {
+            "id": "purification_sound",
+            "name": "Purification Sound",
+            "cultural_name": "Suara Pembersihan",
+            "sound_file": "gamelan_purification.ogg",
+            "volume": 0.6
+        },
+        {
+            "id": "completion_sound",
+            "name": "Completion Sound",
+            "cultural_name": "Suara Selesai",
+            "sound_file": "gamelan_celebration.ogg",
+            "volume": 0.7
+        },
+        {
+            "id": "error_sound",
+            "name": "Error Sound",
+            "cultural_name": "Suara Kesalahan",
+            "sound_file": "gong_error.ogg",
+            "volume": 0.9
+        }
+    ],
+    "localization": {
+        "default_language": "id_ID",
+        "supported_languages": ["id_ID", "en_US", "jv_ID", "su_ID"]
+    },
+    "resources": {
+        "icons": "resources/icons/",
+        "sounds": "resources/sounds/",
+        "cultural_assets": "cultural/",
+        "themes": "resources/themes/",
+        "backup_tools": "resources/tools/"
+    }
+}

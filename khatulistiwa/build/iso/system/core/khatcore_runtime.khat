@@ -1,0 +1,383 @@
+/*
+ * ============================================================================
+ * khatcore_runtime.khat - Runtime Inti Sistem Khatulistiwa OS
+ * Copyright (c) 2025 Dhafa Nazula Permadi & Team BIGCode By Cv Bintang Gumilang Group
+ * ============================================================================
+ * 
+ * Runtime inti yang menangani:
+ * 1. Manajemen aplikasi .khapp
+ * 2. Sistem file dan I/O
+ * 3. Manajemen memori dan proses
+ * 4. Komunikasi antar proses (IPC)
+ * 5. Keamanan dan izin aplikasi
+ */
+
+import "khatcore/kernel.khat"
+import "khatcore/memory.khat"
+import "khatcore/process.khat"
+import "khatcore/file.khat"
+import "khatcore/security.khat"
+
+// Konstanta sistem
+konstan KHATCORE_VERSION = "1.0.0"
+konstan MAX_APPS = 256
+konstan MAX_PROCESSES = 1024
+konstan KHAPP_MAGIC = "KHAP"
+konstan APPS_DIR = "/apps"
+konstan SYSTEM_APPS_DIR = "/apps/system"
+
+// Status aplikasi
+enum AppStatus {
+    TIDAK_DIMUAT = 0,
+    DIMUAT = 1,
+    BERJALAN = 2,
+    SUSPENDED = 3,
+    ERROR = 4
+}
+
+// Struktur aplikasi .khapp
+struct KhappInfo {
+    id: int,
+    nama: string,
+    versi: string,
+    path: string,
+    manifest: KhappManifest*,
+    status: AppStatus,
+    process_id: int,
+    memory_usage: size_t,
+    permissions: int[]
+}
+
+// Manifest aplikasi
+struct KhappManifest {
+    nama: string,
+    versi: string,
+    deskripsi: string,
+    author: string,
+    cultural_elements: bool,
+    batik_theme: string,
+    permissions: string[],
+    dependencies: string[],
+    min_os_version: string
+}
+
+// Registry aplikasi yang dimuat
+var loaded_apps: KhappInfo[MAX_APPS]
+var app_count: int = 0
+
+// Inisialisasi runtime core
+fungsi khatcore_init() -> int {
+    khat_log("[CORE] Menginisialisasi KhatCore Runtime v" + KHATCORE_VERSION)
+    
+    // Inisialisasi subsistem
+    if (init_memory_manager() != 0) {
+        khat_log("[ERROR] Gagal menginisialisasi memory manager")
+        return -1
+    }
+    
+    if (init_process_manager() != 0) {
+        khat_log("[ERROR] Gagal menginisialisasi process manager")
+        return -1
+    }
+    
+    if (init_file_system() != 0) {
+        khat_log("[ERROR] Gagal menginisialisasi file system")
+        return -1
+    }
+    
+    if (init_security_manager() != 0) {
+        khat_log("[ERROR] Gagal menginisialisasi security manager")
+        return -1
+    }
+    
+    // Muat aplikasi sistem
+    if (load_system_apps() != 0) {
+        khat_log("[ERROR] Gagal memuat aplikasi sistem")
+        return -1
+    }
+    
+    khat_log("[CORE] KhatCore Runtime berhasil diinisialisasi!")
+    return 0
+}
+
+// Muat aplikasi .khapp dari file
+fungsi khatcore_load_khapp(khapp_path: string) -> int {
+    khat_log("[CORE] Memuat aplikasi: " + khapp_path)
+    
+    // Periksa apakah file ada
+    if (!khat_file_exists(khapp_path)) {
+        khat_log("[ERROR] File .khapp tidak ditemukan: " + khapp_path)
+        return -1
+    }
+    
+    // Periksa magic number
+    if (!verify_khapp_format(khapp_path)) {
+        khat_log("[ERROR] Format .khapp tidak valid: " + khapp_path)
+        return -1
+    }
+    
+    // Ekstrak manifest
+    var manifest = extract_khapp_manifest(khapp_path)
+    if (manifest == null) {
+        khat_log("[ERROR] Gagal mengekstrak manifest: " + khapp_path)
+        return -1
+    }
+    
+    // Periksa kompatibilitas OS
+    if (!check_os_compatibility(manifest)) {
+        khat_log("[ERROR] Aplikasi tidak kompatibel dengan OS versi ini")
+        return -1
+    }
+    
+    // Periksa izin aplikasi
+    if (!verify_app_permissions(manifest)) {
+        khat_log("[ERROR] Izin aplikasi tidak valid")
+        return -1
+    }
+    
+    // Buat entry aplikasi
+    var app_id = create_app_entry(khapp_path, manifest)
+    if (app_id < 0) {
+        khat_log("[ERROR] Gagal membuat entry aplikasi")
+        return -1
+    }
+    
+    khat_log("[CORE] Aplikasi berhasil dimuat dengan ID: " + app_id)
+    return app_id
+}
+
+// Jalankan aplikasi .khapp
+fungsi khatcore_run_khapp(app_id: int, args: string[]) -> int {
+    if (app_id < 0 || app_id >= app_count) {
+        khat_log("[ERROR] ID aplikasi tidak valid: " + app_id)
+        return -1
+    }
+    
+    var app = &loaded_apps[app_id]
+    
+    if (app->status == BERJALAN) {
+        khat_log("[WARNING] Aplikasi sudah berjalan: " + app->nama)
+        return app->process_id
+    }
+    
+    khat_log("[CORE] Menjalankan aplikasi: " + app->nama)
+    
+    // Ekstrak executable dari .khapp
+    var executable_path = extract_khapp_executable(app->path)
+    if (executable_path == null) {
+        khat_log("[ERROR] Gagal mengekstrak executable")
+        return -1
+    }
+    
+    // Buat proses baru
+    var process_id = khat_process_create(executable_path, args)
+    if (process_id < 0) {
+        khat_log("[ERROR] Gagal membuat proses untuk aplikasi")
+        return -1
+    }
+    
+    // Update status aplikasi
+    app->process_id = process_id
+    app->status = BERJALAN
+    
+    // Set izin proses
+    apply_app_permissions(process_id, app->manifest->permissions)
+    
+    khat_log("[CORE] Aplikasi berhasil dijalankan dengan PID: " + process_id)
+    return process_id
+}
+
+// Hentikan aplikasi
+fungsi khatcore_stop_khapp(app_id: int) -> int {
+    if (app_id < 0 || app_id >= app_count) {
+        return -1
+    }
+    
+    var app = &loaded_apps[app_id]
+    
+    if (app->status != BERJALAN) {
+        return 0
+    }
+    
+    khat_log("[CORE] Menghentikan aplikasi: " + app->nama)
+    
+    // Hentikan proses
+    khat_process_terminate(app->process_id)
+    
+    // Update status
+    app->status = DIMUAT
+    app->process_id = -1
+    
+    return 0
+}
+
+// Verifikasi format .khapp
+fungsi verify_khapp_format(khapp_path: string) -> bool {
+    var file = khat_file_open(khapp_path, "rb")
+    if (file == null) {
+        return false
+    }
+    
+    var magic: char[4]
+    khat_file_read(file, magic, 4)
+    khat_file_close(file)
+    
+    return (magic[0] == 'K' && magic[1] == 'H' && 
+            magic[2] == 'A' && magic[3] == 'P')
+}
+
+// Ekstrak manifest dari .khapp
+fungsi extract_khapp_manifest(khapp_path: string) -> KhappManifest* {
+    // Implementasi ekstraksi manifest dari format .khapp
+    // Format: MAGIC(4) + VERSION(4) + MANIFEST_SIZE(4) + MANIFEST_DATA
+    
+    var file = khat_file_open(khapp_path, "rb")
+    if (file == null) {
+        return null
+    }
+    
+    // Skip magic number dan version
+    khat_file_seek(file, 8, SEEK_SET)
+    
+    // Baca ukuran manifest
+    var manifest_size: uint32
+    khat_file_read(file, &manifest_size, sizeof(uint32))
+    
+    // Baca data manifest
+    var manifest_data = khat_memory_alloc(manifest_size + 1)
+    khat_file_read(file, manifest_data, manifest_size)
+    manifest_data[manifest_size] = '\0'
+    
+    khat_file_close(file)
+    
+    // Parse JSON manifest
+    var manifest = khat_json_parse<KhappManifest>(manifest_data)
+    khat_memory_free(manifest_data)
+    
+    return manifest
+}
+
+// Periksa kompatibilitas OS
+fungsi check_os_compatibility(manifest: KhappManifest*) -> bool {
+    // Implementasi pemeriksaan versi OS minimum
+    return compare_version(KHATCORE_VERSION, manifest->min_os_version) >= 0
+}
+
+// Verifikasi izin aplikasi
+fungsi verify_app_permissions(manifest: KhappManifest*) -> bool {
+    // Periksa setiap izin yang diminta
+    for (var i = 0; i < manifest->permissions.length; i++) {
+        var permission = manifest->permissions[i]
+        
+        if (!is_valid_permission(permission)) {
+            khat_log("[SECURITY] Izin tidak valid: " + permission)
+            return false
+        }
+        
+        if (is_dangerous_permission(permission)) {
+            khat_log("[SECURITY] Izin berbahaya memerlukan konfirmasi: " + permission)
+            // Dalam implementasi nyata, ini akan meminta konfirmasi pengguna
+        }
+    }
+    
+    return true
+}
+
+// Buat entry aplikasi baru
+fungsi create_app_entry(khapp_path: string, manifest: KhappManifest*) -> int {
+    if (app_count >= MAX_APPS) {
+        khat_log("[ERROR] Maksimum aplikasi tercapai")
+        return -1
+    }
+    
+    var app_id = app_count++
+    var app = &loaded_apps[app_id]
+    
+    app->id = app_id
+    app->nama = khat_string_copy(manifest->nama)
+    app->versi = khat_string_copy(manifest->versi)
+    app->path = khat_string_copy(khapp_path)
+    app->manifest = manifest
+    app->status = DIMUAT
+    app->process_id = -1
+    app->memory_usage = 0
+    
+    return app_id
+}
+
+// Muat semua aplikasi sistem
+fungsi load_system_apps() -> int {
+    khat_log("[CORE] Memuat aplikasi sistem...")
+    
+    var system_apps = [
+        "khatlauncher.khapp",
+        "khatsettings.khapp", 
+        "khatfiles.khapp",
+        "khatstore.khapp",
+        "khatnotif.khapp",
+        "khatsecurity.khapp"
+    ]
+    
+    for (var i = 0; i < system_apps.length; i++) {
+        var app_path = SYSTEM_APPS_DIR + "/" + system_apps[i]
+        
+        if (khat_file_exists(app_path)) {
+            var app_id = khatcore_load_khapp(app_path)
+            if (app_id >= 0) {
+                khat_log("[CORE] Aplikasi sistem dimuat: " + system_apps[i])
+            }
+        } else {
+            khat_log("[WARNING] Aplikasi sistem tidak ditemukan: " + system_apps[i])
+        }
+    }
+    
+    return 0
+}
+
+// Dapatkan informasi aplikasi
+fungsi khatcore_get_app_info(app_id: int) -> KhappInfo* {
+    if (app_id < 0 || app_id >= app_count) {
+        return null
+    }
+    
+    return &loaded_apps[app_id]
+}
+
+// Dapatkan daftar semua aplikasi
+fungsi khatcore_get_app_list() -> KhappInfo* {
+    return loaded_apps
+}
+
+// Dapatkan jumlah aplikasi yang dimuat
+fungsi khatcore_get_app_count() -> int {
+    return app_count
+}
+
+// Shutdown runtime core
+fungsi khatcore_shutdown() -> void {
+    khat_log("[CORE] Mematikan KhatCore Runtime...")
+    
+    // Hentikan semua aplikasi
+    for (var i = 0; i < app_count; i++) {
+        if (loaded_apps[i].status == BERJALAN) {
+            khatcore_stop_khapp(i)
+        }
+    }
+    
+    // Bersihkan memori
+    cleanup_memory_manager()
+    cleanup_process_manager()
+    cleanup_file_system()
+    cleanup_security_manager()
+    
+    khat_log("[CORE] KhatCore Runtime berhasil dimatikan")
+}
+
+// Export fungsi utama
+export fungsi khat_core_init() -> int {
+    return khatcore_init()
+}
+
+export fungsi khat_core_shutdown() -> void {
+    khatcore_shutdown()
+}

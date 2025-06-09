@@ -1,0 +1,369 @@
+{
+  "khapp_format_version": "2.0",
+  "app_info": {
+    "id": "com.khatulistiwa.office",
+    "name": "KhatOffice Suite",
+    "name_indonesia": "Paket Perkantoran Khatulistiwa",
+    "version": "3.0.0",
+    "build": "20241210",
+    "developer": "Tim Produktivitas Khatulistiwa",
+    "developer_indonesia": "Tim Produktivitas Khatulistiwa",
+    "category": "productivity",
+    "subcategory": "office_suite",
+    "description": "Complete office productivity suite with Indonesian cultural themes and traditional document templates",
+    "description_indonesia": "Paket produktivitas perkantoran lengkap dengan tema budaya Indonesia dan template dokumen tradisional",
+    "icon": "assets/icons/khatoffice_icon.png",
+    "screenshots": [
+      "assets/screenshots/writer_batik_theme.png",
+      "assets/screenshots/calc_traditional_charts.png",
+      "assets/screenshots/present_wayang_slides.png",
+      "assets/screenshots/cultural_templates.png"
+    ]
+  },
+  "cultural_info": {
+    "cultural_level": 4,
+    "spiritual_approved": true,
+    "gotong_royong_compatible": true,
+    "cultural_features": [
+      "batik_document_themes",
+      "traditional_fonts_support",
+      "cultural_templates_library",
+      "indonesian_calendar_integration",
+      "islamic_document_formatting",
+      "gotong_royong_collaboration"
+    ],
+    "traditional_elements": [
+      "Traditional Indonesian document layouts",
+      "Batik pattern borders and backgrounds",
+      "Cultural color schemes",
+      "Traditional typography",
+      "Islamic calendar integration",
+      "Regional customization options"
+    ]
+  },
+  "technical_specs": {
+    "min_ram": "2GB",
+    "min_storage": "1GB",
+    "recommended_ram": "4GB",
+    "recommended_storage": "2GB",
+    "supported_platforms": ["x86_64", "arm64"],
+    "file_formats": {
+      "supported_read": [
+        "odt", "ods", "odp", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "pdf", "rtf", "csv"
+      ],
+      "supported_write": [
+        "odt", "ods", "odp", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "pdf", "kho" 
+      ],
+      "cultural_formats": [
+        "kho (KhatOffice native)", "cultural_doc", "traditional_template"
+      ]
+    },
+    "dependencies": [
+      "khatcore_runtime >= 2.0.0",
+      "khatui_runtime >= 2.0.0",
+      "cultural_fonts_lib >= 1.0.0",
+      "traditional_templates_lib >= 1.0.0"
+    ]
+  },
+  "applications": {
+    "khat_writer": {
+      "name": "KhatWriter",
+      "name_indonesia": "Penulis Khatulistiwa",
+      "description": "Word processor with cultural document templates",
+      "features": [
+        "Traditional document layouts",
+        "Batik pattern borders",
+        "Cultural font collection",
+        "Islamic document formatting",
+        "Traditional letter templates",
+        "Cultural citation styles"
+      ]
+    },
+    "khat_calc": {
+      "name": "KhatCalc",
+      "name_indonesia": "Kalkulator Khatulistiwa", 
+      "description": "Spreadsheet application with traditional charts",
+      "features": [
+        "Traditional chart styles",
+        "Cultural data visualization",
+        "Islamic financial calculations",
+        "Traditional accounting templates",
+        "Cultural number formatting",
+        "Gotong royong budget planning"
+      ]
+    },
+    "khat_present": {
+      "name": "KhatPresent",
+      "name_indonesia": "Presentasi Khatulistiwa",
+      "description": "Presentation software with wayang-style animations",
+      "features": [
+        "Wayang kulit slide transitions",
+        "Batik presentation themes",
+        "Cultural slide templates",
+        "Traditional storytelling layouts",
+        "Islamic presentation guidelines",
+        "Cultural animation effects"
+      ]
+    },
+    "khat_draw": {
+      "name": "KhatDraw",
+      "name_indonesia": "Gambar Khatulistiwa",
+      "description": "Vector graphics with traditional Indonesian elements",
+      "features": [
+        "Traditional pattern library",
+        "Cultural symbol collection",
+        "Batik design tools",
+        "Islamic geometric patterns",
+        "Traditional calligraphy tools",
+        "Cultural diagram templates"
+      ]
+    }
+  },
+  "cultural_templates": {
+    "document_templates": [
+      "Surat Resmi Tradisional",
+      "Undangan Pernikahan Adat",
+      "Proposal Gotong Royong",
+      "Laporan Kegiatan Budaya",
+      "Surat Lamaran Kerja Formal",
+      "Dokumen Keagamaan"
+    ],
+    "presentation_templates": [
+      "Presentasi Budaya Indonesia",
+      "Slide Pendidikan Tradisional",
+      "Proposal Proyek Komunitas",
+      "Laporan Kegiatan Sosial",
+      "Presentasi Bisnis Islami",
+      "Slide Wayang Edukatif"
+    ],
+    "spreadsheet_templates": [
+      "Anggaran Keluarga Islami",
+      "Keuangan Masjid",
+      "Kas Gotong Royong",
+      "Laporan Keuangan UMKM",
+      "Budget Event Budaya",
+      "Tracking Zakat dan Sedekah"
+    ]
+  },
+  "cultural_fonts": {
+    "traditional_fonts": [
+      "Aksara Jawa",
+      "Aksara Sunda",
+      "Aksara Bali",
+      "Kaligrafi Arab",
+      "Font Batik",
+      "Traditional Serif Indonesia"
+    ],
+    "modern_cultural": [
+      "Nusantara Sans",
+      "Garuda Script",
+      "Pancasila Modern",
+      "Indonesia Contemporary",
+      "Cultural Display",
+      "Traditional Modern"
+    ]
+  },
+  "features": {
+    "collaboration": [
+      "Real-time gotong royong editing",
+      "Cultural comment system",
+      "Traditional review workflow",
+      "Community document sharing",
+      "Islamic-compliant collaboration",
+      "Cultural knowledge integration"
+    ],
+    "formatting": [
+      "Traditional page layouts",
+      "Cultural paragraph styles",
+      "Islamic text formatting",
+      "Traditional numbering systems",
+      "Cultural header/footer designs",
+      "Batik pattern backgrounds"
+    ],
+    "productivity": [
+      "Cultural calendar integration",
+      "Islamic prayer time reminders",
+      "Traditional task management",
+      "Gotong royong project planning",
+      "Cultural event scheduling",
+      "Community deadline tracking"
+    ]
+  },
+  "islamic_features": {
+    "document_formatting": [
+      "Right-to-left text support for Arabic",
+      "Islamic calendar date formatting",
+      "Halal business document templates",
+      "Islamic financial calculation tools",
+      "Prayer time integration",
+      "Quranic verse formatting"
+    ],
+    "business_tools": [
+      "Halal business plan templates",
+      "Islamic contract templates",
+      "Zakat calculation spreadsheets",
+      "Islamic banking forms",
+      "Halal certification documents",
+      "Islamic event planning tools"
+    ]
+  },
+  "accessibility": {
+    "visual_accessibility": [
+      "High contrast cultural themes",
+      "Large text cultural fonts",
+      "Cultural color adjustments",
+      "Traditional pattern alternatives"
+    ],
+    "language_accessibility": [
+      "Multi-language support",
+      "Traditional script support",
+      "Cultural translation tools",
+      "Regional dialect support"
+    ],
+    "motor_accessibility": [
+      "Keyboard shortcuts for cultural features",
+      "Voice input for traditional languages",
+      "Simplified cultural interfaces",
+      "Alternative input methods"
+    ]
+  },
+  "permissions": {
+    "required": [
+      "file_access",
+      "document_creation",
+      "cultural_database_access",
+      "font_rendering"
+    ],
+    "optional": [
+      "network_access",
+      "printer_access",
+      "camera_access",
+      "microphone_access",
+      "cloud_storage_access"
+    ]
+  },
+  "cultural_compliance": {
+    "halal_certified": true,
+    "family_friendly": true,
+    "educational_value": true,
+    "cultural_preservation": true,
+    "spiritual_guidelines": true,
+    "community_values": true,
+    "business_compliance": {
+      "islamic_business_principles": true,
+      "halal_document_standards": true,
+      "cultural_business_etiquette": true,
+      "traditional_communication_styles": true
+    }
+  },
+  "integration": {
+    "system_integration": [
+      "KhatCalendar synchronization",
+      "KhatFiles document management",
+      "Cultural database connectivity",
+      "Islamic calendar integration",
+      "Traditional printing support"
+    ],
+    "cloud_services": [
+      "Cultural document cloud storage",
+      "Gotong royong collaboration platform",
+      "Islamic-compliant cloud sync",
+      "Community template sharing",
+      "Cultural backup services"
+    ]
+  },
+  "export_options": {
+    "standard_formats": [
+      "PDF with cultural fonts",
+      "Microsoft Office compatibility",
+      "OpenDocument formats",
+      "Traditional print formats",
+      "Cultural web formats"
+    ],
+    "cultural_formats": [
+      "Traditional document archive",
+      "Cultural presentation package",
+      "Islamic document bundle",
+      "Community sharing format",
+      "Educational material export"
+    ]
+  },
+  "installation": {
+    "install_size": "1GB",
+    "data_directory": "~/.khatoffice",
+    "config_files": [
+      "config/khatoffice.conf",
+      "config/cultural_settings.conf",
+      "config/templates.conf",
+      "config/fonts.conf"
+    ],
+    "desktop_integration": {
+      "create_desktop_entries": true,
+      "register_mime_types": true,
+      "add_to_applications_menu": true,
+      "create_file_associations": true
+    }
+  },
+  "localization": {
+    "supported_languages": [
+      "id_ID", "en_US", "ar_SA", "ms_MY", "jv_ID", "su_ID"
+    ],
+    "default_language": "id_ID",
+    "cultural_calendar_support": true,
+    "traditional_number_formats": true,
+    "islamic_calendar_integration": true,
+    "regional_customization": true
+  },
+  "content": {
+    "executable": "bin/khatoffice",
+    "applications": [
+      "bin/khatwriter",
+      "bin/khatcalc", 
+      "bin/khatpresent",
+      "bin/khatdraw"
+    ],
+    "libraries": [
+      "lib/libkhatoffice.so",
+      "lib/libcultural_docs.so",
+      "lib/libtraditional_fonts.so",
+      "lib/libislamic_tools.so"
+    ],
+    "assets": [
+      "assets/templates/",
+      "assets/fonts/",
+      "assets/themes/",
+      "assets/cultural/",
+      "assets/icons/"
+    ],
+    "documentation": [
+      "docs/user_guide_id.pdf",
+      "docs/user_guide_en.pdf",
+      "docs/cultural_features.pdf",
+      "docs/islamic_tools.pdf",
+      "docs/template_guide.pdf"
+    ]
+  },
+  "updates": {
+    "auto_update": true,
+    "update_channel": "stable",
+    "cultural_content_updates": true,
+    "template_library_updates": true,
+    "font_updates": true,
+    "community_contributions": true
+  },
+  "community": {
+    "support_forum": "https://community.khatulistiwa-os.my.id/khatoffice",
+    "template_sharing": "https://templates.khatulistiwa-os.my.id/office",
+    "documentation": "https://docs.khatulistiwa-os.my.id/khatoffice",
+    "cultural_resources": "https://cultural.khatulistiwa-os.my.id/office"
+  },
+  "metadata": {
+    "package_date": "2024-12-10T10:00:00Z",
+    "package_size": "1073741824",
+    "checksum_sha256": "789012345678901234567890abcdef1234567890abcdef123456789abcdef12",
+    "digital_signature": "khatulistiwa_productivity_team_2024",
+    "cultural_validator": "Dewan Produktivitas Budaya Khatulistiwa",
+    "spiritual_validator": "Majelis Ulama Khatulistiwa",
+    "business_validator": "Dewan Bisnis Islami Khatulistiwa"
+  }
+}

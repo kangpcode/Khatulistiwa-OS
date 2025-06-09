@@ -1,0 +1,325 @@
+{
+    "name": "AppManager",
+    "version": "1.0.0",
+    "description": "Manajemen aplikasi .khapp dengan install, update, hapus, dan kontrol izin",
+    "author": "Tim Khatulistiwa OS",
+    "category": "system",
+    "type": "application_management",
+    "cultural": {
+        "indonesian_elements": true,
+        "batik_theme": "sekar_jagad",
+        "garuda_animations": true,
+        "traditional_sounds": true,
+        "cultural_colors": {
+            "primary": "#7C3AED",
+            "secondary": "#8B5CF6",
+            "accent": "#A78BFA",
+            "background": "#F5F3FF"
+        }
+    },
+    "permissions": [
+        "application_management",
+        "package_installation",
+        "permission_control",
+        "system_integration",
+        "file_system_access",
+        "cultural_assets_access",
+        "store_integration",
+        "update_management",
+        "security_scanning",
+        "dependency_resolution"
+    ],
+    "dependencies": [
+        "khatui_runtime.khat",
+        "khatcore_runtime.khat",
+        "khatstore.khat",
+        "khatsecurity.khat"
+    ],
+    "min_os_version": "1.0.0",
+    "ui_framework": "KhatUI",
+    "features": {
+        "app_installation": true,
+        "app_uninstallation": true,
+        "permission_management": true,
+        "update_management": true,
+        "dependency_resolution": true,
+        "cultural_app_categorization": true,
+        "traditional_organization": true,
+        "indonesian_terminology": true,
+        "security_scanning": true,
+        "backup_restore": true,
+        "batch_operations": true,
+        "cultural_recommendations": true
+    },
+    "app_categories": [
+        {
+            "id": "system",
+            "name": "Sistem",
+            "cultural_name": "Aplikasi Sistem",
+            "icon": "system_category",
+            "cultural_icon": "alat_sistem",
+            "description": "Aplikasi inti sistem operasi"
+        },
+        {
+            "id": "productivity",
+            "name": "Produktivitas",
+            "cultural_name": "Aplikasi Kerja",
+            "icon": "productivity_category",
+            "cultural_icon": "alat_kerja",
+            "description": "Aplikasi untuk produktivitas"
+        },
+        {
+            "id": "entertainment",
+            "name": "Hiburan",
+            "cultural_name": "Aplikasi Hiburan",
+            "icon": "entertainment_category",
+            "cultural_icon": "alat_hiburan",
+            "description": "Game dan aplikasi hiburan"
+        },
+        {
+            "id": "education",
+            "name": "Pendidikan",
+            "cultural_name": "Aplikasi Belajar",
+            "icon": "education_category",
+            "cultural_icon": "alat_belajar",
+            "description": "Aplikasi pendidikan dan pembelajaran"
+        },
+        {
+            "id": "business",
+            "name": "Bisnis",
+            "cultural_name": "Aplikasi Usaha",
+            "icon": "business_category",
+            "cultural_icon": "alat_usaha",
+            "description": "Aplikasi untuk bisnis dan UMKM"
+        },
+        {
+            "id": "cultural",
+            "name": "Budaya",
+            "cultural_name": "Aplikasi Budaya",
+            "icon": "cultural_category",
+            "cultural_icon": "alat_budaya",
+            "description": "Aplikasi bertemakan budaya Indonesia"
+        },
+        {
+            "id": "developer",
+            "name": "Developer",
+            "cultural_name": "Aplikasi Pengembang",
+            "icon": "developer_category",
+            "cultural_icon": "alat_pembuat",
+            "description": "Tools untuk pengembangan aplikasi"
+        }
+    ],
+    "app_status": [
+        {
+            "id": "installed",
+            "name": "Installed",
+            "cultural_name": "Terpasang",
+            "color": "#10B981",
+            "icon": "installed_status",
+            "cultural_icon": "app_terpasang"
+        },
+        {
+            "id": "update_available",
+            "name": "Update Available",
+            "cultural_name": "Ada Pembaruan",
+            "color": "#F59E0B",
+            "icon": "update_status",
+            "cultural_icon": "app_perlu_update"
+        },
+        {
+            "id": "installing",
+            "name": "Installing",
+            "cultural_name": "Sedang Dipasang",
+            "color": "#3B82F6",
+            "icon": "installing_status",
+            "cultural_icon": "app_dipasang"
+        },
+        {
+            "id": "error",
+            "name": "Error",
+            "cultural_name": "Bermasalah",
+            "color": "#EF4444",
+            "icon": "error_status",
+            "cultural_icon": "app_rusak"
+        },
+        {
+            "id": "disabled",
+            "name": "Disabled",
+            "cultural_name": "Dinonaktifkan",
+            "color": "#6B7280",
+            "icon": "disabled_status",
+            "cultural_icon": "app_mati"
+        }
+    ],
+    "permission_types": [
+        {
+            "id": "file_access",
+            "name": "File Access",
+            "cultural_name": "Akses Berkas",
+            "description": "Mengakses file dan folder",
+            "icon": "file_permission",
+            "cultural_icon": "izin_berkas",
+            "risk_level": "medium"
+        },
+        {
+            "id": "network_access",
+            "name": "Network Access",
+            "cultural_name": "Akses Jaringan",
+            "description": "Koneksi ke internet dan jaringan",
+            "icon": "network_permission",
+            "cultural_icon": "izin_jaringan",
+            "risk_level": "medium"
+        },
+        {
+            "id": "camera_access",
+            "name": "Camera Access",
+            "cultural_name": "Akses Kamera",
+            "description": "Menggunakan kamera perangkat",
+            "icon": "camera_permission",
+            "cultural_icon": "izin_kamera",
+            "risk_level": "high"
+        },
+        {
+            "id": "microphone_access",
+            "name": "Microphone Access",
+            "cultural_name": "Akses Mikrofon",
+            "description": "Merekam audio dari mikrofon",
+            "icon": "microphone_permission",
+            "cultural_icon": "izin_mikrofon",
+            "risk_level": "high"
+        },
+        {
+            "id": "location_access",
+            "name": "Location Access",
+            "cultural_name": "Akses Lokasi",
+            "description": "Mengetahui lokasi perangkat",
+            "icon": "location_permission",
+            "cultural_icon": "izin_lokasi",
+            "risk_level": "high"
+        },
+        {
+            "id": "system_access",
+            "name": "System Access",
+            "cultural_name": "Akses Sistem",
+            "description": "Mengakses fungsi sistem tingkat rendah",
+            "icon": "system_permission",
+            "cultural_icon": "izin_sistem",
+            "risk_level": "critical"
+        }
+    ],
+    "installation_sources": [
+        {
+            "id": "khatstore",
+            "name": "KhatStore",
+            "cultural_name": "Toko Khat",
+            "description": "Toko aplikasi resmi Khatulistiwa OS",
+            "trusted": true,
+            "icon": "khatstore_source",
+            "cultural_icon": "toko_resmi"
+        },
+        {
+            "id": "local_file",
+            "name": "Local File",
+            "cultural_name": "Berkas Lokal",
+            "description": "Install dari file .khapp lokal",
+            "trusted": false,
+            "icon": "local_source",
+            "cultural_icon": "berkas_sendiri"
+        },
+        {
+            "id": "developer",
+            "name": "Developer",
+            "cultural_name": "Pengembang",
+            "description": "Install dari developer mode",
+            "trusted": false,
+            "icon": "developer_source",
+            "cultural_icon": "mode_pembuat"
+        },
+        {
+            "id": "sideload",
+            "name": "Sideload",
+            "cultural_name": "Pasang Samping",
+            "description": "Install dari sumber eksternal",
+            "trusted": false,
+            "icon": "sideload_source",
+            "cultural_icon": "pasang_luar"
+        }
+    ],
+    "update_policies": [
+        {
+            "id": "automatic",
+            "name": "Automatic",
+            "cultural_name": "Otomatis",
+            "description": "Update aplikasi secara otomatis",
+            "icon": "auto_update",
+            "cultural_icon": "update_sendiri"
+        },
+        {
+            "id": "notify_only",
+            "name": "Notify Only",
+            "cultural_name": "Beritahu Saja",
+            "description": "Hanya memberitahu ada update",
+            "icon": "notify_update",
+            "cultural_icon": "kasih_tahu"
+        },
+        {
+            "id": "manual",
+            "name": "Manual",
+            "cultural_name": "Manual",
+            "description": "Update manual oleh pengguna",
+            "icon": "manual_update",
+            "cultural_icon": "update_manual"
+        }
+    ],
+    "cultural_features": {
+        "traditional_app_organization": true,
+        "indonesian_app_names": true,
+        "cultural_permission_metaphors": true,
+        "batik_progress_indicators": true,
+        "traditional_installation_ceremony": true,
+        "cultural_app_recommendations": true,
+        "ornamental_app_icons": true,
+        "traditional_security_warnings": true
+    },
+    "security_features": [
+        {
+            "id": "signature_verification",
+            "name": "Signature Verification",
+            "cultural_name": "Verifikasi Tanda Tangan",
+            "description": "Memverifikasi keaslian aplikasi",
+            "enabled": true
+        },
+        {
+            "id": "permission_analysis",
+            "name": "Permission Analysis",
+            "cultural_name": "Analisis Izin",
+            "description": "Menganalisis izin yang diminta aplikasi",
+            "enabled": true
+        },
+        {
+            "id": "malware_scanning",
+            "name": "Malware Scanning",
+            "cultural_name": "Pemindaian Malware",
+            "description": "Memindai aplikasi dari malware",
+            "enabled": true
+        },
+        {
+            "id": "sandboxing",
+            "name": "Sandboxing",
+            "cultural_name": "Kotak Pasir",
+            "description": "Menjalankan aplikasi dalam lingkungan terisolasi",
+            "enabled": true
+        }
+    ],
+    "localization": {
+        "default_language": "id_ID",
+        "supported_languages": ["id_ID", "en_US", "jv_ID", "su_ID"]
+    },
+    "resources": {
+        "icons": "resources/icons/",
+        "sounds": "resources/sounds/",
+        "cultural_assets": "cultural/",
+        "themes": "resources/themes/",
+        "security": "resources/security/"
+    }
+}

@@ -1,0 +1,451 @@
+/*
+ * ============================================================================
+ * khatui_runtime.khat - Runtime Antarmuka Pengguna Khatulistiwa OS
+ * Copyright (c) 2025 Dhafa Nazula Permadi & Team BIGCode By Cv Bintang Gumilang Group
+ * ============================================================================
+ * 
+ * Runtime UI yang menangani:
+ * 1. Rendering antarmuka dengan Tailwind CSS + ArkUI
+ * 2. Animasi budaya Indonesia (Batik, Garuda)
+ * 3. Manajemen tema dan layout
+ * 4. Event handling dan interaksi pengguna
+ * 5. Window management dan desktop environment
+ */
+
+import "khatui/graphics.khat"
+import "khatui/window.khat"
+import "khatui/theme.khat"
+import "khatui/animation.khat"
+import "khatui/cultural.khat"
+import "khatcore/system.khat"
+
+// Konstanta UI
+konstan KHATUI_VERSION = "1.0.0"
+konstan SCREEN_WIDTH = 1920
+konstan SCREEN_HEIGHT = 1080
+konstan TASKBAR_HEIGHT = 48
+konstan STATUSBAR_HEIGHT = 32
+konstan MAX_WINDOWS = 64
+
+// Mode tampilan
+enum DisplayMode {
+    DESKTOP = 0,
+    MOBILE = 1,
+    TABLET = 2
+}
+
+// Tema sistem
+enum SystemTheme {
+    GARUDA_TERANG = 0,
+    BATIK_GELAP = 1,
+    MINIMAL = 2,
+    NUSANTARA = 3
+}
+
+// Status window
+enum WindowStatus {
+    NORMAL = 0,
+    MINIMIZED = 1,
+    MAXIMIZED = 2,
+    FULLSCREEN = 3,
+    HIDDEN = 4
+}
+
+// Struktur window
+struct KhatWindow {
+    id: int,
+    title: string,
+    x: int,
+    y: int,
+    width: int,
+    height: int,
+    status: WindowStatus,
+    app_id: int,
+    is_system: bool,
+    z_order: int,
+    cultural_theme: string
+}
+
+// Desktop environment state
+struct DesktopState {
+    current_theme: SystemTheme,
+    display_mode: DisplayMode,
+    wallpaper_path: string,
+    batik_pattern: string,
+    garuda_animation: bool,
+    taskbar_visible: bool,
+    statusbar_visible: bool,
+    cultural_sounds: bool
+}
+
+// Global state
+var desktop: DesktopState
+var windows: KhatWindow[MAX_WINDOWS]
+var window_count: int = 0
+var active_window: int = -1
+
+// Inisialisasi KhatUI Runtime
+fungsi khatui_init() -> int {
+    khat_log("[UI] Menginisialisasi KhatUI Runtime v" + KHATUI_VERSION)
+    
+    // Inisialisasi subsistem grafis
+    if (init_graphics_system() != 0) {
+        khat_log("[ERROR] Gagal menginisialisasi sistem grafis")
+        return -1
+    }
+    
+    // Inisialisasi window manager
+    if (init_window_manager() != 0) {
+        khat_log("[ERROR] Gagal menginisialisasi window manager")
+        return -1
+    }
+    
+    // Inisialisasi sistem tema
+    if (init_theme_system() != 0) {
+        khat_log("[ERROR] Gagal menginisialisasi sistem tema")
+        return -1
+    }
+    
+    // Inisialisasi animasi budaya
+    if (init_cultural_animations() != 0) {
+        khat_log("[ERROR] Gagal menginisialisasi animasi budaya")
+        return -1
+    }
+    
+    // Setup desktop environment
+    setup_desktop_environment()
+    
+    // Load tema default
+    load_default_theme()
+    
+    khat_log("[UI] KhatUI Runtime berhasil diinisialisasi!")
+    return 0
+}
+
+// Setup desktop environment
+fungsi setup_desktop_environment() -> void {
+    khat_log("[UI] Menyiapkan desktop environment...")
+    
+    // Konfigurasi default desktop
+    desktop.current_theme = GARUDA_TERANG
+    desktop.display_mode = DESKTOP
+    desktop.wallpaper_path = "/system/ui/wallpapers/garuda_nusantara.jpg"
+    desktop.batik_pattern = "parang"
+    desktop.garuda_animation = true
+    desktop.taskbar_visible = true
+    desktop.statusbar_visible = true
+    desktop.cultural_sounds = true
+    
+    // Buat taskbar
+    create_taskbar()
+    
+    // Buat status bar
+    create_statusbar()
+    
+    // Set wallpaper
+    set_wallpaper(desktop.wallpaper_path)
+}
+
+// Buat window baru
+fungsi khatui_create_window(title: string, x: int, y: int, 
+                           width: int, height: int, app_id: int) -> int {
+    if (window_count >= MAX_WINDOWS) {
+        khat_log("[ERROR] Maksimum window tercapai")
+        return -1
+    }
+    
+    var window_id = window_count++
+    var window = &windows[window_id]
+    
+    window->id = window_id
+    window->title = khat_string_copy(title)
+    window->x = x
+    window->y = y
+    window->width = width
+    window->height = height
+    window->status = NORMAL
+    window->app_id = app_id
+    window->is_system = (app_id < 0)
+    window->z_order = window_count
+    window->cultural_theme = desktop.batik_pattern
+    
+    // Render window dengan tema budaya
+    render_window_with_cultural_theme(window)
+    
+    // Update taskbar
+    update_taskbar()
+    
+    khat_log("[UI] Window dibuat: " + title + " (ID: " + window_id + ")")
+    return window_id
+}
+
+// Render window dengan tema budaya
+fungsi render_window_with_cultural_theme(window: KhatWindow*) -> void {
+    // Buat frame window dengan motif batik
+    draw_batik_window_frame(window)
+    
+    // Tambahkan title bar dengan ornamen tradisional
+    draw_cultural_titlebar(window)
+    
+    // Render konten window
+    render_window_content(window)
+    
+    // Tambahkan efek bayangan dengan pola tradisional
+    add_cultural_shadow_effect(window)
+}
+
+// Gambar frame window dengan motif batik
+fungsi draw_batik_window_frame(window: KhatWindow*) -> void {
+    var frame_color = get_batik_color(desktop.batik_pattern)
+    var border_pattern = get_batik_border_pattern(desktop.batik_pattern)
+    
+    // Gambar border dengan pola batik
+    khatui_draw_patterned_border(
+        window->x, window->y, 
+        window->width, window->height,
+        border_pattern, frame_color
+    )
+    
+    // Tambahkan ornamen sudut
+    draw_corner_ornaments(window)
+}
+
+// Gambar title bar dengan ornamen budaya
+fungsi draw_cultural_titlebar(window: KhatWindow*) -> void {
+    var titlebar_height = 32
+    var bg_color = get_theme_color("titlebar_bg")
+    var text_color = get_theme_color("titlebar_text")
+    
+    // Background title bar dengan gradien batik
+    khatui_draw_batik_gradient(
+        window->x, window->y,
+        window->width, titlebar_height,
+        desktop.batik_pattern
+    )
+    
+    // Icon aplikasi dengan frame tradisional
+    draw_app_icon_with_frame(window->x + 8, window->y + 8, window->app_id)
+    
+    // Judul window dengan font tradisional
+    khatui_draw_text_cultural(
+        window->x + 40, window->y + 16,
+        window->title, text_color, "traditional"
+    )
+    
+    // Tombol kontrol dengan ornamen
+    draw_cultural_window_controls(window)
+}
+
+// Set tema sistem
+fungsi khatui_set_theme(theme: SystemTheme) -> void {
+    khat_log("[UI] Mengubah tema ke: " + theme)
+    
+    desktop.current_theme = theme
+    
+    switch (theme) {
+        case GARUDA_TERANG:
+            load_garuda_theme()
+            break
+            
+        case BATIK_GELAP:
+            load_batik_theme()
+            break
+            
+        case MINIMAL:
+            load_minimal_theme()
+            break
+            
+        case NUSANTARA:
+            load_nusantara_theme()
+            break
+    }
+    
+    // Refresh semua window
+    refresh_all_windows()
+    
+    // Update desktop
+    update_desktop_theme()
+}
+
+// Load tema Garuda (terang)
+fungsi load_garuda_theme() -> void {
+    set_theme_colors({
+        "bg_primary": "#F5F5DC",      // Krem
+        "bg_secondary": "#FFD700",    // Emas
+        "text_primary": "#8B4513",    // Coklat
+        "text_secondary": "#CD853F",  // Peru
+        "accent": "#FF6347",          // Merah bata
+        "border": "#DAA520"           // Emas tua
+    })
+    
+    set_cultural_elements({
+        "pattern": "garuda_wings",
+        "animation": "garuda_flight",
+        "sounds": "gamelan_soft"
+    })
+}
+
+// Load tema Batik (gelap)
+fungsi load_batik_theme() -> void {
+    set_theme_colors({
+        "bg_primary": "#2F1B14",      // Coklat tua
+        "bg_secondary": "#8B4513",    // Coklat sedang
+        "text_primary": "#F5DEB3",    // Wheat
+        "text_secondary": "#DEB887",  // Burlywood
+        "accent": "#CD853F",          // Peru
+        "border": "#A0522D"           // Sienna
+    })
+    
+    set_cultural_elements({
+        "pattern": "batik_parang",
+        "animation": "batik_flow",
+        "sounds": "gamelan_traditional"
+    })
+}
+
+// Animasi Garuda
+fungsi khatui_enable_garuda_animations() -> void {
+    if (!desktop.garuda_animation) {
+        return
+    }
+    
+    khat_log("[UI] Mengaktifkan animasi Garuda...")
+    
+    // Animasi sayap Garuda pada transisi window
+    register_window_transition_animation("garuda_wings")
+    
+    // Animasi terbang Garuda pada startup aplikasi
+    register_app_launch_animation("garuda_flight")
+    
+    // Animasi hover dengan efek bulu Garuda
+    register_hover_animation("garuda_feather")
+}
+
+// Animasi Batik
+fungsi khatui_enable_batik_animations() -> void {
+    khat_log("[UI] Mengaktifkan animasi Batik...")
+    
+    // Animasi aliran motif batik
+    register_background_animation("batik_flow")
+    
+    // Animasi transisi dengan pola batik
+    register_transition_animation("batik_weave")
+    
+    // Animasi loading dengan motif spiral
+    register_loading_animation("batik_spiral")
+}
+
+// Update taskbar
+fungsi update_taskbar() -> void {
+    if (!desktop.taskbar_visible) {
+        return
+    }
+    
+    // Clear taskbar
+    clear_taskbar()
+    
+    // Gambar background taskbar dengan motif
+    draw_taskbar_background()
+    
+    // Tambahkan tombol aplikasi aktif
+    for (var i = 0; i < window_count; i++) {
+        if (windows[i].status != HIDDEN) {
+            add_taskbar_button(&windows[i])
+        }
+    }
+    
+    // Tambahkan area notifikasi
+    draw_notification_area()
+    
+    // Tambahkan jam dengan format Indonesia
+    draw_indonesian_clock()
+}
+
+// Gambar jam dengan format Indonesia
+fungsi draw_indonesian_clock() -> void {
+    var time_str = khat_get_time_indonesian()
+    var date_str = khat_get_date_indonesian()
+    
+    var clock_x = SCREEN_WIDTH - 200
+    var clock_y = SCREEN_HEIGHT - TASKBAR_HEIGHT + 8
+    
+    // Jam dengan font tradisional
+    khatui_draw_text_cultural(
+        clock_x, clock_y,
+        time_str, get_theme_color("text_primary"), "traditional"
+    )
+    
+    // Tanggal dengan format Indonesia
+    khatui_draw_text_cultural(
+        clock_x, clock_y + 16,
+        date_str, get_theme_color("text_secondary"), "small"
+    )
+}
+
+// Handle event klik
+fungsi khatui_handle_click(x: int, y: int) -> void {
+    // Cari window yang diklik
+    var clicked_window = find_window_at_position(x, y)
+    
+    if (clicked_window >= 0) {
+        // Aktifkan window
+        activate_window(clicked_window)
+        
+        // Kirim event ke aplikasi
+        send_click_event_to_app(clicked_window, x, y)
+        
+        // Animasi klik dengan efek budaya
+        play_cultural_click_animation(x, y)
+    }
+}
+
+// Aktifkan window
+fungsi activate_window(window_id: int) -> void {
+    if (window_id < 0 || window_id >= window_count) {
+        return
+    }
+    
+    // Update z-order
+    bring_window_to_front(window_id)
+    
+    // Set sebagai active window
+    active_window = window_id
+    
+    // Update visual state
+    update_window_visual_state(window_id)
+    
+    // Update taskbar
+    update_taskbar()
+}
+
+// Shutdown KhatUI
+fungsi khatui_shutdown() -> void {
+    khat_log("[UI] Mematikan KhatUI Runtime...")
+    
+    // Tutup semua window
+    for (var i = 0; i < window_count; i++) {
+        close_window(i)
+    }
+    
+    // Cleanup sistem grafis
+    cleanup_graphics_system()
+    cleanup_window_manager()
+    cleanup_theme_system()
+    cleanup_cultural_animations()
+    
+    khat_log("[UI] KhatUI Runtime berhasil dimatikan")
+}
+
+// Export fungsi utama
+export fungsi khat_ui_init() -> int {
+    return khatui_init()
+}
+
+export fungsi khat_ui_shutdown() -> void {
+    khatui_shutdown()
+}
+
+export fungsi khat_ui_create_window(title: string, x: int, y: int, 
+                                   width: int, height: int, app_id: int) -> int {
+    return khatui_create_window(title, x, y, width, height, app_id)
+}

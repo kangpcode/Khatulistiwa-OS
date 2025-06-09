@@ -1,0 +1,374 @@
+{
+    "name": "VersionUpdate",
+    "version": "1.0.0",
+    "description": "Update sistem OTA dengan tema pembaruan tradisional Indonesia dan info versi",
+    "author": "Tim Khatulistiwa OS",
+    "category": "system",
+    "type": "system_update",
+    "cultural": {
+        "indonesian_elements": true,
+        "batik_theme": "sekar_jagad",
+        "garuda_animations": true,
+        "traditional_sounds": true,
+        "cultural_colors": {
+            "primary": "#0EA5E9",
+            "secondary": "#38BDF8",
+            "accent": "#7DD3FC",
+            "background": "#F0F9FF"
+        }
+    },
+    "permissions": [
+        "system_update",
+        "ota_download",
+        "version_management",
+        "system_modification",
+        "network_access",
+        "cultural_assets_access",
+        "file_system_modification",
+        "service_restart",
+        "critical_system_access",
+        "update_verification"
+    ],
+    "dependencies": [
+        "khatui_runtime.khat",
+        "khatcore_runtime.khat",
+        "khatupdate.khat",
+        "khatnetwork.khat"
+    ],
+    "min_os_version": "1.0.0",
+    "ui_framework": "KhatUI",
+    "features": {
+        "ota_updates": true,
+        "version_information": true,
+        "update_scheduling": true,
+        "rollback_support": true,
+        "incremental_updates": true,
+        "cultural_update_ceremony": true,
+        "traditional_renewal_process": true,
+        "indonesian_terminology": true,
+        "update_progress_visualization": true,
+        "automatic_updates": true,
+        "manual_updates": true,
+        "cultural_changelog_display": true
+    },
+    "update_types": [
+        {
+            "id": "major_update",
+            "name": "Major Update",
+            "cultural_name": "Pembaruan Besar",
+            "description": "Update versi mayor dengan fitur baru",
+            "icon": "major_update",
+            "cultural_icon": "pembaruan_agung",
+            "requires_restart": true,
+            "backup_recommended": true
+        },
+        {
+            "id": "minor_update",
+            "name": "Minor Update",
+            "cultural_name": "Pembaruan Kecil",
+            "description": "Update versi minor dengan perbaikan",
+            "icon": "minor_update",
+            "cultural_icon": "pembaruan_halus",
+            "requires_restart": false,
+            "backup_recommended": false
+        },
+        {
+            "id": "security_update",
+            "name": "Security Update",
+            "cultural_name": "Pembaruan Keamanan",
+            "description": "Update keamanan sistem",
+            "icon": "security_update",
+            "cultural_icon": "pembaruan_benteng",
+            "requires_restart": true,
+            "backup_recommended": true
+        },
+        {
+            "id": "hotfix",
+            "name": "Hotfix",
+            "cultural_name": "Perbaikan Cepat",
+            "description": "Perbaikan bug kritis",
+            "icon": "hotfix_update",
+            "cultural_icon": "perbaikan_kilat",
+            "requires_restart": false,
+            "backup_recommended": false
+        },
+        {
+            "id": "cultural_update",
+            "name": "Cultural Update",
+            "cultural_name": "Pembaruan Budaya",
+            "description": "Update elemen budaya dan tema",
+            "icon": "cultural_update",
+            "cultural_icon": "pembaruan_nusantara",
+            "requires_restart": false,
+            "backup_recommended": false
+        }
+    ],
+    "update_channels": [
+        {
+            "id": "stable",
+            "name": "Stable",
+            "cultural_name": "Stabil",
+            "description": "Update stabil yang telah diuji",
+            "url": "https://update.khatulistiwa-os.my.id/stable",
+            "frequency": "monthly",
+            "recommended": true
+        },
+        {
+            "id": "beta",
+            "name": "Beta",
+            "cultural_name": "Beta",
+            "description": "Update beta untuk testing",
+            "url": "https://update.khatulistiwa-os.my.id/beta",
+            "frequency": "weekly",
+            "recommended": false
+        },
+        {
+            "id": "nightly",
+            "name": "Nightly",
+            "cultural_name": "Harian",
+            "description": "Update harian terbaru",
+            "url": "https://update.khatulistiwa-os.my.id/nightly",
+            "frequency": "daily",
+            "recommended": false
+        },
+        {
+            "id": "lts",
+            "name": "LTS",
+            "cultural_name": "Dukungan Panjang",
+            "description": "Long Term Support updates",
+            "url": "https://update.khatulistiwa-os.my.id/lts",
+            "frequency": "quarterly",
+            "recommended": true
+        }
+    ],
+    "update_stages": [
+        {
+            "id": "check",
+            "name": "Check",
+            "cultural_name": "Pemeriksaan",
+            "description": "Memeriksa update yang tersedia",
+            "icon": "check_stage",
+            "cultural_icon": "cari_pembaruan",
+            "estimated_time": 30
+        },
+        {
+            "id": "download",
+            "name": "Download",
+            "cultural_name": "Unduh",
+            "description": "Mengunduh file update",
+            "icon": "download_stage",
+            "cultural_icon": "ambil_pembaruan",
+            "estimated_time": 600
+        },
+        {
+            "id": "verify",
+            "name": "Verify",
+            "cultural_name": "Verifikasi",
+            "description": "Memverifikasi integritas update",
+            "icon": "verify_stage",
+            "cultural_icon": "periksa_keaslian",
+            "estimated_time": 60
+        },
+        {
+            "id": "backup",
+            "name": "Backup",
+            "cultural_name": "Cadangan",
+            "description": "Membuat backup sistem",
+            "icon": "backup_stage",
+            "cultural_icon": "simpan_lama",
+            "estimated_time": 300
+        },
+        {
+            "id": "install",
+            "name": "Install",
+            "cultural_name": "Pasang",
+            "description": "Memasang update",
+            "icon": "install_stage",
+            "cultural_icon": "terapkan_baru",
+            "estimated_time": 240
+        },
+        {
+            "id": "restart",
+            "name": "Restart",
+            "cultural_name": "Mulai Ulang",
+            "description": "Restart sistem",
+            "icon": "restart_stage",
+            "cultural_icon": "hidup_kembali",
+            "estimated_time": 120
+        }
+    ],
+    "version_info": {
+        "current_version": "1.0.0",
+        "build_number": "20241210",
+        "release_date": "2024-12-10",
+        "cultural_name": "Khatulistiwa Perdana",
+        "codename": "Garuda Pertama",
+        "kernel_version": "KhatKernel 1.0.0",
+        "ui_version": "KhatUI 1.0.0",
+        "cultural_elements_version": "Nusantara 1.0.0"
+    },
+    "rollback_options": [
+        {
+            "id": "automatic_rollback",
+            "name": "Automatic Rollback",
+            "cultural_name": "Kembali Otomatis",
+            "description": "Rollback otomatis jika update gagal",
+            "enabled": true
+        },
+        {
+            "id": "manual_rollback",
+            "name": "Manual Rollback",
+            "cultural_name": "Kembali Manual",
+            "description": "Rollback manual oleh pengguna",
+            "enabled": true
+        },
+        {
+            "id": "snapshot_restore",
+            "name": "Snapshot Restore",
+            "cultural_name": "Pulihkan Jepretan",
+            "description": "Restore dari snapshot sistem",
+            "enabled": true
+        }
+    ],
+    "cultural_features": {
+        "traditional_renewal_ceremony": true,
+        "indonesian_update_terminology": true,
+        "cultural_progress_visualization": true,
+        "batik_download_indicators": true,
+        "traditional_completion_celebration": true,
+        "gamelan_update_sounds": true,
+        "ornamental_version_display": true,
+        "cultural_changelog_presentation": true
+    },
+    "notification_settings": [
+        {
+            "id": "update_available",
+            "name": "Update Available",
+            "cultural_name": "Pembaruan Tersedia",
+            "description": "Notifikasi saat ada update baru",
+            "enabled": true,
+            "sound": "gamelan_notification.ogg"
+        },
+        {
+            "id": "download_complete",
+            "name": "Download Complete",
+            "cultural_name": "Unduhan Selesai",
+            "description": "Notifikasi saat download selesai",
+            "enabled": true,
+            "sound": "chime_download.ogg"
+        },
+        {
+            "id": "update_installed",
+            "name": "Update Installed",
+            "cultural_name": "Pembaruan Terpasang",
+            "description": "Notifikasi saat update berhasil",
+            "enabled": true,
+            "sound": "gamelan_success.ogg"
+        },
+        {
+            "id": "update_failed",
+            "name": "Update Failed",
+            "cultural_name": "Pembaruan Gagal",
+            "description": "Notifikasi saat update gagal",
+            "enabled": true,
+            "sound": "gong_error.ogg"
+        }
+    ],
+    "security_features": [
+        {
+            "id": "signature_verification",
+            "name": "Signature Verification",
+            "cultural_name": "Verifikasi Tanda Tangan",
+            "description": "Verifikasi tanda tangan digital update",
+            "enabled": true
+        },
+        {
+            "id": "checksum_validation",
+            "name": "Checksum Validation",
+            "cultural_name": "Validasi Checksum",
+            "description": "Validasi checksum file update",
+            "enabled": true
+        },
+        {
+            "id": "secure_download",
+            "name": "Secure Download",
+            "cultural_name": "Unduh Aman",
+            "description": "Download melalui koneksi aman",
+            "enabled": true
+        },
+        {
+            "id": "rollback_protection",
+            "name": "Rollback Protection",
+            "cultural_name": "Perlindungan Rollback",
+            "description": "Proteksi saat rollback sistem",
+            "enabled": true
+        }
+    ],
+    "scheduling_options": [
+        {
+            "id": "immediate",
+            "name": "Immediate",
+            "cultural_name": "Segera",
+            "description": "Install update segera"
+        },
+        {
+            "id": "scheduled",
+            "name": "Scheduled",
+            "cultural_name": "Terjadwal",
+            "description": "Install pada waktu yang ditentukan"
+        },
+        {
+            "id": "maintenance_window",
+            "name": "Maintenance Window",
+            "cultural_name": "Jendela Pemeliharaan",
+            "description": "Install saat maintenance window"
+        },
+        {
+            "id": "user_approval",
+            "name": "User Approval",
+            "cultural_name": "Persetujuan Pengguna",
+            "description": "Install setelah persetujuan pengguna"
+        }
+    ],
+    "audio_feedback": [
+        {
+            "id": "update_check",
+            "name": "Update Check",
+            "cultural_name": "Cek Pembaruan",
+            "sound_file": "gamelan_check.ogg",
+            "volume": 0.5
+        },
+        {
+            "id": "download_progress",
+            "name": "Download Progress",
+            "cultural_name": "Proses Unduh",
+            "sound_file": "water_flow.ogg",
+            "volume": 0.3
+        },
+        {
+            "id": "install_complete",
+            "name": "Install Complete",
+            "cultural_name": "Pasang Selesai",
+            "sound_file": "gamelan_celebration.ogg",
+            "volume": 0.8
+        },
+        {
+            "id": "rollback_initiated",
+            "name": "Rollback Initiated",
+            "cultural_name": "Rollback Dimulai",
+            "sound_file": "gong_warning.ogg",
+            "volume": 0.7
+        }
+    ],
+    "localization": {
+        "default_language": "id_ID",
+        "supported_languages": ["id_ID", "en_US", "jv_ID", "su_ID"]
+    },
+    "resources": {
+        "icons": "resources/icons/",
+        "sounds": "resources/sounds/",
+        "cultural_assets": "cultural/",
+        "themes": "resources/themes/",
+        "update_tools": "resources/tools/"
+    }
+}

@@ -1,0 +1,546 @@
+/*
+ * ============================================================================
+ * khatstore.khat - Toko Aplikasi Khatulistiwa OS dengan Showcase Indonesia
+ * Copyright (c) 2025 Dhafa Nazula Permadi & Team BIGCode By Cv Bintang Gumilang Group
+ * ============================================================================
+ * 
+ * Toko aplikasi lengkap dengan fitur:
+ * 1. Showcase developer Indonesia
+ * 2. Kategori aplikasi berbudaya
+ * 3. Payment gateway lokal
+ * 4. Review dan rating komunitas
+ * 5. Promosi aplikasi tradisional
+ */
+
+import "khatui/runtime.khat"
+import "khatcore/system.khat"
+import "khatcore/network.khat"
+import "khatcore/payment.khat"
+import "khatui/cultural.khat"
+import "khatui/animation.khat"
+
+// Konstanta aplikasi
+konstan STORE_VERSION = "1.0.0"
+konstan WINDOW_WIDTH = 1200
+konstan WINDOW_HEIGHT = 800
+konstan SIDEBAR_WIDTH = 280
+konstan HEADER_HEIGHT = 80
+konstan FOOTER_HEIGHT = 50
+
+// Status aplikasi di store
+enum AppStatus {
+    AVAILABLE = 0,
+    INSTALLED = 1,
+    UPDATING = 2,
+    DOWNLOADING = 3,
+    PENDING = 4,
+    ERROR = 5
+}
+
+// Jenis aplikasi
+enum AppCategory {
+    BUDAYA = 0,
+    PERMAINAN = 1,
+    PENDIDIKAN = 2,
+    BISNIS = 3,
+    MEDIA = 4,
+    UTILITAS = 5,
+    SOSIAL = 6,
+    KESEHATAN = 7
+}
+
+// Struktur aplikasi di store
+struct StoreApp {
+    id: string,
+    nama: string,
+    developer: string,
+    kategori: AppCategory,
+    deskripsi: string,
+    versi: string,
+    ukuran: size_t,
+    harga: float,
+    rating: float,
+    jumlah_review: int,
+    status: AppStatus,
+    icon_url: string,
+    screenshot_urls: string[],
+    cultural_elements: bool,
+    indonesian_developer: bool,
+    regional_language: string,
+    download_count: int,
+    release_date: time_t
+}
+
+// State aplikasi
+struct StoreState {
+    current_category: AppCategory,
+    search_query: string,
+    selected_app: int,
+    featured_apps: StoreApp[],
+    category_apps: StoreApp[],
+    search_results: StoreApp[],
+    user_account: UserAccount*,
+    download_queue: DownloadItem[],
+    cultural_mode: bool,
+    batik_theme: string,
+    main_window: int,
+    content_scroll: int,
+    sidebar_scroll: int
+}
+
+// Item download
+struct DownloadItem {
+    app_id: string,
+    progress: float,
+    speed: float,
+    eta: int,
+    status: string
+}
+
+// Global state
+var store: StoreState
+var featured_apps: StoreApp[20]
+var featured_count: int = 0
+
+// Inisialisasi aplikasi
+fungsi store_init() -> int {
+    khat_log("[STORE] Menginisialisasi KhatStore v" + STORE_VERSION)
+    
+    // Setup state awal
+    store.current_category = BUDAYA
+    store.search_query = ""
+    store.selected_app = -1
+    store.cultural_mode = true
+    store.batik_theme = "ceplok"
+    store.content_scroll = 0
+    store.sidebar_scroll = 0
+    
+    // Load user account
+    if (load_user_account() != 0) {
+        khat_log("[WARNING] User belum login, mode guest")
+    }
+    
+    // Buat window utama
+    if (create_main_window() != 0) {
+        khat_log("[ERROR] Gagal membuat window utama")
+        return -1
+    }
+    
+    // Load featured apps
+    if (load_featured_apps() != 0) {
+        khat_log("[ERROR] Gagal memuat featured apps")
+        return -1
+    }
+    
+    // Setup event handlers
+    setup_store_events()
+    
+    khat_log("[STORE] KhatStore berhasil diinisialisasi!")
+    return 0
+}
+
+// Buat window utama
+fungsi create_main_window() -> int {
+    khat_log("[STORE] Membuat window utama...")
+    
+    store.main_window = khatui_create_window(
+        "KhatStore - Toko Aplikasi Nusantara",
+        (khat_screen_width() - WINDOW_WIDTH) / 2,
+        (khat_screen_height() - WINDOW_HEIGHT) / 2,
+        WINDOW_WIDTH, WINDOW_HEIGHT,
+        khat_get_current_app_id()
+    )
+    
+    if (store.main_window < 0) {
+        return -1
+    }
+    
+    // Set window properties
+    khatui_set_window_cultural_theme(store.main_window, store.batik_theme)
+    khatui_set_window_resizable(store.main_window, true)
+    khatui_set_window_min_size(store.main_window, 1000, 600)
+    
+    // Render window
+    render_store_window()
+    
+    return 0
+}
+
+// Render window store
+fungsi render_store_window() -> void {
+    // Clear window
+    khatui_clear_window(store.main_window)
+    
+    // Background dengan motif batik
+    draw_cultural_background()
+    
+    // Header dengan logo dan search
+    draw_store_header()
+    
+    // Sidebar kategori
+    draw_store_sidebar()
+    
+    // Content area utama
+    draw_store_content()
+    
+    // Footer dengan info
+    draw_store_footer()
+}
+
+// Gambar background dengan motif budaya
+fungsi draw_cultural_background() -> void {
+    var bg_color = get_cultural_color("store_bg")
+    var pattern_color = get_cultural_color("batik_subtle")
+    
+    // Background dasar
+    khatui_fill_rect(store.main_window, 0, 0, 
+                     WINDOW_WIDTH, WINDOW_HEIGHT, bg_color)
+    
+    // Overlay motif batik halus
+    khatui_draw_batik_pattern(store.main_window,
+                              0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
+                              store.batik_theme, pattern_color, 0.08)
+    
+    // Border ornamen
+    khatui_draw_cultural_border(store.main_window,
+                                0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
+                                "ornamen_store")
+}
+
+// Gambar header store
+fungsi draw_store_header() -> void {
+    var header_color = get_cultural_color("store_header_bg")
+    
+    // Background header dengan gradien
+    khatui_draw_gradient_rect(store.main_window, 0, 0, 
+                              WINDOW_WIDTH, HEADER_HEIGHT,
+                              header_color, get_cultural_color("store_header_gradient"))
+    
+    // Logo KhatStore dengan ornamen
+    draw_store_logo(20, 15, 50, 50)
+    
+    // Judul dengan font tradisional
+    khatui_draw_text_cultural(store.main_window, 85, 25,
+                              "KhatStore", get_cultural_color("store_title"),
+                              "store_title")
+    
+    khatui_draw_text_cultural(store.main_window, 85, 45,
+                              "Toko Aplikasi Nusantara", get_cultural_color("store_subtitle"),
+                              "store_subtitle")
+    
+    // Search bar dengan ornamen
+    draw_store_search_bar(400, 20, 400, 40)
+    
+    // User account area
+    draw_user_account_area(WINDOW_WIDTH - 200, 20, 180, 40)
+}
+
+// Gambar logo store dengan ornamen
+fungsi draw_store_logo(x: int, y: int, width: int, height: int) -> void {
+    // Background logo dengan efek emas
+    khatui_draw_circle_gradient(store.main_window,
+                                x + width/2, y + height/2, width/2,
+                                get_cultural_color("emas"),
+                                get_cultural_color("emas_tua"))
+    
+    // Icon toko dengan motif tradisional
+    khatui_draw_cultural_icon(store.main_window, x + 8, y + 8,
+                              width - 16, height - 16,
+                              "toko_nusantara", get_cultural_color("putih"))
+    
+    // Ornamen sudut
+    khatui_draw_cultural_ornament(store.main_window, x, y, width, height,
+                                  "ornamen_toko")
+}
+
+// Gambar search bar
+fungsi draw_store_search_bar(x: int, y: int, width: int, height: int) -> void {
+    var bg_color = get_cultural_color("search_bg")
+    var border_color = get_cultural_color("search_border")
+    
+    // Background dengan ornamen
+    khatui_draw_rounded_rect(store.main_window, x, y, width, height, 8, bg_color)
+    khatui_draw_rounded_border(store.main_window, x, y, width, height, 8, 2, border_color)
+    
+    // Icon search dengan motif tradisional
+    khatui_draw_cultural_icon(store.main_window, x + 10, y + 8,
+                              24, 24, "kaca_pembesar_batik",
+                              get_cultural_color("search_icon"))
+    
+    // Placeholder text
+    if (store.search_query == "") {
+        khatui_draw_text_cultural(store.main_window, x + 40, y + 12,
+                                  "Cari aplikasi Indonesia...",
+                                  get_cultural_color("search_placeholder"),
+                                  "search_placeholder")
+    } else {
+        khatui_draw_text_cultural(store.main_window, x + 40, y + 12,
+                                  store.search_query,
+                                  get_cultural_color("search_text"),
+                                  "search_text")
+    }
+}
+
+// Gambar sidebar kategori
+fungsi draw_store_sidebar() -> void {
+    var sidebar_x = 0
+    var sidebar_y = HEADER_HEIGHT
+    var sidebar_height = WINDOW_HEIGHT - HEADER_HEIGHT - FOOTER_HEIGHT
+    var sidebar_bg = get_cultural_color("sidebar_bg")
+    
+    // Background sidebar
+    khatui_fill_rect(store.main_window, sidebar_x, sidebar_y,
+                     SIDEBAR_WIDTH, sidebar_height, sidebar_bg)
+    
+    // Header sidebar
+    khatui_draw_text_cultural(store.main_window, sidebar_x + 20, sidebar_y + 20,
+                              "Kategori Aplikasi", get_cultural_color("sidebar_header"),
+                              "sidebar_header")
+    
+    // Kategori dengan icon budaya
+    draw_category_list(sidebar_x, sidebar_y + 50, SIDEBAR_WIDTH, sidebar_height - 100)
+    
+    // Featured developer section
+    draw_featured_developers(sidebar_x, sidebar_y + sidebar_height - 200,
+                            SIDEBAR_WIDTH, 150)
+}
+
+// Gambar daftar kategori
+fungsi draw_category_list(x: int, y: int, width: int, height: int) -> void {
+    var categories = [
+        {BUDAYA, "Budaya Indonesia", "warisan_nusantara"},
+        {PERMAINAN, "Permainan Tradisional", "permainan_rakyat"},
+        {PENDIDIKAN, "Pendidikan", "belajar_nusantara"},
+        {BISNIS, "Bisnis & Produktivitas", "usaha_indonesia"},
+        {MEDIA, "Media & Hiburan", "hiburan_nusantara"},
+        {UTILITAS, "Utilitas", "alat_bantu"},
+        {SOSIAL, "Sosial & Komunikasi", "gotong_royong"},
+        {KESEHATAN, "Kesehatan & Kebugaran", "sehat_nusantara"}
+    ]
+    
+    var item_height = 45
+    var current_y = y
+    
+    for (var i = 0; i < categories.length; i++) {
+        var category = categories[i]
+        var is_selected = (category.id == store.current_category)
+        
+        // Background item
+        if (is_selected) {
+            var selected_bg = get_cultural_color("category_selected")
+            khatui_fill_rect(store.main_window, x + 10, current_y,
+                             width - 20, item_height, selected_bg)
+        }
+        
+        // Icon budaya
+        khatui_draw_cultural_icon(store.main_window, x + 20, current_y + 8,
+                                  32, 32, category.cultural_icon,
+                                  get_cultural_color("category_icon"))
+        
+        // Nama kategori
+        var text_color = is_selected ?
+                         get_cultural_color("category_selected_text") :
+                         get_cultural_color("category_text")
+        
+        khatui_draw_text_cultural(store.main_window, x + 60, current_y + 12,
+                                  category.name, text_color, "category_item")
+        
+        // Jumlah aplikasi
+        var app_count = get_category_app_count(category.id)
+        khatui_draw_text_cultural(store.main_window, x + 60, current_y + 28,
+                                  app_count + " aplikasi", 
+                                  get_cultural_color("category_count"),
+                                  "category_count")
+        
+        // Click handler
+        khatui_add_click_handler(store.main_window, x + 10, current_y,
+                                width - 20, item_height, "category_click", i)
+        
+        current_y += item_height + 5
+    }
+}
+
+// Gambar content area utama
+fungsi draw_store_content() -> void {
+    var content_x = SIDEBAR_WIDTH + 20
+    var content_y = HEADER_HEIGHT + 20
+    var content_width = WINDOW_WIDTH - SIDEBAR_WIDTH - 40
+    var content_height = WINDOW_HEIGHT - HEADER_HEIGHT - FOOTER_HEIGHT - 40
+    
+    // Background content
+    var content_bg = get_cultural_color("content_bg")
+    khatui_fill_rect(store.main_window, content_x, content_y,
+                     content_width, content_height, content_bg)
+    
+    if (store.search_query != "") {
+        // Tampilkan hasil search
+        draw_search_results(content_x, content_y, content_width, content_height)
+    } else {
+        // Tampilkan featured dan kategori
+        draw_featured_section(content_x, content_y, content_width, 200)
+        draw_category_apps(content_x, content_y + 220, content_width, 
+                          content_height - 220)
+    }
+}
+
+// Gambar featured apps
+fungsi draw_featured_section(x: int, y: int, width: int, height: int) -> void {
+    // Header section
+    khatui_draw_text_cultural(store.main_window, x, y,
+                              "Pilihan Editor", get_cultural_color("section_header"),
+                              "section_header")
+    
+    khatui_draw_text_cultural(store.main_window, x, y + 25,
+                              "Aplikasi terbaik pilihan tim KhatStore",
+                              get_cultural_color("section_subtitle"),
+                              "section_subtitle")
+    
+    // Featured apps carousel
+    draw_featured_carousel(x, y + 50, width, height - 50)
+}
+
+// Gambar carousel featured apps
+fungsi draw_featured_carousel(x: int, y: int, width: int, height: int) -> void {
+    var app_width = 200
+    var app_height = height - 20
+    var spacing = 20
+    var current_x = x
+    
+    for (var i = 0; i < featured_count && current_x + app_width <= x + width; i++) {
+        var app = &featured_apps[i]
+        
+        // Card background dengan ornamen
+        draw_app_card(current_x, y, app_width, app_height, app, true)
+        
+        current_x += app_width + spacing
+    }
+    
+    // Navigation arrows dengan motif tradisional
+    if (featured_count > 3) {
+        draw_carousel_navigation(x + width - 80, y + height/2 - 20, 40, 40)
+    }
+}
+
+// Gambar card aplikasi
+fungsi draw_app_card(x: int, y: int, width: int, height: int, 
+                    app: StoreApp*, is_featured: bool) -> void {
+    var card_bg = get_cultural_color("app_card_bg")
+    var border_color = get_cultural_color("app_card_border")
+    
+    // Background card dengan shadow
+    khatui_draw_rounded_rect_shadow(store.main_window, x, y, width, height,
+                                    8, card_bg, get_cultural_color("shadow"))
+    
+    // Border dengan ornamen
+    khatui_draw_cultural_border(store.main_window, x, y, width, height,
+                                "ornamen_card")
+    
+    // Icon aplikasi
+    var icon_size = is_featured ? 64 : 48
+    var icon_x = x + (width - icon_size) / 2
+    var icon_y = y + 15
+    
+    draw_app_icon(icon_x, icon_y, icon_size, icon_size, app->icon_url)
+    
+    // Nama aplikasi
+    var name_y = icon_y + icon_size + 10
+    khatui_draw_text_cultural_centered(store.main_window, x, name_y, width,
+                                       app->nama, get_cultural_color("app_name"),
+                                       "app_name")
+    
+    // Developer
+    khatui_draw_text_cultural_centered(store.main_window, x, name_y + 20, width,
+                                       app->developer, get_cultural_color("app_developer"),
+                                       "app_developer")
+    
+    // Rating dengan bintang tradisional
+    draw_app_rating(x + 10, name_y + 45, width - 20, 20, app->rating)
+    
+    // Harga atau status
+    draw_app_price_status(x + 10, y + height - 35, width - 20, 25, app)
+    
+    // Badge Indonesian developer
+    if (app->indonesian_developer) {
+        draw_indonesian_badge(x + width - 30, y + 5, 25, 25)
+    }
+    
+    // Click handler
+    khatui_add_click_handler(store.main_window, x, y, width, height,
+                            "app_click", app->id)
+}
+
+// Handle klik aplikasi
+fungsi handle_app_click(app_id: string) -> void {
+    khat_log("[STORE] Klik aplikasi: " + app_id)
+    
+    // Cari aplikasi
+    var app = find_app_by_id(app_id)
+    if (app == null) {
+        return
+    }
+    
+    // Tampilkan detail aplikasi
+    show_app_details(app)
+    
+    // Animasi dengan efek budaya
+    khatui_animate_app_selection(store.main_window, "wayang_select")
+    
+    // Play sound budaya
+    if (store.cultural_mode) {
+        khat_audio_play_cultural_sound("app_select")
+    }
+}
+
+// Install aplikasi
+fungsi install_app(app: StoreApp*) -> void {
+    khat_log("[STORE] Menginstall aplikasi: " + app->nama)
+    
+    // Cek apakah user sudah login
+    if (store.user_account == null) {
+        show_login_dialog()
+        return
+    }
+    
+    // Cek apakah aplikasi berbayar
+    if (app->harga > 0) {
+        show_payment_dialog(app)
+        return
+    }
+    
+    // Mulai download
+    start_app_download(app)
+    
+    // Update UI
+    app->status = DOWNLOADING
+    render_store_content()
+    
+    // Animasi download dengan motif tradisional
+    khatui_animate_download_start(store.main_window, "download_batik")
+}
+
+// Entry point aplikasi
+fungsi main() -> int {
+    if (store_init() != 0) {
+        return -1
+    }
+    
+    // Main event loop
+    while (true) {
+        var event = khatui_get_next_event()
+        if (event.type == "quit") {
+            break
+        }
+        
+        handle_store_event(event.type, event.data)
+        
+        // Update download progress
+        update_download_progress()
+        
+        khat_sleep(16)
+    }
+    
+    // Cleanup
+    store_cleanup()
+    
+    return 0
+}

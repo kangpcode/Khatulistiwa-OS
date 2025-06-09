@@ -1,0 +1,511 @@
+/*
+ * ============================================================================
+ * init_check.khat - Khatulistiwa OS Initialization & Setup Wizard
+ * Copyright (c) 2025 Dhafa Nazula Permadi & Team BIGCode By Cv Bintang Gumilang Group
+ * ============================================================================
+ * 
+ * System initialization dengan fitur:
+ * 1. First-time setup wizard dengan budaya Indonesia
+ * 2. Hardware detection dan konfigurasi
+ * 3. Cultural preferences setup
+ * 4. User account creation dengan tema tradisional
+ * 5. System validation dan health check
+ */
+
+import "khatcore_runtime.khat"
+import "khatui_runtime.khat"
+import "drivers/driver_manager.khat"
+import "cultural/cultural_setup.khat"
+
+// Konstanta init check
+konstan INIT_CHECK_VERSION = "1.0.0"
+konstan SETUP_WIZARD_TITLE = "Selamat Datang di Khatulistiwa OS"
+konstan MIN_RAM_MB = 2048
+konstan MIN_STORAGE_GB = 8
+
+// Setup stages
+enum SetupStage {
+    WELCOME = 0,
+    LANGUAGE_SELECTION = 1,
+    CULTURAL_SETUP = 2,
+    HARDWARE_DETECTION = 3,
+    USER_ACCOUNT = 4,
+    SYSTEM_CONFIGURATION = 5,
+    FINALIZATION = 6,
+    COMPLETE = 7
+}
+
+// System requirements check
+enum RequirementStatus {
+    PASSED = 0,
+    WARNING = 1,
+    FAILED = 2
+}
+
+// Setup wizard state
+struct SetupWizardState {
+    current_stage: SetupStage,
+    selected_language: string,
+    selected_cultural_theme: string,
+    selected_gamelan_mode: string,
+    selected_wayang_characters: string[],
+    user_name: string,
+    user_cultural_name: string,
+    system_name: string,
+    hardware_detected: bool,
+    requirements_met: bool,
+    setup_complete: bool,
+    wizard_window: int
+}
+
+// Global setup state
+var setup_wizard: SetupWizardState
+
+// Initialize setup wizard
+fungsi init_check_start() -> int {
+    khat_log("[INIT] Memulai Khatulistiwa OS Setup Wizard v" + INIT_CHECK_VERSION)
+    
+    // Initialize setup state
+    setup_wizard.current_stage = WELCOME
+    setup_wizard.selected_language = "id_ID"
+    setup_wizard.selected_cultural_theme = "parang"
+    setup_wizard.selected_gamelan_mode = "pelog"
+    setup_wizard.user_name = ""
+    setup_wizard.user_cultural_name = ""
+    setup_wizard.system_name = "Khatulistiwa"
+    setup_wizard.hardware_detected = false
+    setup_wizard.requirements_met = false
+    setup_wizard.setup_complete = false
+    
+    // Check if this is first boot
+    if (is_system_already_configured()) {
+        khat_log("[INIT] System already configured, skipping setup")
+        return perform_system_health_check()
+    }
+    
+    // Initialize UI for setup wizard
+    if (khatui_init() != 0) {
+        khat_log("[ERROR] Failed to initialize UI for setup")
+        return -1
+    }
+    
+    // Create setup wizard window
+    if (create_setup_wizard_window() != 0) {
+        khat_log("[ERROR] Failed to create setup wizard window")
+        return -1
+    }
+    
+    // Start setup wizard
+    return run_setup_wizard()
+}
+
+// Create setup wizard window
+fungsi create_setup_wizard_window() -> int {
+    var screen_width = khatui_get_screen_width()
+    var screen_height = khatui_get_screen_height()
+    var window_width = 800
+    var window_height = 600
+    
+    var x = (screen_width - window_width) / 2
+    var y = (screen_height - window_height) / 2
+    
+    setup_wizard.wizard_window = khatui_create_window(
+        SETUP_WIZARD_TITLE, x, y, window_width, window_height, 0
+    )
+    
+    if (setup_wizard.wizard_window < 0) {
+        return -1
+    }
+    
+    // Set window properties
+    khatui_set_window_resizable(setup_wizard.wizard_window, false)
+    khatui_set_window_cultural_theme(setup_wizard.wizard_window, "garuda_welcome")
+    
+    return 0
+}
+
+// Run setup wizard
+fungsi run_setup_wizard() -> int {
+    khat_log("[INIT] Running setup wizard...")
+    
+    while (setup_wizard.current_stage != COMPLETE) {
+        // Render current stage
+        render_setup_stage()
+        
+        // Handle user input
+        var result = handle_setup_input()
+        if (result < 0) {
+            khat_log("[ERROR] Setup wizard error")
+            return -1
+        }
+        
+        // Check if user wants to exit
+        if (result == 1) {
+            khat_log("[INIT] Setup wizard cancelled by user")
+            return -1
+        }
+    }
+    
+    // Finalize setup
+    return finalize_system_setup()
+}
+
+// Render setup stage
+fungsi render_setup_stage() -> void {
+    // Clear window
+    khatui_clear_window(setup_wizard.wizard_window)
+    
+    // Draw cultural background
+    draw_setup_background()
+    
+    switch (setup_wizard.current_stage) {
+        case WELCOME:
+            render_welcome_stage()
+            break
+        case LANGUAGE_SELECTION:
+            render_language_selection_stage()
+            break
+        case CULTURAL_SETUP:
+            render_cultural_setup_stage()
+            break
+        case HARDWARE_DETECTION:
+            render_hardware_detection_stage()
+            break
+        case USER_ACCOUNT:
+            render_user_account_stage()
+            break
+        case SYSTEM_CONFIGURATION:
+            render_system_configuration_stage()
+            break
+        case FINALIZATION:
+            render_finalization_stage()
+            break
+    }
+    
+    // Draw navigation buttons
+    draw_navigation_buttons()
+}
+
+// Draw setup background
+fungsi draw_setup_background() -> void {
+    // Garuda background with Indonesian flag colors
+    khatui_draw_cultural_gradient(setup_wizard.wizard_window, 0, 0, 800, 600,
+                                  0xFF0000, 0xFFFFFF, "vertical")
+    
+    // Garuda silhouette
+    khatui_draw_cultural_icon(setup_wizard.wizard_window, 350, 50, 100, 100,
+                              "garuda_silhouette", 0x00000040)
+    
+    // Ornamental border
+    khatui_draw_ornamental_border(setup_wizard.wizard_window, 0, 0, 800, 600,
+                                  "setup_border", 2)
+}
+
+// Render welcome stage
+fungsi render_welcome_stage() -> void {
+    // Title
+    khatui_draw_text_cultural(setup_wizard.wizard_window, 200, 180,
+                              "Selamat Datang di Khatulistiwa OS",
+                              0x000000, "welcome_title")
+    
+    // Subtitle
+    khatui_draw_text_cultural(setup_wizard.wizard_window, 150, 220,
+                              "Sistem Operasi Indonesia dengan Budaya Nusantara",
+                              0x333333, "welcome_subtitle")
+    
+    // Description
+    var description = [
+        "Khatulistiwa OS menggabungkan teknologi modern",
+        "dengan kekayaan budaya Indonesia.",
+        "",
+        "Mari kita mulai perjalanan digital Anda",
+        "dengan sentuhan budaya Nusantara!"
+    ]
+    
+    for (var i = 0; i < description.length; i++) {
+        khatui_draw_text_cultural(setup_wizard.wizard_window, 200, 280 + i * 25,
+                                  description[i], 0x666666, "welcome_text")
+    }
+    
+    // Cultural elements preview
+    khatui_draw_cultural_icon(setup_wizard.wizard_window, 100, 400, 50, 50,
+                              "batik_preview", 0x8B4513)
+    khatui_draw_text(setup_wizard.wizard_window, 160, 420, "Batik Themes", 0x000000)
+    
+    khatui_draw_cultural_icon(setup_wizard.wizard_window, 300, 400, 50, 50,
+                              "wayang_preview", 0x8B4513)
+    khatui_draw_text(setup_wizard.wizard_window, 360, 420, "Wayang Characters", 0x000000)
+    
+    khatui_draw_cultural_icon(setup_wizard.wizard_window, 500, 400, 50, 50,
+                              "gamelan_preview", 0x8B4513)
+    khatui_draw_text(setup_wizard.wizard_window, 560, 420, "Gamelan Audio", 0x000000)
+}
+
+// Render language selection stage
+fungsi render_language_selection_stage() -> void {
+    // Title
+    khatui_draw_text_cultural(setup_wizard.wizard_window, 250, 180,
+                              "Pilih Bahasa / Choose Language",
+                              0x000000, "stage_title")
+    
+    // Language options
+    var languages = [
+        {"id": "id_ID", "name": "Bahasa Indonesia", "flag": "🇮🇩"},
+        {"id": "en_US", "name": "English", "flag": "🇺🇸"},
+        {"id": "jv_ID", "name": "Basa Jawa", "flag": "🏛️"},
+        {"id": "su_ID", "name": "Basa Sunda", "flag": "🏔️"}
+    ]
+    
+    for (var i = 0; i < languages.length; i++) {
+        var lang = languages[i]
+        var y = 250 + i * 60
+        var selected = (lang.id == setup_wizard.selected_language)
+        
+        // Language button
+        var button_color = selected ? 0x4CAF50 : 0xE0E0E0
+        khatui_draw_rounded_rect(setup_wizard.wizard_window, 200, y, 400, 50, 10, button_color)
+        
+        // Flag and name
+        khatui_draw_text(setup_wizard.wizard_window, 220, y + 15, lang.flag, 0x000000)
+        khatui_draw_text(setup_wizard.wizard_window, 260, y + 15, lang.name, 0x000000)
+        
+        // Click handler
+        khatui_add_click_handler(setup_wizard.wizard_window, 200, y, 400, 50,
+                                "language_select", lang.id)
+    }
+}
+
+// Render cultural setup stage
+fungsi render_cultural_setup_stage() -> void {
+    // Title
+    khatui_draw_text_cultural(setup_wizard.wizard_window, 200, 180,
+                              "Pengaturan Budaya Indonesia",
+                              0x000000, "stage_title")
+    
+    // Batik theme selection
+    khatui_draw_text(setup_wizard.wizard_window, 100, 220, "Pilih Tema Batik:", 0x000000)
+    
+    var batik_themes = ["parang", "kawung", "mega_mendung", "ceplok"]
+    for (var i = 0; i < batik_themes.length; i++) {
+        var theme = batik_themes[i]
+        var x = 100 + (i % 2) * 300
+        var y = 250 + (i / 2) * 80
+        var selected = (theme == setup_wizard.selected_cultural_theme)
+        
+        // Theme preview
+        var preview_color = selected ? 0x4CAF50 : 0xE0E0E0
+        khatui_draw_rounded_rect(setup_wizard.wizard_window, x, y, 250, 60, 8, preview_color)
+        
+        // Batik pattern preview
+        khatui_draw_batik_pattern(setup_wizard.wizard_window, x + 10, y + 10, 40, 40,
+                                  theme, 0x8B4513, 0.8)
+        
+        // Theme name
+        khatui_draw_text(setup_wizard.wizard_window, x + 60, y + 20,
+                         capitalize_string(theme), 0x000000)
+        
+        // Click handler
+        khatui_add_click_handler(setup_wizard.wizard_window, x, y, 250, 60,
+                                "batik_select", theme)
+    }
+    
+    // Gamelan mode selection
+    khatui_draw_text(setup_wizard.wizard_window, 100, 420, "Mode Audio Gamelan:", 0x000000)
+    
+    var gamelan_modes = [
+        {"id": "pelog", "name": "Pelog (Tradisional)"},
+        {"id": "slendro", "name": "Slendro (Klasik)"},
+        {"id": "modern", "name": "Modern (Fusion)"}
+    ]
+    
+    for (var i = 0; i < gamelan_modes.length; i++) {
+        var mode = gamelan_modes[i]
+        var x = 100 + i * 200
+        var y = 450
+        var selected = (mode.id == setup_wizard.selected_gamelan_mode)
+        
+        var button_color = selected ? 0x4CAF50 : 0xE0E0E0
+        khatui_draw_rounded_rect(setup_wizard.wizard_window, x, y, 180, 40, 8, button_color)
+        khatui_draw_text(setup_wizard.wizard_window, x + 10, y + 12, mode.name, 0x000000)
+        
+        khatui_add_click_handler(setup_wizard.wizard_window, x, y, 180, 40,
+                                "gamelan_select", mode.id)
+    }
+}
+
+// Render hardware detection stage
+fungsi render_hardware_detection_stage() -> void {
+    // Title
+    khatui_draw_text_cultural(setup_wizard.wizard_window, 200, 180,
+                              "Deteksi Perangkat Keras",
+                              0x000000, "stage_title")
+    
+    if (!setup_wizard.hardware_detected) {
+        // Start hardware detection
+        start_hardware_detection()
+    }
+    
+    // Show detection progress
+    draw_hardware_detection_progress()
+    
+    // Show detected hardware
+    draw_detected_hardware_list()
+}
+
+// Start hardware detection
+fungsi start_hardware_detection() -> void {
+    khat_log("[INIT] Starting hardware detection...")
+    
+    // Initialize driver manager
+    driver_manager_init()
+    
+    // Start auto-detection
+    start_auto_detection()
+    
+    setup_wizard.hardware_detected = true
+}
+
+// Check system requirements
+fungsi check_system_requirements() -> RequirementStatus {
+    var overall_status = PASSED
+    
+    // Check RAM
+    var total_ram_mb = get_total_memory() / (1024 * 1024)
+    if (total_ram_mb < MIN_RAM_MB) {
+        khat_log("[WARNING] Insufficient RAM: " + khat_int_to_string(total_ram_mb) + "MB")
+        overall_status = WARNING
+    }
+    
+    // Check storage
+    var total_storage_gb = get_total_storage() / (1024 * 1024 * 1024)
+    if (total_storage_gb < MIN_STORAGE_GB) {
+        khat_log("[WARNING] Insufficient storage: " + khat_int_to_string(total_storage_gb) + "GB")
+        overall_status = WARNING
+    }
+    
+    // Check graphics support
+    if (!is_graphics_acceleration_available()) {
+        khat_log("[WARNING] No graphics acceleration available")
+        overall_status = WARNING
+    }
+    
+    setup_wizard.requirements_met = (overall_status != FAILED)
+    return overall_status
+}
+
+// Handle setup input
+fungsi handle_setup_input() -> int {
+    var event = khatui_get_next_event()
+    
+    if (event.type == "button_click") {
+        if (event.data == "next") {
+            return advance_to_next_stage()
+        } else if (event.data == "back") {
+            return go_to_previous_stage()
+        } else if (event.data == "cancel") {
+            return 1  // User cancelled
+        }
+    } else if (event.type == "language_select") {
+        setup_wizard.selected_language = event.data
+        return 0
+    } else if (event.type == "batik_select") {
+        setup_wizard.selected_cultural_theme = event.data
+        return 0
+    } else if (event.type == "gamelan_select") {
+        setup_wizard.selected_gamelan_mode = event.data
+        return 0
+    }
+    
+    return 0
+}
+
+// Advance to next stage
+fungsi advance_to_next_stage() -> int {
+    switch (setup_wizard.current_stage) {
+        case WELCOME:
+            setup_wizard.current_stage = LANGUAGE_SELECTION
+            break
+        case LANGUAGE_SELECTION:
+            setup_wizard.current_stage = CULTURAL_SETUP
+            break
+        case CULTURAL_SETUP:
+            setup_wizard.current_stage = HARDWARE_DETECTION
+            break
+        case HARDWARE_DETECTION:
+            if (setup_wizard.hardware_detected) {
+                setup_wizard.current_stage = USER_ACCOUNT
+            }
+            break
+        case USER_ACCOUNT:
+            setup_wizard.current_stage = SYSTEM_CONFIGURATION
+            break
+        case SYSTEM_CONFIGURATION:
+            setup_wizard.current_stage = FINALIZATION
+            break
+        case FINALIZATION:
+            setup_wizard.current_stage = COMPLETE
+            break
+    }
+    
+    return 0
+}
+
+// Finalize system setup
+fungsi finalize_system_setup() -> int {
+    khat_log("[INIT] Finalizing system setup...")
+    
+    // Apply cultural settings
+    apply_cultural_settings()
+    
+    // Create user account
+    create_user_account()
+    
+    // Configure system
+    configure_system_settings()
+    
+    // Mark system as configured
+    mark_system_configured()
+    
+    // Show completion message
+    show_setup_completion()
+    
+    khat_log("[INIT] System setup completed successfully!")
+    return 0
+}
+
+// Perform system health check
+fungsi perform_system_health_check() -> int {
+    khat_log("[INIT] Performing system health check...")
+    
+    // Check core components
+    if (khatcore_init() != 0) {
+        khat_log("[ERROR] Core runtime health check failed")
+        return -1
+    }
+    
+    // Check UI components
+    if (khatui_init() != 0) {
+        khat_log("[ERROR] UI runtime health check failed")
+        return -1
+    }
+    
+    // Check drivers
+    if (driver_manager_init() != 0) {
+        khat_log("[ERROR] Driver manager health check failed")
+        return -1
+    }
+    
+    // Check cultural components
+    if (cultural_system_health_check() != 0) {
+        khat_log("[WARNING] Cultural system health check failed")
+        // Non-critical, continue
+    }
+    
+    khat_log("[INIT] System health check passed")
+    return 0
+}
+
+// Entry point
+fungsi init_check_main() -> int {
+    return init_check_start()
+}

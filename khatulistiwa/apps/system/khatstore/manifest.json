@@ -1,0 +1,209 @@
+{
+    "name": "KhatStore",
+    "version": "1.0.0",
+    "description": "Toko aplikasi resmi Khatulistiwa OS dengan showcase developer Indonesia",
+    "author": "Tim Khatulistiwa OS",
+    "category": "system",
+    "type": "app_store",
+    "cultural": {
+        "indonesian_elements": true,
+        "batik_theme": "ceplok",
+        "garuda_animations": true,
+        "traditional_sounds": true,
+        "cultural_colors": {
+            "primary": "#059669",
+            "secondary": "#10B981",
+            "accent": "#34D399",
+            "background": "#ECFDF5"
+        }
+    },
+    "permissions": [
+        "network_access",
+        "app_installation",
+        "app_management",
+        "file_system_write",
+        "payment_processing",
+        "user_account_access",
+        "download_management",
+        "system_integration",
+        "cultural_assets_access",
+        "developer_verification"
+    ],
+    "dependencies": [
+        "khatui_runtime.khat",
+        "khatcore_runtime.khat",
+        "khatnet.khat",
+        "khatpay.khat"
+    ],
+    "min_os_version": "1.0.0",
+    "ui_framework": "KhatUI",
+    "features": {
+        "app_browsing": true,
+        "app_search": true,
+        "app_installation": true,
+        "app_updates": true,
+        "user_reviews": true,
+        "developer_profiles": true,
+        "payment_integration": true,
+        "download_management": true,
+        "cultural_showcase": true,
+        "indonesian_developers": true,
+        "regional_apps": true,
+        "traditional_games": true,
+        "educational_content": true,
+        "business_solutions": true
+    },
+    "app_categories": [
+        {
+            "id": "budaya",
+            "name": "Budaya Indonesia",
+            "icon": "cultural_apps",
+            "cultural_icon": "warisan_nusantara",
+            "description": "Aplikasi yang melestarikan budaya Indonesia"
+        },
+        {
+            "id": "permainan",
+            "name": "Permainan Tradisional",
+            "icon": "games",
+            "cultural_icon": "permainan_rakyat",
+            "description": "Game tradisional dan modern Indonesia"
+        },
+        {
+            "id": "pendidikan",
+            "name": "Pendidikan",
+            "icon": "education",
+            "cultural_icon": "belajar_nusantara",
+            "description": "Aplikasi pembelajaran dan edukasi"
+        },
+        {
+            "id": "bisnis",
+            "name": "Bisnis & Produktivitas",
+            "icon": "business",
+            "cultural_icon": "usaha_indonesia",
+            "description": "Solusi bisnis untuk UMKM Indonesia"
+        },
+        {
+            "id": "media",
+            "name": "Media & Hiburan",
+            "icon": "media",
+            "cultural_icon": "hiburan_nusantara",
+            "description": "Aplikasi media dan hiburan lokal"
+        },
+        {
+            "id": "utilitas",
+            "name": "Utilitas",
+            "icon": "utilities",
+            "cultural_icon": "alat_bantu",
+            "description": "Tools dan utilitas sistem"
+        },
+        {
+            "id": "sosial",
+            "name": "Sosial & Komunikasi",
+            "icon": "social",
+            "cultural_icon": "gotong_royong",
+            "description": "Aplikasi sosial dan komunikasi"
+        },
+        {
+            "id": "kesehatan",
+            "name": "Kesehatan & Kebugaran",
+            "icon": "health",
+            "cultural_icon": "sehat_nusantara",
+            "description": "Aplikasi kesehatan dan olahraga"
+        }
+    ],
+    "featured_sections": [
+        {
+            "id": "pilihan_editor",
+            "name": "Pilihan Editor",
+            "description": "Aplikasi terbaik pilihan tim KhatStore"
+        },
+        {
+            "id": "trending_indonesia",
+            "name": "Trending Indonesia",
+            "description": "Aplikasi populer di Indonesia"
+        },
+        {
+            "id": "developer_lokal",
+            "name": "Developer Lokal",
+            "description": "Karya developer Indonesia"
+        },
+        {
+            "id": "baru_rilis",
+            "name": "Baru Dirilis",
+            "description": "Aplikasi terbaru di KhatStore"
+        },
+        {
+            "id": "gratis_minggu_ini",
+            "name": "Gratis Minggu Ini",
+            "description": "Aplikasi premium gratis terbatas"
+        }
+    ],
+    "payment_methods": [
+        {
+            "id": "gopay",
+            "name": "GoPay",
+            "icon": "gopay_logo",
+            "supported": true
+        },
+        {
+            "id": "ovo",
+            "name": "OVO",
+            "icon": "ovo_logo",
+            "supported": true
+        },
+        {
+            "id": "dana",
+            "name": "DANA",
+            "icon": "dana_logo",
+            "supported": true
+        },
+        {
+            "id": "shopeepay",
+            "name": "ShopeePay",
+            "icon": "shopeepay_logo",
+            "supported": true
+        },
+        {
+            "id": "bank_transfer",
+            "name": "Transfer Bank",
+            "icon": "bank_transfer",
+            "supported": true
+        },
+        {
+            "id": "indomaret",
+            "name": "Indomaret",
+            "icon": "indomaret_logo",
+            "supported": true
+        },
+        {
+            "id": "alfamart",
+            "name": "Alfamart",
+            "icon": "alfamart_logo",
+            "supported": true
+        }
+    ],
+    "cultural_features": {
+        "indonesian_developer_spotlight": true,
+        "regional_app_promotion": true,
+        "traditional_game_collection": true,
+        "cultural_education_apps": true,
+        "local_business_solutions": true,
+        "bahasa_indonesia_interface": true,
+        "regional_language_support": true,
+        "indonesian_payment_methods": true,
+        "local_currency_pricing": true,
+        "cultural_app_reviews": true
+    },
+    "localization": {
+        "default_language": "id_ID",
+        "supported_languages": ["id_ID", "en_US", "jv_ID", "su_ID", "ms_MY"]
+    },
+    "resources": {
+        "icons": "resources/icons/",
+        "sounds": "resources/sounds/",
+        "cultural_assets": "cultural/",
+        "themes": "resources/themes/",
+        "banners": "resources/banners/",
+        "screenshots": "resources/screenshots/"
+    }
+}
